@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060" font-family="Inter, DejaVu Sans, sans-serif">
+<defs>
+<marker id="a_pub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6CAED6"/></marker>
+<marker id="a_priv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0A1D35"/></marker>
+<marker id="a_out" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#A8926F"/></marker>
+</defs>
+<rect width="1600" height="1060" fill="#FFFFFF"/>
+<text x="30" y="52" font-size="28" font-weight="700" fill="#0A1D35">Schéma d'architecture · Planning RDV</text>
+<text x="30" y="80" font-size="15" fill="#4A5A70">Mise à jour : 02/11/2026</text>
+<rect x="30" y="100" width="300" height="860" rx="14" fill="#D0E7F5" stroke="#6CAED6" stroke-width="2"/>
+<text x="46" y="128" font-size="13" font-weight="700" letter-spacing="1" fill="#0A1D35">INTERNET</text>
+<rect x="540" y="100" width="680" height="860" rx="14" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="556" y="128" font-size="13" font-weight="700" letter-spacing="1" fill="#0A1D35">VPS LINUX (DEBIAN)</text>
+<rect x="585" y="470" width="615" height="300" rx="14" fill="#F2E8DC" stroke="#0A1D35" stroke-width="2" stroke-dasharray="8,6"/>
+<text x="601" y="498" font-size="13" font-weight="700" letter-spacing="1" fill="#0A1D35">ZONE PRIVÉE : ACCESSIBLE UNIQUEMENT PAR LE VPN</text>
+<rect x="1250" y="100" width="320" height="860" rx="14" fill="#F7F1E8" stroke="#D9C9B4" stroke-width="2"/>
+<text x="1266" y="128" font-size="13" font-weight="700" letter-spacing="1" fill="#0A1D35">SERVICES EXTERNES</text>
+<rect x="548" y="140" width="28" height="800" rx="6" fill="#D9C9B4" stroke="#0A1D35" stroke-width="1.5"/>
+<text transform="translate(567,400) rotate(-90)" text-anchor="middle" font-size="13" font-weight="700" fill="#0A1D35">PARE-FEU (UFW)</text>
+<text x="605" y="942" font-size="13" fill="#0A1D35"><tspan font-weight="700">Ports ouverts :</tspan> 80 et 443 (site), 51820/UDP (VPN). Tout le reste est fermé.</text>
+<polyline points="305,245 350,245" fill="none" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<polyline points="520,245 530,245 530,235 605,235" fill="none" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<rect x="530.5" y="209" width="75" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="568" y="224" text-anchor="middle" font-size="12" fill="#0A1D35">HTTPS 443</text>
+<polyline points="845,235 925,235" fill="none" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<polyline points="725,275 725,345" fill="none" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<rect x="725.0" y="300" width="40" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="745" y="315" text-anchor="middle" font-size="12" fill="#0A1D35">/api</text>
+<polyline points="845,390 925,390" fill="none" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<polyline points="805,435 805,460 1015,460 1015,520" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<rect x="857.0" y="439" width="96" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="905" y="454" text-anchor="middle" font-size="12" fill="#0A1D35">SQL en local</text>
+<polyline points="1095,435 1095,520" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<polyline points="305,560 605,560" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<rect x="382.5" y="535" width="145" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="455" y="550" text-anchor="middle" font-size="12" fill="#0A1D35">WireGuard 51820/UDP</text>
+<polyline points="845,560 925,560" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<rect x="861.5" y="535" width="47" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="885" y="550" text-anchor="middle" font-size="12" fill="#0A1D35">admin</text>
+<polyline points="725,600 725,665" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<polyline points="1055,600 1055,665" fill="none" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<rect x="1058.0" y="624" width="40" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="1078" y="639" text-anchor="middle" font-size="12" fill="#0A1D35">dump</text>
+<polyline points="785,345 785,310 1230,310 1230,295 1275,295" fill="none" stroke="#A8926F" stroke-width="2.5" marker-end="url(#a_out)"/>
+<rect x="983.0" y="289" width="54" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="1010" y="304" text-anchor="middle" font-size="12" fill="#0A1D35">agenda</text>
+<polyline points="1185,390 1275,390" fill="none" stroke="#A8926F" stroke-width="2.5" marker-end="url(#a_out)"/>
+<rect x="1199.5" y="367" width="61" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="1230" y="382" text-anchor="middle" font-size="12" fill="#0A1D35">e-mails</text>
+<polyline points="1185,705 1275,705" fill="none" stroke="#A8926F" stroke-width="2.5" marker-end="url(#a_out)"/>
+<rect x="1206.5" y="682" width="47" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="1230" y="697" text-anchor="middle" font-size="12" fill="#0A1D35">copie</text>
+<polyline points="1185,870 1275,870" fill="none" stroke="#A8926F" stroke-width="2.5" marker-end="url(#a_out)"/>
+<rect x="1203.0" y="847" width="54" height="20" rx="4" fill="#FFFFFF" opacity="0.92"/>
+<text x="1230" y="862" text-anchor="middle" font-size="12" fill="#0A1D35">alerte</text>
+<rect x="55" y="200" width="250" height="90" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="180.0" y="241.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Visiteurs et clients</text>
+<text x="180.0" y="261.0" text-anchor="middle" font-size="12" fill="#4A5A70">Navigateur, mobile ou ordinateur</text>
+<rect x="55" y="515" width="250" height="90" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="180.0" y="556.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Équipe du client et équipe projet</text>
+<text x="180.0" y="576.0" text-anchor="middle" font-size="12" fill="#4A5A70">Poste équipé du client WireGuard</text>
+<rect x="350" y="200" width="170" height="90" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="435.0" y="241.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">rdv.exemple.fr</text>
+<text x="435.0" y="261.0" text-anchor="middle" font-size="12" fill="#4A5A70">DNS + certificat HTTPS</text>
+<rect x="605" y="195" width="240" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="725.0" y="231.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Nginx</text>
+<text x="725.0" y="251.0" text-anchor="middle" font-size="12" fill="#4A5A70">Reverse proxy HTTPS</text>
+<rect x="925" y="195" width="260" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1055.0" y="231.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Site React + TypeScript</text>
+<text x="1055.0" y="251.0" text-anchor="middle" font-size="12" fill="#4A5A70">Fichiers statiques</text>
+<rect x="605" y="345" width="240" height="90" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="725.0" y="386.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">API Node.js + TypeScript</text>
+<text x="725.0" y="406.0" text-anchor="middle" font-size="12" fill="#4A5A70">RDV, clients, prestations</text>
+<rect x="925" y="345" width="260" height="90" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1055.0" y="386.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Espace de tickets</text>
+<text x="1055.0" y="406.0" text-anchor="middle" font-size="12" fill="#4A5A70">Module de l'API</text>
+<rect x="605" y="520" width="240" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="725.0" y="556.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Serveur VPN WireGuard</text>
+<text x="725.0" y="576.0" text-anchor="middle" font-size="12" fill="#4A5A70">Réseau privé 10.8.0.0/24</text>
+<rect x="925" y="520" width="260" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1055.0" y="556.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">PostgreSQL</text>
+<text x="1055.0" y="576.0" text-anchor="middle" font-size="12" fill="#4A5A70">Écoute sur 127.0.0.1, droits limités</text>
+<rect x="605" y="665" width="240" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="725.0" y="701.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">SSH administration</text>
+<text x="725.0" y="721.0" text-anchor="middle" font-size="12" fill="#4A5A70">Clé uniquement, via le VPN</text>
+<rect x="925" y="665" width="260" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1055.0" y="701.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Sauvegarde automatique</text>
+<text x="1055.0" y="721.0" text-anchor="middle" font-size="12" fill="#4A5A70">pg_dump quotidien (cron)</text>
+<rect x="605" y="830" width="580" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="895.0" y="866.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Supervision (Uptime Kuma)</text>
+<text x="895.0" y="886.0" text-anchor="middle" font-size="12" fill="#4A5A70">Surveille le site, l'API et la base de données</text>
+<rect x="1275" y="255" width="270" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1410.0" y="291.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Google Calendar API</text>
+<text x="1410.0" y="311.0" text-anchor="middle" font-size="12" fill="#4A5A70">Création et lecture des créneaux</text>
+<rect x="1275" y="350" width="270" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1410.0" y="386.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Service d'e-mails (SMTP)</text>
+<text x="1410.0" y="406.0" text-anchor="middle" font-size="12" fill="#4A5A70">Confirmations et rappels</text>
+<rect x="1275" y="665" width="270" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1410.0" y="701.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Stockage externe</text>
+<text x="1410.0" y="721.0" text-anchor="middle" font-size="12" fill="#4A5A70">Copies des sauvegardes</text>
+<rect x="1275" y="830" width="270" height="80" rx="10" fill="#FFFFFF" stroke="#0A1D35" stroke-width="2"/>
+<text x="1410.0" y="866.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0A1D35">Alertes à l'équipe</text>
+<text x="1410.0" y="886.0" text-anchor="middle" font-size="12" fill="#4A5A70">E-mail en cas de panne</text>
+<text x="30" y="1005" font-size="13" font-weight="700" fill="#0A1D35">LÉGENDE</text>
+<line x1="120" y1="1000" x2="160" y2="1000" stroke="#6CAED6" stroke-width="2.5" marker-end="url(#a_pub)"/>
+<text x="172" y="1005" font-size="13" fill="#0A1D35">Flux public (HTTPS)</text>
+<line x1="350.6" y1="1000" x2="390.6" y2="1000" stroke="#0A1D35" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#a_priv)"/>
+<text x="402.6" y="1005" font-size="13" fill="#0A1D35">Flux privé (VPN ou local au serveur)</text>
+<line x1="707.0" y1="1000" x2="747.0" y2="1000" stroke="#A8926F" stroke-width="2.5" marker-end="url(#a_out)"/>
+<text x="759.0" y="1005" font-size="13" fill="#0A1D35">Flux sortant vers un service externe</text>
+</svg>
