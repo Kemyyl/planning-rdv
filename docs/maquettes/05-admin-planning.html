@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:960px;display:flex}
+.side{width:248px;background:var(--card);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;padding:0 8px}
+.brand img{width:36px;height:36px}
+.menu{display:flex;flex-direction:column;gap:4px}
+.mi{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--muted)}
+.mi.on{background:var(--navy);color:#fff}
+.mi .n{margin-left:auto;min-width:24px;height:22px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--bg)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.me small{display:block;font-size:12px;color:var(--muted)}
+.main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.bar{display:flex;align-items:center;gap:10px}.bar *{white-space:nowrap}
+.bar h1{white-space:nowrap;font-size:26px;font-weight:800;letter-spacing:-.5px}
+.bar .sp{flex:1}
+.seg{display:flex;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:3px}
+.seg span{height:38px;padding:0 14px;display:flex;align-items:center;border-radius:9px;font-weight:700;font-size:14px;color:var(--muted)}
+.seg span.on{background:var(--navy);color:#fff}
+.sq{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center}
+.sync{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ok)}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.body{display:grid;grid-template-columns:1fr 300px;gap:20px;flex:1;min-height:0}
+.cal{padding:16px 16px 12px;display:grid;grid-template-columns:52px repeat(6,1fr);grid-template-rows:auto 1fr}
+.dh{padding:4px 10px 12px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line)}
+.dh small{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.dh b{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-left:-6px}
+.dh.today b{background:var(--navy);color:#fff}
+.hours{display:flex;flex-direction:column}
+.hours span{height:72px;font-size:12px;font-weight:600;color:var(--muted);padding-top:4px}
+.col{position:relative;border-left:1px solid var(--line);background:repeating-linear-gradient(transparent 0 71px,var(--line) 71px 72px)}
+.col.today{background:repeating-linear-gradient(transparent 0 71px,var(--line) 71px 72px),rgba(208,231,245,.25)}
+.ev{position:absolute;left:5px;right:5px;border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;gap:1px;overflow:hidden;font-size:12px}
+.ev b{font-size:13px}
+.p1{background:#D0E7F5;border-left:4px solid #0A1D35}
+.p2{background:#EDE3D4;border-left:4px solid #8C6E44}
+.p3{background:#E3E8F2;border-left:4px solid #56627A}
+.blk{background:repeating-linear-gradient(45deg,#EFE8DE 0 6px,#F7F2EB 6px 12px);border:1px dashed #C9B79E;color:var(--muted)}
+.now{position:absolute;left:0;right:0;height:2px;background:#C2410C}
+.now::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:#C2410C}
+.panel{display:flex;flex-direction:column;gap:16px}
+.pc{padding:20px;display:flex;flex-direction:column;gap:14px}
+.pc h2{font-size:16px;font-weight:800}
+.next{background:var(--navy);color:#fff;border:none}
+.next small{color:var(--champ);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.next .t{font-size:30px;font-weight:800}
+.next .who{font-size:15px;font-weight:700}
+.next .mut{font-size:13px;color:#B9C3D3}
+.next .acts{display:flex;gap:8px}
+.next .acts span{flex:1;height:42px;border-radius:11px;background:var(--navy-2);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700}
+.li{display:flex;align-items:center;gap:12px;font-size:14px}
+.li .tm{width:52px;font-weight:800}
+.li .who{flex:1}
+.li small{display:block;color:var(--muted);font-size:12.5px}
+.todo{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600}
+.legend{display:flex;gap:16px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:4px}
+</style></head><body>
+<aside class="side">
+  <div class="brand"><img src="logo.png" alt="">Espace pro</div>
+  <nav class="menu">
+    <div class="mi on"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg>Planning</div>
+    <div class="mi"><svg class="icon"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13.5 4.2a3 3 0 010 5.6M15 12.8c1.4.6 2.4 2 2.8 4.2"/></svg>Clients</div>
+    <div class="mi"><svg class="icon"><path d="M4 5h12M4 10h12M4 15h7"/></svg>Prestations et horaires</div>
+    </nav>
+  <div class="me"><div class="av">[G]</div><div><b style="font-size:14px">[Nom du gérant]</b><small>Administrateur</small></div></div>
+</aside>
+<main class="main">
+  <div class="bar">
+    <h1>Novembre 2026</h1>
+    <div class="sq"><svg class="icon"><path d="M12 5l-5 5 5 5"/></svg></div>
+    <div class="sq"><svg class="icon"><path d="M8 5l5 5-5 5"/></svg></div>
+    <span class="btn btn-ghost" style="height:44px">Aujourd'hui</span>
+    <span class="sync"><i></i>Google Agenda synchronisé</span>
+    <span class="sp"></span>
+    <div class="seg"><span>Jour</span><span class="on">Semaine</span><span>Liste</span></div>
+    <span class="btn btn-primary" style="height:44px"><svg class="icon"><path d="M10 4v12M4 10h12"/></svg>Nouveau rendez-vous</span>
+  </div>
+  <div class="legend"><span><i style="background:#D0E7F5;border:2px solid #0A1D35"></i>[Prestation 1]</span><span><i style="background:#EDE3D4;border:2px solid #8C6E44"></i>[Prestation 2]</span><span><i style="background:#E3E8F2;border:2px solid #56627A"></i>[Prestation 3]</span><span><i style="background:repeating-linear-gradient(45deg,#E6DBCB 0 3px,#fff 3px 6px);border:1px dashed #C9B79E"></i>Bloqué dans Google Agenda</span></div>
+  <div class="body">
+    <div class="card cal">
+      <span></span>
+      <div class="dh"><small>Lun</small><b>9</b></div>
+      <div class="dh today"><small>Mar</small><b>10</b></div>
+      <div class="dh"><small>Mer</small><b>11</b></div>
+      <div class="dh"><small>Jeu</small><b>12</b></div>
+      <div class="dh"><small>Ven</small><b>13</b></div>
+      <div class="dh"><small>Sam</small><b>14</b></div>
+      <div class="hours"><span>9h</span><span>10h</span><span>11h</span><span>12h</span><span>13h</span><span>14h</span><span>15h</span><span>16h</span><span>17h</span></div>
+      <div class="col">
+        <div class="ev p1" style="top:2px;height:32px"><b>C. Martin</b></div>
+        <div class="ev p2" style="top:74px;height:68px"><b>L. Bernard</b>10h – 11h</div>
+        <div class="ev p3" style="top:362px;height:104px"><b>S. Petit</b>14h – 15h30</div>
+      </div>
+      <div class="col today">
+        <div class="ev p1" style="top:38px;height:32px"><b>A. Robert</b></div>
+        <div class="ev p1" style="top:110px;height:32px"><b>C. Martin</b></div>
+        <div class="now" style="top:100px"></div>
+        <div class="ev blk" style="top:362px;height:68px"><b>Indisponible</b>Google Agenda</div>
+        <div class="ev p1" style="top:542px;height:32px"><b>M. Durand</b></div>
+      </div>
+      <div class="col">
+        <div class="ev p2" style="top:146px;height:68px"><b>J. Moreau</b>11h – 12h</div>
+        <div class="ev p3" style="top:434px;height:104px"><b>E. Laurent</b>15h – 16h30</div>
+      </div>
+      <div class="col">
+        <div class="ev p2" style="top:2px;height:68px"><b>N. Simon</b>9h – 10h</div>
+        <div class="ev blk" style="top:290px;height:140px"><b>Indisponible</b>Google Agenda</div>
+      </div>
+      <div class="col">
+        <div class="ev p1" style="top:74px;height:32px"><b>P. Michel</b></div>
+        <div class="ev p2" style="top:146px;height:68px"><b>I. Garcia</b>11h – 12h</div>
+        <div class="ev p2" style="top:506px;height:68px"><b>T. Roux</b>16h – 17h</div>
+      </div>
+      <div class="col">
+        <div class="ev p3" style="top:74px;height:104px"><b>H. Fournier</b>10h – 11h30</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="card pc next">
+        <small>Prochain rendez-vous</small>
+        <div class="t">10h30</div>
+        <div><div class="who">Camille Martin</div><div class="mut">[Prestation 1] · 30 min · 06 12 34 56 78</div></div>
+        <div class="acts"><span>Fiche client</span><span>Déplacer</span></div>
+      </div>
+      <div class="card pc">
+        <h2>Aujourd'hui · mardi 10</h2>
+        <div class="li"><span class="tm">09:30</span><span class="who">A. Robert<small>[Prestation 1]</small></span><span class="chip" style="background:var(--ok-bg);color:var(--ok)">Venu</span></div>
+        <div class="li"><span class="tm">10:30</span><span class="who">C. Martin<small>[Prestation 1]</small></span><span class="chip" style="background:var(--diamond);color:var(--navy)">À venir</span></div>
+        <div class="li"><span class="tm">16:30</span><span class="who">M. Durand<small>[Prestation 1]</small></span><span class="chip" style="background:var(--diamond);color:var(--navy)">À venir</span></div>
+      </div>
+      <div class="card pc">
+        <h2>À traiter</h2>
+        <div class="todo"><span class="chip" style="background:var(--diamond);color:var(--navy)">2</span>nouvelles réservations depuis hier</div>
+        <div class="todo"><span class="chip" style="background:var(--err-bg);color:var(--err)">1</span>annulation à confirmer</div>
+      </div>
+    </div>
+  </div>
+</main>
+</body></html>

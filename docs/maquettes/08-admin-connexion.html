@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:900px;display:grid;grid-template-columns:1fr 1fr}
+.left{background:var(--navy);color:#FFFDFA;padding:64px;display:flex;flex-direction:column;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.brand .lg{width:48px;height:48px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.brand img{width:40px;height:40px}
+.left h1{font-size:46px;font-weight:800;letter-spacing:-1px;line-height:1.1;max-width:480px}
+.left p{margin-top:16px;color:#C9D2DF;font-size:17px;line-height:1.6;max-width:460px}
+.feat{display:flex;flex-direction:column;gap:14px}
+.feat div{display:flex;gap:12px;align-items:center;font-size:15px;color:#E4E9F0}
+.feat i{width:36px;height:36px;border-radius:10px;background:var(--navy-2);display:flex;align-items:center;justify-content:center;color:var(--champ)}
+.right{display:flex;align-items:center;justify-content:center}
+.box{width:440px;display:flex;flex-direction:column;gap:20px}
+.box h2{font-size:30px;font-weight:800;letter-spacing:-.5px}
+.box .sub{color:var(--muted);font-size:15px;margin-top:-10px}
+.f{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:700}
+.in{height:52px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;padding:0 16px;font-weight:500;font-size:15px;color:var(--navy);gap:10px}
+.in.focus{border:2px solid var(--sky);box-shadow:0 0 0 4px rgba(108,174,214,.22)}
+.in .eye{margin-left:auto;color:var(--muted)}
+.row{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.row u{font-weight:700}
+.chk{display:flex;gap:10px;align-items:center;color:var(--muted)}
+.chk span{width:20px;height:20px;border-radius:6px;border:1.5px solid #B9A88F;background:#fff}
+.btn{width:100%;height:54px;font-size:16px}
+.err{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--err-bg);color:var(--err);font-size:14px;font-weight:600;line-height:1.45}
+.sec{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center;justify-content:center}
+</style></head><body>
+<div class="left">
+  <div class="brand"><span class="lg"><img src="logo.png" alt=""></span>[Nom de l'enseigne] · Espace pro</div>
+  <div>
+    <h1>Votre planning, au même endroit</h1>
+    <p>Retrouvez vos rendez-vous, vos clients et vos horaires. Tout est relié à votre Google Agenda.</p>
+  </div>
+  <div class="feat">
+    <div><i><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg></i>Planning de la semaine en un coup d'œil</div>
+    <div><i><svg class="icon"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/></svg></i>Fiches clients et historique</div>
+    <div><i><svg class="icon"><rect x="4" y="9" width="12" height="8" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg></i>Accès réservé à votre équipe</div>
+  </div>
+</div>
+<div class="right">
+  <div class="box">
+    <h2>Connexion</h2>
+    <p class="sub">Accès réservé à l'équipe de [Nom de l'enseigne].</p>
+    <div class="err"><svg class="icon" style="flex:none"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v5M10 14h.01"/></svg>E-mail ou mot de passe incorrect. Vérifiez votre saisie ou réinitialisez votre mot de passe.</div>
+    <div class="f">E-mail<div class="in">gerant@[enseigne].fr</div></div>
+    <div class="f">Mot de passe<div class="in focus">••••••••••<span class="eye"><svg class="icon"><path d="M2 10s3-5.5 8-5.5S18 10 18 10s-3 5.5-8 5.5S2 10 2 10z"/><circle cx="10" cy="10" r="2.5"/></svg></span></div></div>
+    <div class="row"><span class="chk"><span></span>Rester connecté</span><u>Mot de passe oublié ?</u></div>
+    <span class="btn btn-primary">Se connecter</span>
+    <div class="sec"><svg class="icon" style="width:16px;height:16px"><rect x="4" y="9" width="12" height="8" rx="2"/><path d="M7 9V6a3 3 0 016 0v3"/></svg>Connexion sécurisée</div>
+  </div>
+</div>
+</body></html>

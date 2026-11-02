@@ -1,0 +1,23 @@
+@font-face{font-family:"Jakarta";src:url(node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:"Jakarta";src:url(node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:"Jakarta";src:url(node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:"Jakarta";src:url(node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:"Jakarta";src:url(node_modules/@fontsource/plus-jakarta-sans/files/plus-jakarta-sans-latin-800-normal.woff2);font-weight:800}
+
+:root{
+  --navy:#0A1D35; --navy-2:#1C3352; --ivory:#F2E8DC; --bg:#F7F2EB; --card:#FFFDFA;
+  --sky:#6CAED6; --champ:#D9C9B4; --diamond:#D0E7F5; --muted:#56627A; --line:#E7DCCD;
+  --ok:#1E6B4A; --ok-bg:#DCEFE4; --warn:#8A5A12; --warn-bg:#F6E7C8; --err:#9B2C1F; --err-bg:#F7DDD8;
+  --shadow:0 1px 2px rgba(10,29,53,.05),0 8px 24px rgba(10,29,53,.07);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Jakarta",sans-serif;background:var(--bg);color:var(--navy);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;height:52px;padding:0 24px;border-radius:14px;font:700 15px "Jakarta";border:none;cursor:pointer}
+.btn-primary{background:var(--navy);color:#FFFDFA}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:700}
+.icon{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}

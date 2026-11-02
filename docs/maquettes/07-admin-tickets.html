@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:960px;display:flex}
+.side{width:248px;background:var(--card);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;padding:0 8px}
+.brand img{width:36px;height:36px}
+.menu{display:flex;flex-direction:column;gap:4px}
+.mi{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--muted)}
+.mi.on{background:var(--navy);color:#fff}
+.mi .n{margin-left:auto;min-width:24px;height:22px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--bg)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.me small{display:block;font-size:12px;color:var(--muted)}
+
+.main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.bar{display:flex;align-items:center;gap:12px}
+.bar h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.bar .sp{flex:1}
+.tabs{display:flex;gap:6px}
+.tab{height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--muted)}
+.tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.tab i{font-style:normal;min-width:22px;height:22px;border-radius:999px;background:var(--bg);color:var(--navy);font-size:12px;display:flex;align-items:center;justify-content:center}
+.split{display:grid;grid-template-columns:440px 1fr;gap:20px;flex:1;min-height:0}
+.list{padding:8px;display:flex;flex-direction:column;gap:4px}
+.tk{padding:14px;border-radius:14px;display:flex;flex-direction:column;gap:6px}
+.tk.on{background:var(--diamond)}
+.tk .r1{display:flex;justify-content:space-between;align-items:center}
+.tk b{font-size:15px}
+.tk small{font-size:12.5px;color:var(--muted)}
+.tk p{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.open{background:var(--warn-bg);color:var(--warn)}
+.prog{background:var(--diamond);color:var(--navy);border:1px solid #A9CDE6}
+.done{background:var(--ok-bg);color:var(--ok)}
+.det{padding:28px;display:flex;flex-direction:column;gap:20px}
+.dh{display:flex;align-items:flex-start;gap:16px}
+.dh h2{font-size:22px;font-weight:800}
+.dh p{font-size:14px;color:var(--muted);margin-top:6px}
+.dh .sp{flex:1}.dh .btn{white-space:nowrap;flex:none}.dh>div:first-child{max-width:520px}
+.steps{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700}
+.steps span{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.steps .dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px}
+.steps .ok .dot{background:var(--navy);border-color:var(--navy);color:#fff}
+.steps .ok{color:var(--navy)}
+.steps hr{flex:1;border:none;height:2px;background:var(--line);margin:0}
+.steps hr.ok{background:var(--navy)}
+.msg{display:flex;gap:12px}
+.msg .av{width:36px;height:36px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex:none}
+.msg .bub{padding:14px 16px;border-radius:4px 16px 16px 16px;background:var(--bg);font-size:14.5px;line-height:1.55;flex:1}
+.msg.mine{flex-direction:row-reverse}
+.msg.mine .av{background:var(--navy);color:#fff}
+.msg.mine .bub{background:var(--navy);color:#fff;border-radius:16px 4px 16px 16px}
+.bub small{display:block;font-size:12px;opacity:.75;margin-bottom:4px;font-weight:700}
+.reply{display:flex;gap:10px;align-items:center;margin-top:auto}
+.reply .in{flex:1;height:52px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;padding:0 16px;color:#8A93A3;font-size:14.5px}
+</style></head><body>
+<aside class="side">
+  <div class="brand"><img src="logo.png" alt="">Espace pro</div>
+  <nav class="menu">
+    <div class="mi"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg>Planning</div>
+    <div class="mi"><svg class="icon"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13.5 4.2a3 3 0 010 5.6M15 12.8c1.4.6 2.4 2 2.8 4.2"/></svg>Clients</div>
+    <div class="mi"><svg class="icon"><path d="M4 5h12M4 10h12M4 15h7"/></svg>Prestations et horaires</div>
+    <div class="mi on"><svg class="icon"><path d="M3 6a2 2 0 012-2h10a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4z"/></svg>Tickets<span class="n">3</span></div>
+  </nav>
+  <div class="me"><div class="av">[G]</div><div><b style="font-size:14px">[Nom du gérant]</b><small>Administrateur</small></div></div>
+</aside>
+<main class="main">
+  <div class="bar">
+    <h1>Tickets</h1>
+    <div class="tabs"><span class="tab on">Ouverts <i>3</i></span><span class="tab">En cours <i>1</i></span><span class="tab">Clos <i>12</i></span></div>
+    <span class="sp"></span>
+    <span class="btn btn-ghost" style="height:44px">Exporter</span>
+  </div>
+  <div class="split">
+    <div class="card list">
+      <div class="tk on"><div class="r1"><b>Je ne reçois pas l'e-mail de confirmation</b><span class="chip open">Ouvert</span></div><small>Camille Martin · il y a 25 min</small><p>J'ai réservé ce matin mais rien dans ma boîte, même dans les spams.</p></div>
+      <div class="tk"><div class="r1"><b>Changer de prestation</b><span class="chip open">Ouvert</span></div><small>Julien Moreau · il y a 2 h</small><p>Est-il possible de passer à la prestation de 1 h le 11 novembre ?</p></div>
+      <div class="tk"><div class="r1"><b>Créneau du samedi complet</b><span class="chip open">Ouvert</span></div><small>Inès Garcia · hier</small><p>Y aura-t-il d'autres créneaux le samedi matin ?</p></div>
+      <div class="tk"><div class="r1"><b>Facture du dernier rendez-vous</b><span class="chip prog">En cours</span></div><small>Léa Bernard · 7 nov.</small><p>Pouvez-vous m'envoyer la facture de septembre ?</p></div>
+    </div>
+    <div class="card det">
+      <div class="dh"><div><h2>Je ne reçois pas l'e-mail de confirmation</h2><p>Ticket n° 0031 · Camille Martin · camille.martin@exemple.fr</p></div><span class="sp"></span><span class="btn btn-ghost" style="height:44px">Fiche client</span><span class="btn btn-primary" style="height:44px"><svg class="icon"><path d="M4 10l4 4 8-9"/></svg>Clore le ticket</span></div>
+      <div class="steps"><span class="ok"><span class="dot">1</span>Déposé</span><hr class="ok"><span class="ok"><span class="dot">2</span>Pris en charge</span><hr><span><span class="dot">3</span>Résolu</span></div>
+      <div class="msg"><div class="av">CM</div><div class="bub"><small>Camille Martin · 10:05</small>Bonjour, j'ai réservé un rendez-vous pour mardi 10 novembre à 10h30 mais je n'ai reçu aucun e-mail, même dans les spams. Le rendez-vous est-il bien enregistré ?</div></div>
+      <div class="msg mine"><div class="av">[G]</div><div class="bub"><small>Vous · 10:21</small>Bonjour Camille, votre rendez-vous est bien enregistré. Je vous renvoie la confirmation tout de suite.</div></div>
+      <div class="reply"><div class="in">Écrire une réponse…</div><span class="btn btn-primary">Envoyer</span></div>
+    </div>
+  </div>
+</main>
+</body></html>

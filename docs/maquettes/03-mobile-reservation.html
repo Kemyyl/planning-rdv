@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:390px;height:844px;position:relative;overflow:hidden}
+.top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+.brand img{width:34px;height:34px}
+.menu{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center}
+.c{padding:18px 16px 140px;display:flex;flex-direction:column;gap:18px}
+.prog{display:flex;flex-direction:column;gap:8px}
+.prog .bar{display:flex;gap:6px}.prog .bar span{flex:1;height:5px;border-radius:9px;background:var(--line)}.prog .bar span.on{background:var(--navy)}
+.prog small{font-size:12.5px;font-weight:700;color:var(--muted)}
+h1{font-size:26px;font-weight:800;letter-spacing:-.4px}
+.svc{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--diamond);border:2px solid var(--navy)}
+.svc div{flex:1}.svc b{font-size:15px;display:block}.svc small{font-size:13px;color:var(--navy-2);font-weight:600}
+.svc u{font-size:13px;font-weight:700}
+.lbl{font-size:13px;font-weight:700;color:var(--muted)}
+.days{display:flex;gap:8px;overflow:hidden;margin-right:-16px}
+.day{flex:none;width:62px;height:76px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.day small{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted)}
+.day b{font-size:19px}.day i{font-style:normal;font-size:10.5px;font-weight:700;color:var(--ok)}
+.day.sel{background:var(--navy);border-color:var(--navy);color:#fff}.day.sel small,.day.sel i{color:var(--champ)}
+.day.off{border-style:dashed;background:transparent;color:#9AA2B1}.day.off i{color:#9AA2B1}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.slot{height:48px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.slot.sel{background:var(--navy);color:#fff;border-color:var(--navy)}
+.slot.off{border-style:dashed;background:transparent;color:#A7AEBB;text-decoration:line-through}
+.bottom{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:14px 16px 28px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 24px rgba(10,29,53,.08)}
+.bottom .sum{display:flex;justify-content:space-between;font-size:14px}
+.bottom .sum b{font-weight:800}
+.bottom .btn{width:100%;height:54px}
+</style></head><body>
+<div class="top"><div class="brand"><img src="logo.png" alt="">[Nom de l'enseigne]</div><div class="menu"><svg class="icon"><path d="M3 6h14M3 10h14M3 14h14"/></svg></div></div>
+<div class="c">
+  <div class="prog"><div class="bar"><span class="on"></span><span class="on"></span><span></span></div><small>Étape 2 sur 3 · Jour et horaire</small></div>
+  <h1>Quand venez-vous ?</h1>
+  <div class="svc"><div><b>[Prestation 1]</b><small>30 min</small></div><u>Changer</u></div>
+  <span class="lbl">Novembre 2026</span>
+  <div class="days">
+    <div class="day"><small>Lun</small><b>9</b><i>8 dispo</i></div>
+    <div class="day sel"><small>Mar</small><b>10</b><i>9 dispo</i></div>
+    <div class="day"><small>Mer</small><b>11</b><i>6 dispo</i></div>
+    <div class="day"><small>Jeu</small><b>12</b><i>4 dispo</i></div>
+    <div class="day off"><small>Ven</small><b>13</b><i>Complet</i></div>
+    <div class="day"><small>Sam</small><b>14</b><i>3 dispo</i></div>
+  </div>
+  <span class="lbl">Matin</span>
+  <div class="slots"><div class="slot">09:00</div><div class="slot off">09:30</div><div class="slot">10:00</div><div class="slot sel">10:30</div><div class="slot off">11:00</div><div class="slot">11:30</div></div>
+  <span class="lbl">Après-midi</span>
+  <div class="slots"><div class="slot off">14:00</div><div class="slot">14:30</div><div class="slot">15:00</div></div>
+</div>
+<div class="bottom">
+  <div class="sum"><span>Mardi 10 nov. · 10h30</span><b>[Prestation 1]</b></div>
+  <span class="btn btn-primary">Continuer vers mes coordonnées</span>
+</div>
+</body></html>

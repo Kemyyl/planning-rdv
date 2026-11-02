@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:1000px;overflow:hidden}
+.top{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 64px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.brand img{width:42px;height:42px}
+.nav{display:flex;align-items:center;gap:28px;font-weight:600;font-size:15px;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:1fr 380px;gap:32px;padding:40px 64px}
+.head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:flex-end}
+.head h1{font-size:40px;font-weight:800;letter-spacing:-.8px}
+.head p{margin-top:8px;color:var(--muted);font-size:16px}
+.progress{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:700;color:var(--muted)}
+.progress span{width:56px;height:6px;border-radius:9px;background:var(--line)}
+.progress span.on{background:var(--navy)}
+.step{padding:28px;display:flex;flex-direction:column;gap:20px}
+.step+.step{margin-top:20px}
+.step-h{display:flex;align-items:center;gap:14px}
+.num{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.num.done{background:var(--ok)}
+.step-h h2{font-size:20px;font-weight:800}
+.step-h .edit{margin-left:auto;font-size:14px;font-weight:700;color:var(--navy);text-decoration:underline}
+.services{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.svc{position:relative;padding:20px;border-radius:16px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;gap:8px}
+.svc b{font-size:16px}
+.svc small{font-size:13.5px;color:var(--muted);line-height:1.45}
+.svc .dur{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--navy-2)}
+.svc.sel{border:2px solid var(--navy);background:var(--diamond)}
+.svc .tick{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center}
+.days{display:flex;gap:10px;align-items:center}
+.arrow{width:44px;height:72px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center}
+.day{flex:1;height:72px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.day small{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.day b{font-size:20px}
+.day i{font-style:normal;font-size:11px;font-weight:700;color:var(--ok)}
+.day.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+.day.sel small,.day.sel i{color:var(--champ)}
+.day.off{background:transparent;border-style:dashed;color:#9AA2B1}
+.day.off i{color:#9AA2B1}
+.slots-g{display:flex;flex-direction:column;gap:10px}
+.slots-g .lbl{font-size:13px;font-weight:700;color:var(--muted)}
+.slots{display:flex;flex-wrap:wrap;gap:10px}
+.slot{width:92px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.slot.sel{background:var(--navy);border-color:var(--navy);color:#fff}
+.slot.off{color:#A7AEBB;text-decoration:line-through;background:transparent;border-style:dashed}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.f{display:flex;flex-direction:column;gap:7px;font-size:13.5px;font-weight:700}
+.f .in{height:50px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;padding:0 16px;font-weight:500;color:#8A93A3;font-size:15px}
+.f .in.val{color:var(--navy)}
+.f .in.focus{border:2px solid var(--sky);box-shadow:0 0 0 4px rgba(108,174,214,.22)}
+.consent{grid-column:1/-1;display:flex;gap:12px;align-items:flex-start;font-size:13.5px;color:var(--muted);line-height:1.5;font-weight:500}
+.box{width:22px;height:22px;border-radius:6px;background:var(--navy);flex:none;display:flex;align-items:center;justify-content:center;color:#fff}
+.recap{position:sticky;top:24px;align-self:start;background:var(--navy);color:#FFFDFA;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:22px;box-shadow:0 10px 30px rgba(10,29,53,.25)}
+.recap h3{font-size:18px;font-weight:800}
+.row{display:flex;gap:14px;align-items:flex-start}
+.row .ic{width:40px;height:40px;border-radius:12px;background:var(--navy-2);display:flex;align-items:center;justify-content:center;color:var(--champ);flex:none}
+.row small{display:block;font-size:12px;color:#B9C3D3;font-weight:600}
+.row b{font-size:15px}
+.recap .btn{background:var(--champ);color:var(--navy);height:56px;font-size:16px}
+.reassure{display:flex;flex-direction:column;gap:8px;font-size:13px;color:#C9D2DF}
+.reassure div{display:flex;gap:8px;align-items:center}
+.help{margin-top:16px;font-size:14px;color:var(--muted);text-align:center}
+.help u{color:var(--navy);font-weight:700}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--warn-bg);color:var(--warn);font-size:14.5px;line-height:1.5}.alert b{color:#6B4409}.slot.near{border:2px solid var(--navy);background:var(--diamond)}</style></head><body>
+<div class="top">
+  <div class="brand"><img src="logo.png" alt="">[Nom de l'enseigne]</div>
+  <div class="nav"><span>Mon rendez-vous</span><span>Aide</span><span class="btn btn-ghost" style="height:42px">Espace pro</span></div>
+</div>
+<div class="wrap">
+  <div class="head">
+    <div><h1>Réservez en moins d'une minute</h1><p>Tout se passe sur cette page. Confirmation immédiate par e-mail.</p></div>
+    <div class="progress">Étape 2 sur 3 <span class="on"></span><span class="on"></span><span></span></div>
+  </div>
+
+  <div>
+    <section class="card step">
+      <div class="step-h"><div class="num done"><svg class="icon" style="width:16px;height:16px;stroke-width:3"><path d="M4 9l4 4 7-8"/></svg></div><h2>Prestation</h2><span class="edit">Modifier</span></div>
+      <div class="services">
+        <div class="svc sel"><div class="tick"><svg class="icon" style="width:14px;height:14px;stroke-width:3"><path d="M2 7l3.5 3.5L12 3"/></svg></div><b>[Prestation 1]</b><small>[Description courte : ce que le client obtient.]</small><span class="dur"><svg class="icon" style="width:16px;height:16px"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 1.5"/></svg>30 min</span></div>
+        <div class="svc"><b>[Prestation 2]</b><small>[Description courte : ce que le client obtient.]</small><span class="dur"><svg class="icon" style="width:16px;height:16px"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 1.5"/></svg>1 h</span></div>
+        <div class="svc"><b>[Prestation 3]</b><small>[Description courte : ce que le client obtient.]</small><span class="dur"><svg class="icon" style="width:16px;height:16px"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5V8l2.5 1.5"/></svg>1 h 30</span></div>
+      </div>
+    </section>
+
+    <section class="card step">
+      <div class="step-h"><div class="num">2</div><h2>Jour et horaire</h2></div>
+      <div class="days">
+        <div class="arrow"><svg class="icon"><path d="M12 5l-5 5 5 5"/></svg></div>
+        <div class="day"><small>Lun</small><b>9</b><i>8 dispo</i></div>
+        <div class="day sel"><small>Mar</small><b>10</b><i>9 dispo</i></div>
+        <div class="day"><small>Mer</small><b>11</b><i>6 dispo</i></div>
+        <div class="day"><small>Jeu</small><b>12</b><i>4 dispo</i></div>
+        <div class="day off"><small>Ven</small><b>13</b><i>Complet</i></div>
+        <div class="day"><small>Sam</small><b>14</b><i>3 dispo</i></div>
+        <div class="day off"><small>Dim</small><b>15</b><i>Fermé</i></div>
+        <div class="arrow"><svg class="icon"><path d="M8 5l5 5-5 5"/></svg></div>
+      </div>
+      <div class="alert"><svg class="icon" style="flex:none;width:22px;height:22px"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v5M10 14h.01"/></svg><div><b>Ce créneau vient d'être réservé par quelqu'un d'autre.</b><br>Choisissez un autre horaire : les plus proches sont mis en avant ci-dessous.</div></div>
+      <div class="slots-g"><span class="lbl">Matin</span>
+        <div class="slots"><div class="slot">09:00</div><div class="slot off">09:30</div><div class="slot near">10:00</div><div class="slot off">10:30</div><div class="slot off">11:00</div><div class="slot near">11:30</div></div>
+      </div>
+      <div class="slots-g"><span class="lbl">Après-midi</span>
+        <div class="slots"><div class="slot off">14:00</div><div class="slot">14:30</div><div class="slot">15:00</div><div class="slot">15:30</div><div class="slot">16:00</div><div class="slot off">16:30</div><div class="slot">17:00</div><div class="slot">17:30</div></div>
+      </div>
+    </section>
+
+    <section class="card step">
+      <div class="step-h"><div class="num">3</div><h2>Vos coordonnées</h2></div>
+      <div class="form">
+        <div class="f">Prénom<div class="in val">Camille</div></div>
+        <div class="f">Nom<div class="in val">Martin</div></div>
+        <div class="f">E-mail<div class="in focus val">camille.martin@exemple.fr</div></div>
+        <div class="f">Téléphone<div class="in">06 12 34 56 78</div></div>
+        <div class="consent"><span class="box"><svg class="icon" style="width:13px;height:13px;stroke-width:3"><path d="M2 7l3.5 3.5L12 3"/></svg></span>J'accepte que mes informations servent à gérer mon rendez-vous (politique de confidentialité).</div>
+      </div>
+    </section>
+  </div>
+
+  <aside>
+    <div class="recap">
+      <h3>Votre rendez-vous</h3>
+      <div class="row"><div class="ic"><svg class="icon"><path d="M10 2l2.5 5 5.5.8-4 3.9.9 5.5L10 14.6 5.1 17.2 6 11.7 2 7.8l5.5-.8z"/></svg></div><div><small>Prestation</small><b>[Prestation 1] · 30 min</b></div></div>
+      <div class="row"><div class="ic"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg></div><div><small>Date</small><b>Mardi 10 novembre</b></div></div>
+      <div class="row"><div class="ic"><svg class="icon"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4l3 2"/></svg></div><div><small>Horaire</small><b style="color:#F6C9A5">À choisir</b></div></div>
+      <div class="row"><div class="ic"><svg class="icon"><path d="M10 18s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/><circle cx="10" cy="8" r="2"/></svg></div><div><small>Adresse</small><b>[Adresse de l'établissement]</b></div></div>
+      <span class="btn" style="opacity:.45">Confirmer le rendez-vous</span>
+      <div class="reassure">
+        <div><svg class="icon" style="width:16px;height:16px"><path d="M3 8l3.5 3.5L13 4"/></svg>Confirmation immédiate par e-mail</div>
+        <div><svg class="icon" style="width:16px;height:16px"><path d="M3 8l3.5 3.5L13 4"/></svg>Rappel la veille du rendez-vous</div>
+        <div><svg class="icon" style="width:16px;height:16px"><path d="M3 8l3.5 3.5L13 4"/></svg>Annulation gratuite en un clic</div>
+      </div>
+    </div>
+    <p class="help">Une question ? Appelez-nous au <u>[téléphone]</u></p>
+  </aside>
+</div>
+</body></html>

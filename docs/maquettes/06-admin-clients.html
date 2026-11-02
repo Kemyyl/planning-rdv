@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:960px;display:flex}
+.side{width:248px;background:var(--card);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;padding:0 8px}
+.brand img{width:36px;height:36px}
+.menu{display:flex;flex-direction:column;gap:4px}
+.mi{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--muted)}
+.mi.on{background:var(--navy);color:#fff}
+.mi .n{margin-left:auto;min-width:24px;height:22px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--bg)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.me small{display:block;font-size:12px;color:var(--muted)}
+
+.main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.bar{display:flex;align-items:center;gap:12px}
+.bar h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.bar .sp{flex:1}
+.search{white-space:nowrap;width:340px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;color:#8A93A3;font-size:14.5px;font-weight:500}
+.split{display:grid;grid-template-columns:400px 1fr;gap:20px;flex:1;min-height:0}
+.list{padding:8px;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.it{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px}
+.it.on{background:var(--diamond)}
+.av{width:40px;height:40px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none}
+.it>div:not(.av){flex:1;min-width:0}.it small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it b{font-size:15px;display:block}
+.it small{font-size:12.5px;color:var(--muted)}
+.it .d{flex:none;width:56px;font-size:12.5px;font-weight:700;color:var(--muted);text-align:right}
+.fiche{padding:28px;display:flex;flex-direction:column;gap:22px}
+.fh{display:flex;align-items:center;gap:16px}
+.fh .av{width:64px;height:64px;font-size:20px;background:var(--navy);color:#fff}
+.fh h2{font-size:24px;font-weight:800}
+.fh p{color:var(--muted);font-size:14px;margin-top:4px}
+.fh .sp{flex:1}.fh .btn{white-space:nowrap}
+.infos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.inf{padding:14px 16px;border-radius:14px;background:var(--bg);display:flex;flex-direction:column;gap:3px}
+.inf small{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.inf b{font-size:15px}
+h3{font-size:16px;font-weight:800}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:0 12px 10px}
+td{padding:14px 12px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.note{padding:14px 16px;border-radius:14px;border:1.5px dashed var(--line);font-size:14px;color:var(--muted)}
+</style></head><body>
+<aside class="side">
+  <div class="brand"><img src="logo.png" alt="">Espace pro</div>
+  <nav class="menu">
+    <div class="mi"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg>Planning</div>
+    <div class="mi on"><svg class="icon"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13.5 4.2a3 3 0 010 5.6M15 12.8c1.4.6 2.4 2 2.8 4.2"/></svg>Clients</div>
+    <div class="mi"><svg class="icon"><path d="M4 5h12M4 10h12M4 15h7"/></svg>Prestations et horaires</div>
+    </nav>
+  <div class="me"><div class="av">[G]</div><div><b style="font-size:14px">[Nom du gérant]</b><small>Administrateur</small></div></div>
+</aside>
+<main class="main">
+  <div class="bar">
+    <h1>Clients</h1>
+    <span class="sp"></span>
+    <div class="search"><svg class="icon"><circle cx="9" cy="9" r="5.5"/><path d="M13.5 13.5L17 17"/></svg>Rechercher un client</div>
+    <span class="btn btn-primary" style="height:46px"><svg class="icon"><path d="M10 4v12M4 10h12"/></svg>Nouveau client</span>
+  </div>
+  <div class="split">
+    <div class="card list">
+      <div class="it on"><div class="av">CM</div><div><b>Camille Martin</b><small>camille.martin@exemple.fr</small></div><span class="d">RDV<br>10 nov.</span></div>
+      <div class="it"><div class="av">AR</div><div><b>Antoine Robert</b><small>a.robert@exemple.fr</small></div><span class="d">RDV<br>10 nov.</span></div>
+      <div class="it"><div class="av">LB</div><div><b>Léa Bernard</b><small>lea.bernard@exemple.fr</small></div><span class="d">Vu le<br>9 nov.</span></div>
+      <div class="it"><div class="av">JM</div><div><b>Julien Moreau</b><small>j.moreau@exemple.fr</small></div><span class="d">RDV<br>11 nov.</span></div>
+      <div class="it"><div class="av">SP</div><div><b>Sarah Petit</b><small>sarah.petit@exemple.fr</small></div><span class="d">Vu le<br>9 nov.</span></div>
+      <div class="it"><div class="av">NS</div><div><b>Nicolas Simon</b><small>n.simon@exemple.fr</small></div><span class="d">RDV<br>12 nov.</span></div>
+      <div class="it"><div class="av">IG</div><div><b>Inès Garcia</b><small>ines.garcia@exemple.fr</small></div><span class="d">RDV<br>13 nov.</span></div>
+      <div class="it"><div class="av">HF</div><div><b>Hugo Fournier</b><small>h.fournier@exemple.fr</small></div><span class="d">RDV<br>14 nov.</span></div>
+    </div>
+    <div class="card fiche">
+      <div class="fh"><div class="av">CM</div><div><h2>Camille Martin</h2><p>Cliente depuis mars 2026 · consentement RGPD le 02/11/2026</p></div><span class="sp"></span><span class="btn btn-ghost" style="height:44px">Modifier</span><span class="btn btn-primary" style="height:44px">Nouveau RDV</span></div>
+      <div class="infos">
+        <div class="inf"><small>E-mail</small><b>camille.martin@exemple.fr</b></div>
+        <div class="inf"><small>Téléphone</small><b>06 12 34 56 78</b></div>
+        <div class="inf"><small>Prochain RDV</small><b>Mar. 10 nov., 10h30</b></div>
+      </div>
+      <h3>Historique des rendez-vous</h3>
+      <table>
+        <tr><th>Date</th><th>Prestation</th><th>Durée</th><th>Statut</th></tr>
+        <tr><td>10/11/2026 · 10h30</td><td>[Prestation 1]</td><td>30 min</td><td><span class="chip" style="background:var(--diamond);color:var(--navy)">À venir</span></td></tr>
+        <tr><td>14/09/2026 · 15h00</td><td>[Prestation 2]</td><td>1 h</td><td><span class="chip" style="background:var(--ok-bg);color:var(--ok)">Venue</span></td></tr>
+        <tr><td>02/06/2026 · 11h00</td><td>[Prestation 1]</td><td>30 min</td><td><span class="chip" style="background:var(--err-bg);color:var(--err)">Annulé</span></td></tr>
+        <tr><td>18/03/2026 · 09h30</td><td>[Prestation 3]</td><td>1 h 30</td><td><span class="chip" style="background:var(--ok-bg);color:var(--ok)">Venue</span></td></tr>
+      </table>
+      <div class="note">Note interne : ajoutez ici une information utile pour le prochain rendez-vous.</div>
+    </div>
+  </div>
+</main>
+</body></html>

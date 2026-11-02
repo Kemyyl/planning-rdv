@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:820px;background:#E9E4DC;display:flex;align-items:center;justify-content:center}
+.client{width:980px;height:760px;background:#fff;border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.mh{padding:18px 28px;border-bottom:1px solid #ECE6DD;display:flex;flex-direction:column;gap:6px}
+.mh b{font-size:19px}
+.mh small{font-size:13px;color:var(--muted)}
+.body{flex:1;background:var(--bg);display:flex;justify-content:center;padding:28px}
+.mail{width:600px;background:var(--card);border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.hd{background:var(--navy);color:#fff;padding:28px 32px;display:flex;align-items:center;gap:14px}
+.hd .lg{width:48px;height:48px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.hd img{width:40px;height:40px}
+.hd b{font-size:18px}
+.ct{padding:30px 32px;display:flex;flex-direction:column;gap:18px}
+.ct h1{font-size:26px;font-weight:800;letter-spacing:-.4px}
+.ct p{font-size:15px;line-height:1.6;color:#33415A}
+.rec{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rr{display:flex;justify-content:space-between;padding:13px 16px;font-size:14.5px;border-top:1px solid var(--line)}
+.rr:first-child{border-top:none}
+.rr span{color:var(--muted)}
+.btns{display:flex;gap:10px}
+.btns .btn{height:48px;font-size:14.5px}
+.foot{padding:18px 32px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);line-height:1.6}
+</style></head><body>
+<div class="client">
+  <div class="mh"><b>Votre rendez-vous du mardi 10 novembre est confirmé</b><small>De : [Nom de l'enseigne] &lt;rdv@[enseigne].fr&gt; · À : camille.martin@exemple.fr · 10:24</small></div>
+  <div class="body">
+    <div class="mail">
+      <div class="hd"><span class="lg"><img src="logo.png" alt=""></span><b>[Nom de l'enseigne]</b></div>
+      <div class="ct">
+        <h1>Bonjour Camille, c'est confirmé</h1>
+        <p>Nous avons bien enregistré votre rendez-vous. Vous recevrez un rappel la veille.</p>
+        <div class="rec">
+          <div class="rr"><span>Prestation</span><b>[Prestation 1] · 30 min</b></div>
+          <div class="rr"><span>Date</span><b>Mardi 10 novembre 2026</b></div>
+          <div class="rr"><span>Horaire</span><b>10h30 – 11h00</b></div>
+          <div class="rr"><span>Adresse</span><b>[Adresse de l'établissement]</b></div>
+        </div>
+        <div class="btns"><span class="btn btn-primary">Ajouter à mon agenda</span><span class="btn btn-ghost">Modifier ou annuler</span></div>
+      </div>
+      <div class="foot">Annulation gratuite jusqu'à [délai] avant le rendez-vous. Une question ? Répondez simplement à cet e-mail ou appelez le [téléphone].</div>
+    </div>
+  </div>
+</div>
+</body></html>

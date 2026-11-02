@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:820px}
+.top{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 64px;background:var(--card);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.brand img{width:42px;height:42px}
+.nav{display:flex;align-items:center;gap:28px;font-weight:600;font-size:15px;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:56px 64px}
+.col{display:flex;flex-direction:column;gap:18px}
+.lab{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.pane{padding:32px;display:flex;flex-direction:column;gap:18px}
+.pane h1{font-size:30px;font-weight:800;letter-spacing:-.5px}
+.pane p{font-size:15.5px;color:var(--muted);line-height:1.6}
+.sum{display:flex;gap:14px;align-items:center;padding:16px;border-radius:14px;background:var(--bg)}
+.sum .ic{width:44px;height:44px;border-radius:12px;background:var(--diamond);display:flex;align-items:center;justify-content:center}
+.sum b{display:block;font-size:15.5px}
+.sum small{font-size:13.5px;color:var(--muted)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-size:14.5px;font-weight:600}
+.opt.on{border:2px solid var(--navy);background:var(--diamond)}
+.rad{width:20px;height:20px;border-radius:50%;border:2px solid #B9A88F;flex:none}
+.opt.on .rad{border:6px solid var(--navy)}
+.acts{display:flex;gap:10px}
+.btn-danger{background:var(--err);color:#fff}
+.done{align-items:center;text-align:center}
+.badge{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--navy)}
+</style></head><body>
+<div class="top"><div class="brand"><img src="logo.png" alt="">[Nom de l'enseigne]</div><div class="nav"><span>Mon rendez-vous</span><span>Aide</span></div></div>
+<div class="wrap">
+  <div class="col">
+    <span class="lab">1 · Le client demande l'annulation</span>
+    <div class="card pane">
+      <h1>Annuler votre rendez-vous ?</h1>
+      <div class="sum"><div class="ic"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg></div><div><b>Mardi 10 novembre · 10h30</b><small>[Prestation 1] · 30 min</small></div></div>
+      <p>Vous pouvez aussi simplement choisir un autre horaire.</p>
+      <div class="opts">
+        <div class="opt"><span class="rad"></span>Je préfère changer d'horaire</div>
+        <div class="opt on"><span class="rad"></span>J'annule, je reprendrai rendez-vous plus tard</div>
+      </div>
+      <div class="acts"><span class="btn btn-ghost">Garder mon rendez-vous</span><span class="btn btn-danger" style="flex:1">Confirmer l'annulation</span></div>
+    </div>
+  </div>
+  <div class="col">
+    <span class="lab">2 · Annulation confirmée</span>
+    <div class="card pane done">
+      <div class="badge"><svg class="icon" style="width:36px;height:36px"><path d="M6 6l8 8M14 6l-8 8"/></svg></div>
+      <h1>Votre rendez-vous est annulé</h1>
+      <p>Le créneau du mardi 10 novembre à 10h30 est libéré. Un e-mail de confirmation vous a été envoyé.</p>
+      <span class="btn btn-primary">Reprendre un rendez-vous</span>
+    </div>
+  </div>
+</div>
+</body></html>

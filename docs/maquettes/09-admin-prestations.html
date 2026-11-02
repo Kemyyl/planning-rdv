@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><link rel="stylesheet" href="base.css">
+<style>
+body{width:1440px;height:960px;display:flex}
+.side{width:248px;background:var(--card);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:26px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;padding:0 8px}
+.brand img{width:36px;height:36px}
+.menu{display:flex;flex-direction:column;gap:4px}
+.mi{display:flex;align-items:center;gap:12px;height:46px;padding:0 12px;border-radius:12px;font-weight:600;font-size:15px;color:var(--muted)}
+.mi.on{background:var(--navy);color:#fff}
+.mi .n{margin-left:auto;min-width:24px;height:22px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:var(--bg)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--champ);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.me small{display:block;font-size:12px;color:var(--muted)}
+
+.main{flex:1;padding:28px 32px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.bar{display:flex;align-items:center;gap:12px}
+.bar h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.bar .sp{flex:1}
+.saved{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--ok)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;flex:1;min-height:0}
+.pc{padding:24px;display:flex;flex-direction:column;gap:14px}
+.ph{display:flex;justify-content:space-between;align-items:center}
+.ph h2{font-size:18px;font-weight:800}
+.ph p{font-size:13.5px;color:var(--muted);margin-top:4px}
+.svc{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:14px;border:1.5px solid var(--line);background:#fff}
+.grip{color:#B9A88F}
+.svc div{flex:1}
+.svc b{font-size:15px;display:block}
+.svc small{font-size:13px;color:var(--muted)}
+.dur{height:36px;padding:0 12px;border-radius:10px;background:var(--bg);display:flex;align-items:center;font-weight:700;font-size:14px}
+.tg{width:44px;height:26px;border-radius:999px;background:var(--navy);position:relative;flex:none}
+.tg::after{content:"";position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff}
+.tg.off{background:#C9C2B6}
+.tg.off::after{right:auto;left:3px}
+.add{height:52px;border-radius:14px;border:1.5px dashed #B9A88F;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:14px;color:var(--navy)}
+.day{display:grid;grid-template-columns:110px 44px 1fr;align-items:center;gap:14px;padding:10px 0;border-top:1px solid var(--line)}
+.day b{font-size:15px}
+.hrs{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600;color:var(--muted)}
+.t{height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;display:flex;align-items:center;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums}
+.closed{font-size:14px;font-weight:600;color:#8A93A3}
+.abs{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--bg);font-size:14px}
+.abs b{flex:1}
+.abs small{color:var(--muted)}
+</style></head><body>
+<aside class="side">
+  <div class="brand"><img src="logo.png" alt="">Espace pro</div>
+  <nav class="menu">
+    <div class="mi"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg>Planning</div>
+    <div class="mi"><svg class="icon"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M13.5 4.2a3 3 0 010 5.6M15 12.8c1.4.6 2.4 2 2.8 4.2"/></svg>Clients</div>
+    <div class="mi on"><svg class="icon"><path d="M4 5h12M4 10h12M4 15h7"/></svg>Prestations et horaires</div>
+    </nav>
+  <div class="me"><div class="av">[G]</div><div><b style="font-size:14px">[Nom du gérant]</b><small>Administrateur</small></div></div>
+</aside>
+<main class="main">
+  <div class="bar"><h1>Prestations et horaires</h1><span class="sp"></span><span class="saved"><svg class="icon"><path d="M4 10l4 4 8-9"/></svg>Modifications enregistrées</span></div>
+  <div class="cols">
+    <div class="card pc">
+      <div class="ph"><div><h2>Vos prestations</h2><p>Ce que vos clients peuvent réserver en ligne.</p></div></div>
+      <div class="svc"><svg class="icon grip"><path d="M7 5h.01M7 10h.01M7 15h.01M13 5h.01M13 10h.01M13 15h.01"/></svg><div><b>[Prestation 1]</b><small>[Description courte]</small></div><span class="dur">30 min</span><span class="tg"></span></div>
+      <div class="svc"><svg class="icon grip"><path d="M7 5h.01M7 10h.01M7 15h.01M13 5h.01M13 10h.01M13 15h.01"/></svg><div><b>[Prestation 2]</b><small>[Description courte]</small></div><span class="dur">1 h</span><span class="tg"></span></div>
+      <div class="svc"><svg class="icon grip"><path d="M7 5h.01M7 10h.01M7 15h.01M13 5h.01M13 10h.01M13 15h.01"/></svg><div><b>[Prestation 3]</b><small>[Description courte]</small></div><span class="dur">1 h 30</span><span class="tg"></span></div>
+      <div class="svc" style="opacity:.7"><svg class="icon grip"><path d="M7 5h.01M7 10h.01M7 15h.01M13 5h.01M13 10h.01M13 15h.01"/></svg><div><b>[Prestation saisonnière]</b><small>Masquée sur le site</small></div><span class="dur">45 min</span><span class="tg off"></span></div>
+      <div class="add"><svg class="icon"><path d="M10 4v12M4 10h12"/></svg>Ajouter une prestation</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card pc">
+        <div class="ph"><div><h2>Horaires d'ouverture</h2><p>Les créneaux proposés en ligne suivent ces horaires.</p></div></div>
+        <div class="day"><b>Lundi</b><span class="tg"></span><span class="hrs"><span class="t">09:00</span>–<span class="t">12:00</span><span class="t">14:00</span>–<span class="t">18:00</span></span></div>
+        <div class="day"><b>Mardi</b><span class="tg"></span><span class="hrs"><span class="t">09:00</span>–<span class="t">12:00</span><span class="t">14:00</span>–<span class="t">18:00</span></span></div>
+        <div class="day"><b>Mercredi</b><span class="tg"></span><span class="hrs"><span class="t">09:00</span>–<span class="t">12:00</span><span class="t">14:00</span>–<span class="t">18:00</span></span></div>
+        <div class="day"><b>Jeudi</b><span class="tg"></span><span class="hrs"><span class="t">09:00</span>–<span class="t">12:00</span><span class="t">14:00</span>–<span class="t">18:00</span></span></div>
+        <div class="day"><b>Vendredi</b><span class="tg"></span><span class="hrs"><span class="t">09:00</span>–<span class="t">12:00</span><span class="t">14:00</span>–<span class="t">18:00</span></span></div>
+        <div class="day"><b>Samedi</b><span class="tg"></span><span class="hrs"><span class="t">10:00</span>–<span class="t">16:00</span></span></div>
+        <div class="day"><b>Dimanche</b><span class="tg off"></span><span class="closed">Fermé</span></div>
+      </div>
+      <div class="card pc">
+        <div class="ph"><div><h2>Fermetures exceptionnelles</h2><p>Aucun rendez-vous ne pourra être pris ces jours-là.</p></div><span class="btn btn-ghost" style="height:40px;font-size:14px">Ajouter</span></div>
+        <div class="abs"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg><b>Lundi 30 novembre</b><small>Formation</small></div>
+        <div class="abs"><svg class="icon"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 8h14M7 2v3M13 2v3"/></svg><b>Du 24 au 31 décembre</b><small>Congés</small></div>
+      </div>
+    </div>
+  </div>
+</main>
+</body></html>

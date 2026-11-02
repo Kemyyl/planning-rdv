@@ -1,0 +1,59 @@
+﻿Issue ID,Parent,Issue Type,Summary,Description,Priority,Story Points,Assignee (à mapper),Sprint,Labels
+E1,,Epic,Cadrage & organisation du projet,"Mise en place des outils, du cahier des charges et des choix techniques.",High,,,,
+T1,E1,Task,Mettre en place le projet Jira,"Créer le projet, inviter les 6 membres, définir les types de tickets.",High,2,"Kemyl, Dylan",Sprint 0,organisation
+T2,E1,Task,Configurer le board Scrum et le workflow,"Colonnes À faire / En cours / En revue / Terminé, durée des sprints, Definition of Done.",High,2,"Kemyl, Dylan",Sprint 0,organisation
+T3,E1,Task,Mettre en place le Google Doc et le modèle de compte rendu de daily,"Doc partagé : cahier des charges, comptes rendus de daily.",Medium,1,"Walid, Lucas, Anthony, Esteban",Sprint 0,organisation
+T4,E1,Task,Relancer le client pour obtenir l'e-mail de détails,"Bloquant : détails du besoin client attendus (prestations, horaires, nombre d'utilisateurs, budget, délais).",Highest,1,À définir,Sprint 0,"blocage,client"
+T5,E1,Task,Rédiger le cahier des charges,Compléter les 15 sections du plan existant à partir de la demande client.,Highest,5,À définir,Sprint 0,documentation
+T6,E1,Task,Définir les choix techniques (stack),"Front, back, base de données, hébergement, service d'e-mail. Documenter dans le cahier des charges (section 8).",Highest,3,"Walid, Lucas, Anthony, Esteban",Sprint 0,technique
+T7,E1,Task,Réaliser les wireframes / maquettes UX,Parcours client de prise de RDV + écrans admin. Valider avec le client.,High,5,,Sprint 0,ux
+T8,E1,Task,Initialiser le dépôt Git et l'architecture du projet,"Repo, conventions de branches, structure front/back, README.",High,2,,Sprint 1,technique
+E2,,Epic,Prise de rendez-vous en ligne,Le client réserve un créneau directement sur le site.,High,,,,
+T9,E2,Story,"En tant que client, je vois les créneaux disponibles",Affichage calendrier/liste des créneaux libres selon les horaires et les RDV existants.,Highest,5,,Sprint 1,"front,back"
+T10,E2,Story,"En tant que client, je réserve un créneau via un formulaire","Nom, prénom, e-mail, téléphone, prestation, commentaire. Validation des champs.",Highest,5,,Sprint 1,"front,back"
+T11,E2,Story,"En tant que client, je reçois une page de confirmation de RDV",Récapitulatif date/heure/prestation après réservation.,High,2,,Sprint 1,front
+T12,E2,Story,"En tant que client, j'annule ou je modifie mon RDV",Lien sécurisé (token) reçu par e-mail.,High,5,,Sprint 2,"front,back"
+T13,E2,Task,Empêcher les doubles réservations,"Verrouillage du créneau, contrôle côté serveur.",Highest,3,,Sprint 1,back
+E3,,Epic,Synchronisation Google Calendar,Les RDV du site et l'agenda Google restent cohérents.,High,,,,
+T14,E3,Task,Configurer le projet Google Cloud et l'accès à l'API Calendar,"Création du projet, OAuth 2.0 / compte de service, stockage sécurisé des secrets.",Highest,3,,Sprint 1,google-calendar
+T15,E3,Story,Créer l'événement Google Calendar à chaque réservation,"Événement avec titre, client, prestation.",Highest,3,,Sprint 2,google-calendar
+T16,E3,Story,Bloquer les créneaux déjà occupés dans Google Calendar,Lecture des disponibilités (free/busy) pour ne proposer que des créneaux libres.,Highest,5,,Sprint 2,google-calendar
+T17,E3,Story,Répercuter modifications et annulations dans Google Calendar,Mise à jour / suppression de l'événement lié.,High,3,,Sprint 2,google-calendar
+T18,E3,Task,Gérer les erreurs et quotas de l'API Google,"Retry, logs, message utilisateur si synchro impossible.",Medium,2,,Sprint 3,google-calendar
+E4,,Epic,Base de données clients,Stockage et gestion des clients et de leurs RDV.,High,,,,
+T19,E4,Task,Modéliser la base de données,"Tables : clients, rendez-vous, prestations, administrateurs, horaires. Schéma MCD/MLD.",Highest,3,,Sprint 1,bdd
+T20,E4,Story,"En tant qu'admin, je gère les fiches clients (CRUD)","Créer, consulter, modifier, supprimer un client.",High,5,,Sprint 2,"bdd,admin"
+T21,E4,Story,"En tant qu'admin, je consulte l'historique des RDV d'un client",Liste des RDV passés et à venir sur la fiche client.,Medium,3,,Sprint 3,"bdd,admin"
+T22,E4,Story,"En tant qu'admin, je recherche et filtre les clients","Recherche par nom, e-mail, téléphone.",Medium,2,,Sprint 3,admin
+E5,,Epic,Récapitulatif des rendez-vous,Vue d'ensemble des RDV pour l'admin et le client.,High,,,,
+T23,E5,Story,"En tant qu'admin, je vois les RDV en vue jour / semaine / mois",Vue calendrier + vue liste.,High,5,,Sprint 2,"admin,front"
+T24,E5,Story,"En tant qu'admin, je filtre les RDV","Par date, prestation, statut (confirmé, annulé).",Medium,3,,Sprint 3,admin
+T25,E5,Story,"En tant que client, je consulte le récapitulatif de mon RDV",Via le lien reçu par e-mail.,Medium,2,,Sprint 3,front
+T26,E5,Story,"En tant qu'admin, j'exporte la liste des RDV",Export CSV (PDF en option).,Low,3,,Sprint 4,admin
+E6,,Epic,Notifications par e-mail,E-mails automatiques au client et à l'admin.,High,,,,
+T27,E6,Task,Configurer le service d'envoi d'e-mails,"Choix du service (SMTP / API transactionnelle), templates HTML.",High,2,,Sprint 2,email
+T28,E6,Story,Envoyer un e-mail de confirmation de RDV,Au client et à l'admin.,High,2,,Sprint 2,email
+T29,E6,Story,Envoyer un e-mail de rappel (J-1),Tâche planifiée.,Medium,3,,Sprint 3,email
+T30,E6,Story,Envoyer un e-mail en cas de modification ou d'annulation,Au client et à l'admin.,Medium,2,,Sprint 3,email
+E7,,Epic,Espace administrateur,Back-office pour l'équipe du client.,High,,,,
+T31,E7,Story,"En tant qu'admin, je me connecte de façon sécurisée","Login, mot de passe hashé, réinitialisation.",Highest,5,,Sprint 1,"admin,securite"
+T32,E7,Story,"En tant qu'admin, je définis les horaires d'ouverture et les indisponibilités","Jours, plages horaires, congés, jours fériés.",High,5,,Sprint 2,admin
+T33,E7,Story,"En tant qu'admin, je gère les prestations et leur durée","Nom, durée, description.",High,3,,Sprint 2,admin
+T34,E7,Story,"En tant qu'admin, j'ai un tableau de bord","RDV du jour, prochains RDV, statistiques simples.",Medium,3,,Sprint 4,admin
+E8,,Epic,"Qualité, ergonomie et sécurité","Besoins non fonctionnels : user friendly, performance, sécurité, compatibilité.",High,,,,
+T35,E8,Task,Rendre le site responsive (mobile / tablette),Parcours de réservation testé sur mobile en priorité.,High,3,,Sprint 3,"ux,front"
+T36,E8,Task,Tester la compatibilité navigateurs,"Chrome, Firefox, Safari, Edge.",Medium,2,,Sprint 4,qa
+T37,E8,Task,Sécuriser l'application,"HTTPS, protection injections SQL / XSS / CSRF, gestion des secrets.",Highest,3,,Sprint 3,securite
+T38,E8,Task,Optimiser les performances,"Temps de chargement, requêtes BDD, mise en cache.",Medium,2,,Sprint 4,performance
+T39,E8,Task,Réaliser des tests utilisateurs,"Tester le parcours de prise de RDV avec quelques utilisateurs, corriger les irritants.",High,3,,Sprint 4,ux
+E9,,Epic,Conformité RGPD,Protection des données personnelles des clients.,High,,,,
+T40,E9,Task,Rédiger mentions légales et politique de confidentialité,Pages publiques sur le site.,High,2,,Sprint 3,rgpd
+T41,E9,Task,Ajouter le consentement au formulaire de réservation,Case à cocher + information sur l'usage des données.,High,1,,Sprint 2,rgpd
+T42,E9,Story,"En tant qu'admin, je supprime ou exporte les données d'un client",Droit à l'effacement et à la portabilité.,Medium,3,,Sprint 4,rgpd
+T43,E9,Task,Définir et appliquer une durée de conservation des données,Purge automatique des données anciennes.,Low,2,,Sprint 4,rgpd
+E10,,Epic,"Déploiement, recette et livraison",Mise en ligne et validation client.,High,,,,
+T44,E10,Task,Mettre en place les environnements dev / recette / prod,"Hébergement, base de données, variables d'environnement.",High,3,,Sprint 1,devops
+T45,E10,Task,Mettre en place l'intégration / déploiement continu,Pipeline de tests et déploiement automatique.,Medium,3,,Sprint 2,devops
+T46,E10,Task,Organiser la recette avec le client,Cahier de recette selon les critères d'acceptation (section 12).,High,3,,Sprint 4,recette
+T47,E10,Task,Mise en production,"Déploiement final, vérifications post-déploiement.",Highest,2,,Sprint 4,devops
+T48,E10,Task,Rédiger la documentation utilisateur et technique,Guide admin + doc de maintenance.,Medium,3,,Sprint 4,documentation
