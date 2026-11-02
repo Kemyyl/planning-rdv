@@ -8,7 +8,7 @@ W, H = 1600, 1060
 # Zones : id, x, y, w, h, titre, remplissage, contour, pointillés
 ZONES = [
     ("z_net", 30, 100, 300, 860, "INTERNET", DIAM, LIGHT, False),
-    ("z_vps", 540, 100, 680, 860, "VPS LINUX (DEBIAN)", "#FFFFFF", NAVY, False),
+    ("z_vps", 540, 100, 680, 860, "VPS LINUX (DEBIAN) · COOLIFY + DOCKER", "#FFFFFF", NAVY, False),
     ("z_priv", 585, 470, 615, 300, "ZONE PRIVÉE : ACCESSIBLE UNIQUEMENT PAR LE VPN", IVORY, NAVY, True),
     ("z_ext", 1250, 100, 320, 860, "SERVICES EXTERNES", "#F7F1E8", CHAMP, False),
 ]
@@ -18,19 +18,20 @@ BOXES = [
     ("visit", 55, 200, 250, 90, "Visiteurs et clients", "Navigateur, mobile ou ordinateur"),
     ("team", 55, 515, 250, 90, "Équipe du client et équipe projet", "Poste équipé du client WireGuard"),
     ("dns", 350, 200, 170, 90, "rdv.exemple.fr", "DNS + certificat HTTPS"),
-    ("nginx", 605, 195, 240, 80, "Nginx", "Reverse proxy HTTPS"),
-    ("front", 925, 195, 260, 80, "Site React + TypeScript", "Fichiers statiques"),
-    ("api", 605, 345, 240, 90, "API Node.js + TypeScript", "RDV, clients, prestations"),
+    ("nginx", 605, 195, 240, 80, "Proxy Coolify (Traefik)", "HTTPS automatique Let's Encrypt"),
+    ("front", 925, 195, 260, 80, "Site React + TypeScript", "Conteneur déployé par Coolify"),
+    ("api", 605, 345, 240, 90, "API Node.js + TypeScript", "Conteneur déployé par Coolify"),
     ("tickets", 925, 345, 260, 90, "Espace de tickets", "Module de l'API"),
     ("wg", 605, 520, 240, 80, "Serveur VPN WireGuard", "Réseau privé 10.8.0.0/24"),
-    ("pg", 925, 520, 260, 80, "PostgreSQL", "Écoute sur 127.0.0.1, droits limités"),
-    ("ssh", 605, 665, 240, 80, "SSH administration", "Clé uniquement, via le VPN"),
-    ("backup", 925, 665, 260, 80, "Sauvegarde automatique", "pg_dump quotidien (cron)"),
-    ("monit", 605, 830, 580, 80, "Supervision (Uptime Kuma)", "Surveille le site, l'API et la base de données"),
+    ("pg", 925, 520, 260, 80, "PostgreSQL (géré par Coolify)", "Réseau Docker interne, droits limités"),
+    ("ssh", 605, 665, 240, 80, "Tableau de bord Coolify + SSH", "Ports 8000 et 22 via le VPN"),
+    ("backup", 925, 665, 260, 80, "Sauvegardes Coolify", "Planifiées chaque jour"),
+    ("monit", 605, 830, 580, 80, "Supervision : Uptime Kuma (service Coolify)", "Surveille le site, l'API et la base · notifications Coolify"),
     ("gcal", 1275, 255, 270, 80, "Google Calendar API", "Création et lecture des créneaux"),
     ("smtp", 1275, 350, 270, 80, "Service d'e-mails (SMTP)", "Confirmations et rappels"),
-    ("store", 1275, 665, 270, 80, "Stockage externe", "Copies des sauvegardes"),
+    ("store", 1275, 665, 270, 80, "Stockage S3 compatible", "Copies des sauvegardes"),
     ("alert", 1275, 830, 270, 80, "Alertes à l'équipe", "E-mail en cas de panne"),
+    ("github", 1275, 470, 270, 80, "GitHub", "Code source, déploiement à chaque push"),
 ]
 
 # Flux : points, libellé, (lx, ly), type ("pub", "priv", "out")
@@ -45,14 +46,15 @@ EDGES = [
     ([(305, 560), (605, 560)], "WireGuard 51820/UDP", (455, 548), "priv"),
     ([(845, 560), (925, 560)], "admin", (885, 548), "priv"),
     ([(725, 600), (725, 665)], "", None, "priv"),
-    ([(1055, 600), (1055, 665)], "dump", (1078, 637), "priv"),
+    ([(1055, 600), (1055, 665)], "sauvegarde", (1100, 637), "priv"),
     ([(785, 345), (785, 310), (1230, 310), (1230, 295), (1275, 295)], "agenda", (1010, 302), "out"),
     ([(1185, 390), (1275, 390)], "e-mails", (1230, 380), "out"),
     ([(1185, 705), (1275, 705)], "copie", (1230, 695), "out"),
     ([(1185, 870), (1275, 870)], "alerte", (1230, 860), "out"),
+    ([(1275, 510), (1200, 510), (1200, 170), (1055, 170), (1055, 195)], "déploiement", (1132, 162), "dep"),
 ]
 
-STYLE = {"pub": (LIGHT, ""), "priv": (NAVY, "7,5"), "out": ("#A8926F", "")}
+STYLE = {"pub": (LIGHT, ""), "priv": (NAVY, "7,5"), "out": ("#A8926F", ""), "dep": ("#7A8699", "3,4")}
 
 
 def svg():
@@ -71,7 +73,7 @@ def svg():
     # pare-feu : bande verticale sur le bord gauche du VPS
     o.append(f'<rect x="548" y="140" width="28" height="800" rx="6" fill="{CHAMP}" stroke="{NAVY}" stroke-width="1.5"/>')
     o.append(f'<text transform="translate(567,400) rotate(-90)" text-anchor="middle" font-size="13" font-weight="700" fill="{NAVY}">PARE-FEU (UFW)</text>')
-    o.append(f'<text x="605" y="942" font-size="13" fill="{NAVY}"><tspan font-weight="700">Ports ouverts :</tspan> 80 et 443 (site), 51820/UDP (VPN). Tout le reste est fermé.</text>')
+    o.append(f'<text x="605" y="942" font-size="12.5" fill="{NAVY}"><tspan font-weight="700">Ports ouverts :</tspan> 80, 443, 51820/UDP · <tspan font-weight="700">fermés côté Internet :</tspan> 8000, 6001, 6002, 22</text>')
     for pts, lab, lp, k in EDGES:
         c, dash = STYLE[k]
         d = f' stroke-dasharray="{dash}"' if dash else ""
@@ -87,7 +89,7 @@ def svg():
         o.append(f'<text x="{x+w/2}" y="{y+h/2+16}" text-anchor="middle" font-size="12" fill="#4A5A70">{escape(s)}</text>')
     # légende
     ly = 1000
-    items = [("pub", "Flux public (HTTPS)"), ("priv", "Flux privé (VPN ou local au serveur)"), ("out", "Flux sortant vers un service externe")]
+    items = [("pub", "Flux public (HTTPS)"), ("priv", "Flux privé (VPN ou local au serveur)"), ("out", "Flux sortant vers un service externe"), ("dep", "Déploiement depuis GitHub")]
     x = 30
     o.append(f'<text x="{x}" y="{ly+5}" font-size="13" font-weight="700" fill="{NAVY}">LÉGENDE</text>')
     x += 90
@@ -107,7 +109,7 @@ def drawio():
     for i, x, y, w, h, t, fill, stroke, dash in ZONES:
         st = f"rounded=1;arcSize=3;whiteSpace=wrap;html=1;fillColor={fill};strokeColor={stroke};strokeWidth=2;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;fontStyle=1;fontColor={NAVY};" + ("dashed=1;" if dash else "")
         cells.append(f'<mxCell id="{i}" value="{a(t)}" style="{st}" vertex="1" parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" as="geometry"/></mxCell>')
-    cells.append(f'<mxCell id="fw" value="PARE-FEU (UFW) : ports 80, 443 et 51820/UDP ouverts, tout le reste fermé" style="rounded=1;whiteSpace=wrap;html=1;fillColor={CHAMP};strokeColor={NAVY};horizontal=0;fontStyle=1;fontColor={NAVY};" vertex="1" parent="1"><mxGeometry x="548" y="140" width="28" height="800" as="geometry"/></mxCell>')
+    cells.append(f'<mxCell id="fw" value="PARE-FEU (UFW) : ports 80, 443 et 51820/UDP ouverts ; 8000, 6001, 6002 et 22 fermés côté Internet" style="rounded=1;whiteSpace=wrap;html=1;fillColor={CHAMP};strokeColor={NAVY};horizontal=0;fontStyle=1;fontColor={NAVY};" vertex="1" parent="1"><mxGeometry x="548" y="140" width="28" height="800" as="geometry"/></mxCell>')
     for i, x, y, w, h, t, s in BOXES:
         v = a(f"<b>{escape(t)}</b><br><font color='#4A5A70' style='font-size:11px'>{escape(s)}</font>")
         cells.append(f'<mxCell id="{i}" value="{v}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor={NAVY};strokeWidth=2;fontColor={NAVY};" vertex="1" parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" as="geometry"/></mxCell>')
