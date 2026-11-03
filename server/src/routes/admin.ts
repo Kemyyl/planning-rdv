@@ -2,6 +2,8 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
+import path from 'path';
+import fs from 'fs';
 import PDFDocument from 'pdfkit';
 import { format, addDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -467,6 +469,16 @@ adminRouter.patch('/prestations/:id', async (req, res) => {
 
 // ── Devis ────────────────────────────────────────────────────
 
+const LOGO_PATH = (() => {
+  const candidates = [
+    path.resolve(__dirname, '../../../client/public/logo.png'),
+    path.resolve(__dirname, '../../../../client/public/logo.png'),
+    path.resolve(process.cwd(), 'client/public/logo.png'),
+    path.resolve(process.cwd(), '../client/public/logo.png'),
+  ];
+  return candidates.find(p => fs.existsSync(p)) ?? null;
+})();
+
 function generateDevisPdf(data: {
   devisNum: string; prenom: string; nom: string; email: string;
   prestationNom: string; duree: number; nbSeances: number;
@@ -488,8 +500,18 @@ function generateDevisPdf(data: {
 
     // ── Header ─────────────────────────────────────────────
     doc.rect(L, 40, W, 68).fill(navy);
-    doc.fontSize(20).fillColor('white').text('Synégo', L + 20, 56, { lineBreak: false });
-    doc.fontSize(10).fillColor(blue).text('Accompagnement thérapeutique', L + 20, 80, { lineBreak: false });
+
+    // Logo (white bg square so dark logo is visible)
+    if (LOGO_PATH) {
+      doc.rect(L + 14, 51, 36, 36).fill('white');
+      doc.image(LOGO_PATH, L + 15, 52, { width: 34, height: 34 });
+      doc.fontSize(20).fillColor('white').text('Synégo', L + 58, 56, { lineBreak: false });
+      doc.fontSize(10).fillColor(blue).text('Accompagnement thérapeutique', L + 58, 80, { lineBreak: false });
+    } else {
+      doc.fontSize(20).fillColor('white').text('Synégo', L + 20, 56, { lineBreak: false });
+      doc.fontSize(10).fillColor(blue).text('Accompagnement thérapeutique', L + 20, 80, { lineBreak: false });
+    }
+
     doc.fontSize(11).fillColor('white').text('DEVIS', L, 56, { width: W - 20, align: 'right', lineBreak: false });
     doc.fontSize(8).fillColor(blue).text(data.devisNum, L, 72, { width: W - 20, align: 'right', lineBreak: false });
 
@@ -510,7 +532,6 @@ function generateDevisPdf(data: {
     // ── Table label ────────────────────────────────────────
     doc.fontSize(7).fillColor(grey).text('DÉTAIL DES PRESTATIONS', L, 208, { lineBreak: false });
 
-    // Table header row
     const th = 226;
     doc.rect(L, th, W, 26).fill(bg);
     doc.fontSize(7).fillColor(grey);
@@ -519,7 +540,6 @@ function generateDevisPdf(data: {
     doc.text('SÉANCES', L + 310, th + 10, { lineBreak: false });
     doc.text('TOTAL', L, th + 10, { width: W - 10, align: 'right', lineBreak: false });
 
-    // Table data row
     const tr = th + 26;
     doc.moveTo(L, tr).lineTo(R, tr).strokeColor(light).lineWidth(0.5).stroke();
     doc.fontSize(11).fillColor(navy).text(data.prestationNom, L + 10, tr + 10, { width: 210, lineBreak: false });
@@ -528,20 +548,15 @@ function generateDevisPdf(data: {
     doc.text(`${data.nbSeances}`, L + 310, tr + 10, { lineBreak: false });
     doc.fontSize(11).fillColor(navy).text(totalStr, L, tr + 10, { width: W - 10, align: 'right', lineBreak: false });
 
-    // ── Separator ─────────────────────────────────────────
     const sep2 = tr + 38;
     doc.moveTo(L, sep2).lineTo(R, sep2).strokeColor(light).lineWidth(1).stroke();
 
-    // ── Total box ──────────────────────────────────────────
     const tbX = R - 185; const tbY = sep2 + 14; const tbH = 44;
     doc.rect(tbX, tbY, 185, tbH).fill(navy);
     doc.fontSize(9).fillColor(blue).text('TOTAL TTC', tbX + 14, tbY + 9, { lineBreak: false });
     doc.fontSize(17).fillColor('white').text(totalStr, tbX, tbY + 7, { width: 175, align: 'right', lineBreak: false });
-
-    // Prix unitaire
     doc.fontSize(9).fillColor(grey).text(`Prix unitaire : ${prixStr} / séance`, tbX, tbY + tbH + 10, { width: 185, align: 'right', lineBreak: false });
 
-    // ── Notes ─────────────────────────────────────────────
     if (data.notes?.trim()) {
       const notesY = tbY + tbH + 50;
       doc.moveTo(L, notesY).lineTo(R, notesY).strokeColor(light).lineWidth(1).stroke();
@@ -549,7 +564,6 @@ function generateDevisPdf(data: {
       doc.fontSize(10).fillColor(navy).text(data.notes.trim(), L, notesY + 30, { width: W });
     }
 
-    // ── Footer ─────────────────────────────────────────────
     doc.moveTo(L, 762).lineTo(R, 762).strokeColor(light).lineWidth(1).stroke();
     doc.fontSize(8).fillColor('#9BA8B8')
       .text(`Synégo — Accompagnement thérapeutique — Document généré le ${data.emissionDate}`, L, 772, { width: W, align: 'center', lineBreak: false });
@@ -564,6 +578,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
     prenom: z.string().min(1),
     nom: z.string().min(1),
     email: z.string().email(),
+    client_id: z.string().uuid().optional().nullable(),
     prestation_nom: z.string().min(1),
     duree: z.number().int().min(1),
     nb_seances: z.number().int().min(1).max(100),
@@ -578,25 +593,128 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
   const now = new Date();
   const devisNum = `SYNEGO-${format(now, 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
   const emissionDate = format(now, 'd MMMM yyyy', { locale: fr });
-  const validiteDate = format(addDays(now, d.validite_jours), 'd MMMM yyyy', { locale: fr });
+  const validiteDateStr = format(addDays(now, d.validite_jours), 'd MMMM yyyy', { locale: fr });
+  const validiteDateISO = format(addDays(now, d.validite_jours), 'yyyy-MM-dd');
   const total = d.nb_seances * d.prix_par_seance;
 
+  // 1. Enregistrer en BDD
+  const { data: devisRecord, error: dbError } = await supabase.from('devis').insert({
+    numero: devisNum,
+    client_prenom: d.prenom,
+    client_nom: d.nom,
+    client_email: d.email,
+    client_id: d.client_id ?? null,
+    prestation_nom: d.prestation_nom,
+    duree: d.duree,
+    nb_seances: d.nb_seances,
+    prix_par_seance: d.prix_par_seance,
+    total,
+    notes: d.notes ?? null,
+    validite_jours: d.validite_jours,
+    validite_date: validiteDateISO,
+    statut: 'envoye',
+    email_envoye: false,
+  }).select('id').single();
+
+  if (dbError) { res.status(500).json({ error: dbError.message }); return; }
+
+  // 2. Générer PDF + envoyer email
+  let emailEnvoye = false;
+  let emailError: string | undefined;
   try {
     const pdfBuffer = await generateDevisPdf({
       devisNum, prenom: d.prenom, nom: d.nom, email: d.email,
       prestationNom: d.prestation_nom, duree: d.duree,
       nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
-      total, notes: d.notes, validiteDate, emissionDate,
+      total, notes: d.notes, validiteDate: validiteDateStr, emissionDate,
     });
     await sendDevisPdfEmail({
       to: d.email, prenom: d.prenom, devisNum,
       prestationNom: d.prestation_nom, duree: d.duree,
       nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
-      total, notes: d.notes, validiteDate, pdfBuffer,
+      total, notes: d.notes, validiteDate: validiteDateStr, pdfBuffer,
     });
-    res.json({ ok: true, devisNum });
+    emailEnvoye = true;
+    await supabase.from('devis').update({ email_envoye: true }).eq('id', (devisRecord as { id: string }).id);
   } catch (e) {
-    console.error('Erreur génération devis:', e);
-    res.status(500).json({ error: 'Erreur lors de la génération du devis' });
+    emailError = e instanceof Error ? e.message : 'Erreur email';
+    console.error('Erreur envoi email devis:', emailError);
+  }
+
+  res.json({ ok: true, devisNum, emailEnvoye, emailError });
+});
+
+// GET /api/admin/devis
+adminRouter.get('/devis', requireAuth, async (_req, res) => {
+  const { data, error } = await supabase
+    .from('devis')
+    .select('id,numero,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,validite_date,email_envoye,statut,created_at')
+    .order('created_at', { ascending: false });
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
+
+// GET /api/admin/devis/:id/pdf
+adminRouter.get('/devis/:id/pdf', requireAuth, async (req, res) => {
+  const { data: devis, error } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (error || !devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    numero: string; client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string;
+    validite_jours: number; validite_date: string; created_at: string;
+  };
+
+  const emissionDate = format(new Date(d.created_at), 'd MMMM yyyy', { locale: fr });
+  const validiteDate = format(new Date(d.validite_date), 'd MMMM yyyy', { locale: fr });
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: d.numero, prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total: d.total, notes: d.notes, validiteDate, emissionDate,
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${d.numero}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur génération PDF' });
+  }
+});
+
+// POST /api/admin/devis/:id/renvoyer
+adminRouter.post('/devis/:id/renvoyer', requireAuth, async (req, res) => {
+  const { data: devis, error } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (error || !devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    id: string; numero: string; client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string;
+    validite_jours: number; validite_date: string; created_at: string;
+  };
+
+  const emissionDate = format(new Date(d.created_at), 'd MMMM yyyy', { locale: fr });
+  const validiteDate = format(new Date(d.validite_date), 'd MMMM yyyy', { locale: fr });
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: d.numero, prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total: d.total, notes: d.notes, validiteDate, emissionDate,
+    });
+    await sendDevisPdfEmail({
+      to: d.client_email, prenom: d.client_prenom, devisNum: d.numero,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total: d.total, notes: d.notes, validiteDate, pdfBuffer,
+    });
+    await supabase.from('devis').update({ email_envoye: true }).eq('id', d.id);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e instanceof Error ? e.message : 'Erreur' });
   }
 });
