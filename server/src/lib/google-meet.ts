@@ -27,7 +27,7 @@ function getOAuthClient(refreshToken: string) {
   return client;
 }
 
-export function getGoogleOAuthUrl(adminId: string): string | null {
+export function getGoogleOAuthUrl(adminId: number): string | null {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
@@ -40,7 +40,7 @@ export function getGoogleOAuthUrl(adminId: string): string | null {
       'https://www.googleapis.com/auth/meetings.space.created',
       'https://www.googleapis.com/auth/drive.readonly',
     ],
-    state: adminId,
+    state: String(adminId),
     prompt: 'consent',
   });
 }

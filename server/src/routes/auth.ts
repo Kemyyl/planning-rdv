@@ -19,7 +19,7 @@ authRouter.post('/login', async (req, res) => {
   if (admin && (admin as { mot_de_passe: string }).mot_de_passe) {
     const ok = await bcrypt.compare(mot_de_passe, (admin as { mot_de_passe: string }).mot_de_passe);
     if (ok) {
-      const token = jwt.sign({ id: (admin as { id: string }).id, email }, process.env.JWT_SECRET!, { expiresIn: '8h' });
+      const token = jwt.sign({ id: (admin as { id: number }).id, email }, process.env.JWT_SECRET!, { expiresIn: '8h' });
       res.json({ token, role: 'admin', nom: (admin as { nom: string }).nom });
       return;
     }
@@ -32,11 +32,11 @@ authRouter.post('/login', async (req, res) => {
   if (client && (client as { compte_actif: boolean }).compte_actif && (client as { mot_de_passe: string }).mot_de_passe) {
     const ok = await bcrypt.compare(mot_de_passe, (client as { mot_de_passe: string }).mot_de_passe);
     if (ok) {
-      const token = jwt.sign({ id: (client as { id: string }).id, email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
+      const token = jwt.sign({ id: (client as { id: number }).id, email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
       res.json({
         token,
         role: 'client',
-        id: (client as { id: string }).id,
+        id: (client as { id: number }).id,
         prenom: (client as { prenom: string }).prenom,
         nom: (client as { nom: string }).nom,
       });

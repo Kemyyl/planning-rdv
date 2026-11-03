@@ -9,13 +9,13 @@ import { supabase } from '../lib/supabase';
 
 export const clientRouter = Router();
 
-interface ClientReq extends Request { clientId: string }
+interface ClientReq extends Request { clientId: number }
 
 function requireClientAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) { res.status(401).json({ error: 'Non autorisé' }); return; }
   try {
-    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET!) as { id: string; role: string };
+    const payload = jwt.verify(header.slice(7), process.env.JWT_SECRET!) as { id: number; role: string };
     if (payload.role !== 'client') { res.status(403).json({ error: 'Accès refusé' }); return; }
     (req as ClientReq).clientId = payload.id;
     next();
@@ -37,19 +37,19 @@ clientRouter.post('/register', async (req, res) => {
   const hash = await bcrypt.hash(mot_de_passe, 12);
   const { data: existing } = await supabase.from('clients').select('id,compte_actif').eq('email', email).single();
 
-  let clientId: string;
+  let clientId: number;
   if (existing) {
     if ((existing as { compte_actif: boolean }).compte_actif) {
       res.status(409).json({ error: 'Un compte existe déjà avec cet e-mail.' }); return;
     }
-    await supabase.from('clients').update({ mot_de_passe: hash, compte_actif: true, nom, prenom, telephone }).eq('id', (existing as { id: string }).id);
-    clientId = (existing as { id: string }).id;
+    await supabase.from('clients').update({ mot_de_passe: hash, compte_actif: true, nom, prenom, telephone }).eq('id', (existing as { id: number }).id);
+    clientId = (existing as { id: number }).id;
   } else {
     const { data, error } = await supabase.from('clients')
       .insert({ email, mot_de_passe: hash, nom, prenom, telephone, compte_actif: true })
       .select('id').single();
     if (error || !data) { res.status(500).json({ error: error?.message || 'Erreur' }); return; }
-    clientId = (data as { id: string }).id;
+    clientId = (data as { id: number }).id;
   }
 
   const token = jwt.sign({ id: clientId, email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
@@ -71,8 +71,8 @@ clientRouter.post('/login', async (req, res) => {
   const ok = await bcrypt.compare(mot_de_passe, (client as { mot_de_passe: string }).mot_de_passe);
   if (!ok) { res.status(401).json({ error: 'Identifiants incorrects.' }); return; }
 
-  const token = jwt.sign({ id: (client as { id: string }).id, email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
-  res.json({ token, id: (client as { id: string }).id, prenom: (client as { prenom: string }).prenom });
+  const token = jwt.sign({ id: (client as { id: number }).id, email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
+  res.json({ token, id: (client as { id: number }).id, prenom: (client as { prenom: string }).prenom });
 });
 
 // GET /api/client/me

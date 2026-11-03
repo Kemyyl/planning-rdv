@@ -20,7 +20,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
   const [notes, setNotes] = useState<NoteSeance[]>([]);
   const [contenu, setContenu] = useState('');
   const [saving, setSaving] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [editContenu, setEditContenu] = useState('');
 
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -49,7 +49,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
     finally { setSaving(false); }
   }
 
-  async function modifier(id: string) {
+  async function modifier(id: number) {
     try {
       const res = await fetch(`/api/admin/notes/${id}`, {
         method: 'PATCH', headers,
@@ -63,7 +63,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
     } catch { toast.error('Erreur'); }
   }
 
-  async function supprimer(id: string) {
+  async function supprimer(id: number) {
     if (!confirm(t('noteSeance.supprimer'))) return;
     await fetch(`/api/admin/notes/${id}`, { method: 'DELETE', headers });
     setNotes(prev => prev.filter(n => n.id !== id));

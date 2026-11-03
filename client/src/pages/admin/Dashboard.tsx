@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [period, setPeriod] = useState<Period>('today');
   const [pendingCount, setPendingCount] = useState(0);
-  const [resumeLoading, setResumeLoading] = useState<Set<string>>(new Set());
+  const [resumeLoading, setResumeLoading] = useState<Set<number>>(new Set());
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -77,7 +77,7 @@ export default function AdminDashboard() {
     }
   }
 
-  async function deleteRdv(id: string, e: MouseEvent) {
+  async function deleteRdv(id: number, e: MouseEvent) {
     e.stopPropagation();
     if (!confirm('Annuler ce rendez-vous ?')) return;
     const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
@@ -203,7 +203,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2">
                         <span className="text-[#56627A]">{r.titre || r.prestation?.nom || '—'}</span>
-                        {r.numero && <span className="text-[10px] font-mono text-[#A8B8C8]">#{r.numero}</span>}
+                        <span className="text-[10px] font-mono text-[#A8B8C8]">#{r.id}</span>
                       </div>
                       {r.commentaire && <div className="text-xs text-[#A8B8C8] mt-0.5 max-w-[260px] truncate cursor-help" title={r.commentaire}>{r.commentaire}</div>}
                     </td>

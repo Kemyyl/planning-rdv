@@ -56,7 +56,7 @@ export default function MesRdv() {
     }
   }, [clientToken, jeton]);
 
-  async function downloadPdf(rdvId: string) {
+  async function downloadPdf(rdvId: number) {
     if (!clientToken) return;
     const res = await fetch(`/api/client/rdv/${rdvId}/pdf`, { headers: { Authorization: `Bearer ${clientToken}` } });
     if (!res.ok) { toast.error('Impossible de télécharger le PDF'); return; }

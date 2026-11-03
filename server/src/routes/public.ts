@@ -38,7 +38,7 @@ publicRouter.get('/creneaux', async (req, res) => {
 
 // POST /api/public/rdv
 const creerRdvSchema = z.object({
-  prestation_id: z.string().uuid(),
+  prestation_id: z.coerce.number().int().positive(),
   debut: z.string().datetime(),
   commentaire: z.string().min(1, 'Le motif de consultation est requis'),
   client: z.object({
@@ -68,10 +68,10 @@ publicRouter.post('/rdv', async (req, res) => {
   if (conflit && conflit.length > 0) { res.status(409).json({ error: 'Ce créneau vient d\'être pris. Choisissez un autre horaire.' }); return; }
 
   // Upsert client
-  let clientId: string;
+  let clientId: number;
   const { data: existingClient } = await supabase.from('clients').select('id').eq('email', client.email).single();
   if (existingClient) {
-    clientId = existingClient.id;
+    clientId = (existingClient as { id: number }).id;
   } else {
     const inviteToken = randomUUID();
     const inviteExpiry = new Date(); inviteExpiry.setDate(inviteExpiry.getDate() + 7);
@@ -82,7 +82,7 @@ publicRouter.post('/rdv', async (req, res) => {
       })
       .select('id').single();
     if (clientErr || !newClient) { res.status(500).json({ error: 'Erreur lors de la création du client' }); return; }
-    clientId = newClient.id;
+    clientId = (newClient as { id: number }).id;
     const appUrl = process.env.APP_URL || 'http://localhost:5173';
     sendInviteEmail(client.email, client.prenom, `${appUrl}/definir-mot-de-passe?token=${inviteToken}`)
       .catch(e => console.error('Invite email failed:', e));
@@ -159,7 +159,7 @@ publicRouter.post('/definir-mot-de-passe', async (req, res) => {
     .single();
 
   if (!client) { res.status(400).json({ error: 'Lien invalide ou expiré.' }); return; }
-  const c = client as { id: string; email: string; prenom: string; nom: string; token_expire_le: string };
+  const c = client as { id: number; email: string; prenom: string; nom: string; token_expire_le: string };
   if (new Date(c.token_expire_le) < new Date()) { res.status(400).json({ error: 'Ce lien a expiré.' }); return; }
 
   const hash = await bcrypt.hash(mot_de_passe, 12);

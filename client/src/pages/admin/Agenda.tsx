@@ -82,7 +82,7 @@ export default function AdminAgenda() {
     }
   }
 
-  function update(id: string, field: keyof Horaire, value: string | boolean) {
+  function update(id: number, field: keyof Horaire, value: string | boolean) {
     setHoraires(prev => prev.map(h => h.id === id ? { ...h, [field]: value } : h));
   }
 

@@ -83,7 +83,7 @@ export default function ClientPanel({ client, readOnly = false, onClose, onUpdat
             <div>
               <div className="font-bold text-[#0A1D35] text-sm">{client.prenom} {client.nom}</div>
               <div className="text-xs text-[#56627A] flex items-center gap-2">
-                {client.numero && <span className="font-mono text-[#A8B8C8]">#{client.numero}</span>}
+                <span className="font-mono text-[#A8B8C8]">#{client.id}</span>
                 <span>{rdvs.filter(r => r.statut !== 'annule').length} séance(s)</span>
               </div>
             </div>

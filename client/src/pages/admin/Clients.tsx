@@ -34,12 +34,12 @@ export default function AdminClients() {
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('tous');
-  const [editingObjectif, setEditingObjectif] = useState<{ id: string; val: string } | null>(null);
+  const [editingObjectif, setEditingObjectif] = useState<{ id: number; val: string } | null>(null);
   const [showNouveauClient, setShowNouveauClient] = useState(false);
   const [clientPanel, setClientPanel] = useState<{ client: ClientWithStats; readOnly: boolean } | null>(null);
   const headers = { Authorization: `Bearer ${token}` };
 
-  async function saveObjectif(clientId: string, val: string) {
+  async function saveObjectif(clientId: number, val: string) {
     const n = parseInt(val, 10);
     if (isNaN(n) || n < 1) { toast.error('Valeur invalide'); return; }
     const res = await fetch(`/api/admin/clients/${clientId}`, {
@@ -126,7 +126,7 @@ export default function AdminClients() {
                       <Avatar name={fullName} />
                       <div>
                         <div className="font-medium text-[#0A1D35]">{fullName}</div>
-                        {c.numero && <div className="text-[10px] text-[#A8B8C8] font-mono">#{c.numero}</div>}
+                        <div className="text-[10px] text-[#A8B8C8] font-mono">#{c.id}</div>
                       </div>
                     </div>
                   </td>

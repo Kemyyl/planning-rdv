@@ -27,7 +27,7 @@ export default function AdminPlanning() {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  async function deleteRdv(id: string, e: MouseEvent) {
+  async function deleteRdv(id: number, e: MouseEvent) {
     e.stopPropagation();
     if (!confirm('Annuler ce rendez-vous ?')) return;
     const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });

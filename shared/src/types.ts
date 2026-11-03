@@ -2,8 +2,7 @@ export type Statut = 'confirme' | 'annule' | 'en_attente';
 export type StatutTicket = 'ouvert' | 'en_cours' | 'clos';
 
 export interface Client {
-  id: string;
-  numero?: number;
+  id: number;
   nom: string;
   prenom: string;
   email: string;
@@ -13,7 +12,7 @@ export interface Client {
 }
 
 export interface Prestation {
-  id: string;
+  id: number;
   nom: string;
   nom_en?: string;
   description?: string;
@@ -26,7 +25,7 @@ export interface Prestation {
 }
 
 export interface Horaire {
-  id: string;
+  id: number;
   jour: number;
   ouverture?: string;
   fermeture?: string;
@@ -36,10 +35,9 @@ export interface Horaire {
 }
 
 export interface RendezVous {
-  id: string;
-  numero?: number;
-  client_id?: string;
-  prestation_id?: string;
+  id: number;
+  client_id?: number;
+  prestation_id?: number;
   debut: string;
   fin: string;
   statut: Statut;
@@ -61,7 +59,7 @@ export interface Creneau {
 }
 
 export interface Ticket {
-  id: string;
+  id: number;
   auteur: string;
   email: string;
   sujet: string;
@@ -89,10 +87,10 @@ export interface LoginInput {
 }
 
 export interface NoteSeance {
-  id: string;
-  rdv_id: string;
-  client_id: string;
-  admin_id?: string;
+  id: number;
+  rdv_id: number;
+  client_id: number;
+  admin_id?: number;
   contenu: string;
   created_at?: string;
   updated_at?: string;

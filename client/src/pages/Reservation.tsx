@@ -22,7 +22,10 @@ export default function Reservation() {
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [prestations, setPrestations] = useState<Prestation[]>([]);
-  const [prestationId, setPrestationId] = useState<string>(searchParams.get('prestation') || '');
+  const [prestationId, setPrestationId] = useState<number | null>(() => {
+    const p = searchParams.get('prestation');
+    return p ? (parseInt(p, 10) || null) : null;
+  });
   const [semaine, setSemaine] = useState(0);
   const [creneaux, setCreneaux] = useState<Record<string, Creneau[]>>({});
   const [creneau, setCreneau] = useState<string>('');

@@ -56,7 +56,7 @@ adminRouter.use(requireAuth);
 
 // GET /api/admin/me
 adminRouter.get('/me', async (req, res) => {
-  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { id } = (req as typeof req & { admin: { id: number } }).admin;
   const { data, error } = await supabase
     .from('admins').select('id,email,nom,google_calendar_id,google_refresh_token').eq('id', id).single();
   if (error || !data) { res.status(404).json({ error: 'Admin introuvable' }); return; }
@@ -70,7 +70,7 @@ adminRouter.get('/me', async (req, res) => {
 
 // PATCH /api/admin/me
 adminRouter.patch('/me', async (req, res) => {
-  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { id } = (req as typeof req & { admin: { id: number } }).admin;
   const allowed = ['nom', 'google_calendar_id'];
   const update: Record<string, unknown> = {};
   for (const k of allowed) if (req.body[k] !== undefined) update[k] = req.body[k];
@@ -82,14 +82,14 @@ adminRouter.patch('/me', async (req, res) => {
 
 // DELETE /api/admin/me/google — déconnecter Google
 adminRouter.delete('/me/google', async (req, res) => {
-  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { id } = (req as typeof req & { admin: { id: number } }).admin;
   await supabase.from('admins').update({ google_refresh_token: null, google_calendar_id: null }).eq('id', id);
   res.json({ ok: true });
 });
 
 // GET /api/admin/google-auth — génère l'URL d'autorisation Google
 adminRouter.get('/google-auth', (req, res) => {
-  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { id } = (req as typeof req & { admin: { id: number } }).admin;
   const url = getGoogleOAuthUrl(id);
   if (!url) { res.status(500).json({ error: 'OAuth non configuré (GOOGLE_CLIENT_ID manquant)' }); return; }
   res.json({ url });
@@ -172,7 +172,7 @@ adminRouter.post('/rdv', async (req, res) => {
 
 // GET /api/admin/rdv/:id/find-resume — cherche le doc Gemini dans Drive
 adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
-  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { id } = (req as typeof req & { admin: { id: number } }).admin;
   const { data: admin } = await supabase.from('admins').select('google_refresh_token').eq('id', id).single();
   const refreshToken = (admin as { google_refresh_token?: string } | null)?.google_refresh_token;
   if (!refreshToken) { res.status(400).json({ error: 'Google non connecté' }); return; }
@@ -213,7 +213,7 @@ adminRouter.patch('/rdv/:id', async (req, res) => {
   // Mettre à jour l'événement Google Calendar si existant
   const d = data as Record<string, unknown> & { google_event_id?: string };
   if (d.google_event_id) {
-    const { id: adminId } = (req as typeof req & { admin: { id: string } }).admin;
+    const { id: adminId } = (req as typeof req & { admin: { id: number } }).admin;
     const { data: admin } = await supabase.from('admins').select('google_refresh_token,google_calendar_id').eq('id', adminId).single();
     const a = admin as { google_refresh_token?: string; google_calendar_id?: string } | null;
     if (a?.google_refresh_token) {
@@ -247,7 +247,7 @@ adminRouter.delete('/rdv/:id', async (req, res) => {
   // Annuler l'événement Google Calendar si existant
   const googleEventId = (rdv as { google_event_id?: string } | null)?.google_event_id;
   if (googleEventId) {
-    const { id: adminId } = (req as typeof req & { admin: { id: string } }).admin;
+    const { id: adminId } = (req as typeof req & { admin: { id: number } }).admin;
     const { data: admin } = await supabase.from('admins')
       .select('google_refresh_token,google_calendar_id').eq('id', adminId).single();
     const a = admin as { google_refresh_token?: string; google_calendar_id?: string } | null;
@@ -331,7 +331,7 @@ adminRouter.get('/horaires', async (_req, res) => {
 
 // PUT /api/admin/horaires
 adminRouter.put('/horaires', async (req, res) => {
-  const horaires = req.body as Array<{ id: string; jour: number; ouverture?: string; fermeture?: string; ouverture_aprem?: string; fermeture_aprem?: string; actif: boolean }>;
+  const horaires = req.body as Array<{ id: number; jour: number; ouverture?: string; fermeture?: string; ouverture_aprem?: string; fermeture_aprem?: string; actif: boolean }>;
   if (!Array.isArray(horaires)) { res.status(400).json({ error: 'Format invalide' }); return; }
   const updates = await Promise.all(horaires.map(h =>
     supabase.from('horaires').update({
@@ -405,9 +405,9 @@ adminRouter.post('/rdv/:id/note', async (req, res) => {
   if (!contenu?.trim()) { res.status(400).json({ error: 'Le contenu est requis' }); return; }
   const { data: rdv } = await supabase.from('rendez_vous').select('client_id').eq('id', req.params.id).single();
   if (!rdv) { res.status(404).json({ error: 'RDV introuvable' }); return; }
-  const adminPayload = (req as typeof req & { admin: { id: string } }).admin;
+  const adminPayload = (req as typeof req & { admin: { id: number } }).admin;
   const { data, error } = await supabase.from('notes_seance')
-    .insert({ rdv_id: req.params.id, client_id: (rdv as { client_id: string }).client_id, admin_id: adminPayload?.id, contenu: contenu.trim() })
+    .insert({ rdv_id: req.params.id, client_id: (rdv as { client_id: number }).client_id, admin_id: adminPayload?.id, contenu: contenu.trim() })
     .select('*').single();
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.status(201).json(data);

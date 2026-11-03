@@ -10,7 +10,7 @@ export default function AdminPrestations() {
   const { t } = useTranslation();
   const { token } = useAuth();
   const [prestations, setPrestations] = useState<Prestation[]>([]);
-  const [editId, setEditId] = useState<string | null>(null);
+  const [editId, setEditId] = useState<number | null>(null);
   const [editData, setEditData] = useState<Partial<Prestation>>({});
   const [showCreate, setShowCreate] = useState(false);
   const [createData, setCreateData] = useState<Partial<Prestation>>({ nom: '', duree: 60, couleur: '#6CAED6' });
@@ -23,7 +23,7 @@ export default function AdminPrestations() {
       .then(r => r.json()).then(data => setPrestations(Array.isArray(data) ? data : []));
   }, []);
 
-  async function sauvegarder(id: string) {
+  async function sauvegarder(id: number) {
     try {
       const res = await fetch(`/api/admin/prestations/${id}`, {
         method: 'PATCH', headers,
