@@ -45,6 +45,15 @@ export default function AdminPrestations() {
     } catch { toast.error('Erreur'); }
   }
 
+  async function toggleVisibleClient(p: Prestation) {
+    try {
+      await fetch(`/api/admin/prestations/${p.id}`, {
+        method: 'PATCH', headers, body: JSON.stringify({ visible_client: !p.visible_client }),
+      });
+      setPrestations(prev => prev.map(x => x.id === p.id ? { ...x, visible_client: !x.visible_client } : x));
+    } catch { toast.error('Erreur'); }
+  }
+
   async function creerPrestation() {
     if (!createData.nom?.trim() || !createData.duree) { toast.error('Nom et durée requis'); return; }
     setCreating(true);
@@ -189,12 +198,18 @@ export default function AdminPrestations() {
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.actif ? 'bg-[#DCEFE4] text-[#1E6B4A]' : 'bg-[#F7DDD8] text-[#9B2C1F]'}`}>
                   {p.actif ? t('prestations.actif') : t('prestations.masque')}
                 </span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.visible_client !== false ? 'bg-[#E8F0FB] text-[#1A56A4]' : 'bg-[#F7F2EB] text-[#56627A]'}`}>
+                  {p.visible_client !== false ? 'Visible client' : 'Admin only'}
+                </span>
                 <div className="flex gap-2">
                   <button onClick={() => startEdit(p)} className="p-2 hover:bg-[#F7F2EB] rounded-[8px] transition-colors text-[#56627A]">
                     <Pencil size={14} />
                   </button>
                   <button onClick={() => toggleActif(p)} className="text-xs border border-[#E7DCCD] px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors text-[#56627A]">
                     {p.actif ? t('prestations.masquer') : t('prestations.activer')}
+                  </button>
+                  <button onClick={() => toggleVisibleClient(p)} className="text-xs border border-[#E7DCCD] px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors text-[#56627A]">
+                    {p.visible_client !== false ? 'Masquer du site' : 'Afficher sur site'}
                   </button>
                 </div>
               </div>

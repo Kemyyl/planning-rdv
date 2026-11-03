@@ -21,6 +21,7 @@ export interface Prestation {
   prix?: number;
   couleur: string;
   actif: boolean;
+  visible_client: boolean;
   ordre: number;
 }
 

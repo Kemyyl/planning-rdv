@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { FileText, Send, Users, ChevronDown, Minus, Plus, CheckCircle, RotateCcw, Download, Mail, AlertCircle, ArrowLeft, Eye } from 'lucide-react';
+import { FileText, Send, Users, ChevronDown, Minus, Plus, CheckCircle, RotateCcw, Download, Mail, AlertCircle, ArrowLeft, Eye, Search } from 'lucide-react';
 import { format, addDays, isPast } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -45,6 +45,7 @@ export default function Devis() {
   const [listLoading, setListLoading] = useState(true);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   // ── Form state ───────────────────────────────────────────
   const [clients, setClients] = useState<Client[]>([]);
@@ -416,12 +417,23 @@ export default function Devis() {
     <AdminLayout title="Devis">
       <div className="max-w-5xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <p className="text-[#56627A] text-sm">{devisList.length} devis enregistré{devisList.length > 1 ? 's' : ''}</p>
           <button onClick={() => setView('create')}
             className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
             <FileText size={14} /> Nouveau devis
           </button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-5">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A8B8C8] pointer-events-none" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher par nom, email ou numéro de devis…"
+            className="w-full border border-[#E7DCCD] rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] bg-white placeholder:text-[#A8B8C8]"
+          />
         </div>
 
         {listLoading ? (
@@ -451,7 +463,16 @@ export default function Devis() {
           </div>
         ) : (
           <div className="space-y-3">
-            {devisList.map(item => {
+            {devisList.filter(item => {
+              if (!search.trim()) return true;
+              const q = search.toLowerCase();
+              return (
+                item.client_prenom.toLowerCase().includes(q) ||
+                item.client_nom.toLowerCase().includes(q) ||
+                item.client_email.toLowerCase().includes(q) ||
+                item.numero.toLowerCase().includes(q)
+              );
+            }).map(item => {
               const isExpired = isPast(new Date(item.validite_date));
               return (
                 <div key={item.id} className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 hover:shadow-sm transition-shadow">

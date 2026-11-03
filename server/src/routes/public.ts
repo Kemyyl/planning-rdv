@@ -19,7 +19,7 @@ export const publicRouter = Router();
 // GET /api/public/prestations
 publicRouter.get('/prestations', async (_req, res) => {
   const { data, error } = await supabase
-    .from('prestations').select('*').eq('actif', true).order('ordre');
+    .from('prestations').select('*').eq('actif', true).eq('visible_client', true).order('ordre');
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data);
 });
