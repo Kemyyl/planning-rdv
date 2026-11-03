@@ -3,7 +3,7 @@ import { X, Search, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import type { Client } from '@synego/shared';
+import type { Client, Prestation } from '@synego/shared';
 
 interface Props {
   onClose: () => void;
@@ -14,12 +14,13 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
   const { t } = useTranslation();
   const { token } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
+  const [prestations, setPrestations] = useState<Prestation[]>([]);
   const [search, setSearch] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedPrestation, setSelectedPrestation] = useState<Prestation | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [date, setDate] = useState('');
   const [heure, setHeure] = useState('');
-  const [titre, setTitre] = useState('');
   const [duree, setDuree] = useState('60');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -29,11 +30,20 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
   useEffect(() => {
     fetch('/api/admin/clients', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json()).then(data => setClients(Array.isArray(data) ? data : []));
+    fetch('/api/admin/prestations', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(data =>
+        setPrestations(Array.isArray(data) ? (data as Prestation[]).filter(p => p.actif) : [])
+      );
   }, []);
 
   const filtered = clients.filter(c =>
     `${c.prenom} ${c.nom} ${c.email}`.toLowerCase().includes(search.toLowerCase())
   ).slice(0, 6);
+
+  function selectPrestation(p: Prestation) {
+    setSelectedPrestation(p);
+    setDuree(String(p.duree));
+  }
 
   async function creer() {
     if (!selectedClient || !date || !heure) {
@@ -49,7 +59,7 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
         note_interne: note,
         duree: duree ? +duree : 60,
       };
-      if (titre.trim()) body.titre = titre.trim();
+      if (selectedPrestation) body.prestation_id = selectedPrestation.id;
       const res = await fetch('/api/admin/rdv', { method: 'POST', headers, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -106,15 +116,36 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
             )}
           </div>
 
-          {/* Titre */}
-          <div>
-            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">
-              Titre <span className="font-normal text-[#A8B8C8]">(facultatif)</span>
-            </label>
-            <input value={titre} onChange={e => setTitre(e.target.value)}
-              placeholder="Ex : Séance bilan, Suivi mensuel…"
-              className="w-full border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
-          </div>
+          {/* Prestation */}
+          {prestations.length > 0 && (
+            <div>
+              <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">
+                {t('nouveauRdvPanel.prestation')} <span className="font-normal text-[#A8B8C8]">({t('nouveauRdvPanel.facultatif')})</span>
+              </label>
+              <div className="grid grid-cols-1 gap-1.5">
+                {prestations.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => selectedPrestation?.id === p.id ? setSelectedPrestation(null) : selectPrestation(p)}
+                    className={`flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-xl border transition-colors ${
+                      selectedPrestation?.id === p.id
+                        ? 'border-[#0A1D35] bg-[#F7F2EB]'
+                        : 'border-[#E7DCCD] hover:bg-[#F7F2EB]'
+                    }`}
+                  >
+                    <div className="w-3 h-3 rounded-full shrink-0" style={{ background: p.couleur }} />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-[#0A1D35] truncate">{p.nom}</div>
+                      <div className="text-xs text-[#56627A]">{p.duree} min{p.prix ? ` · ${p.prix} €` : ''}</div>
+                    </div>
+                    {selectedPrestation?.id === p.id && (
+                      <div className="w-2 h-2 rounded-full bg-[#0A1D35] shrink-0" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Durée */}
           <div>

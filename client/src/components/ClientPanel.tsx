@@ -77,9 +77,17 @@ export default function ClientPanel({ client, readOnly = false, onClose, onUpdat
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7DCCD]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#D0E7F5] flex items-center justify-center text-xs font-bold text-[#0A1D35] shrink-0">
-              {`${client.prenom[0]}${client.nom[0]}`.toUpperCase()}
-            </div>
+            {(() => {
+              const paletteBg = ['#D0E7F5','#DCEFE4','#F6E7C8','#F7DDD8','#E9D8F5','#D6EBE4'];
+              const paletteFg = ['#0A5A8A','#1E6B4A','#8A5A12','#9B2C1F','#5A2C8A','#1E5C4A'];
+              const idx = ((client.prenom.charCodeAt(0) || 0) + (client.nom.charCodeAt(0) || 0)) % 6;
+              return (
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ background: paletteBg[idx], color: paletteFg[idx] }}>
+                  {`${client.prenom[0]}${client.nom[0]}`.toUpperCase()}
+                </div>
+              );
+            })()}
             <div>
               <div className="font-bold text-[#0A1D35] text-sm">{client.prenom} {client.nom}</div>
               <div className="text-xs text-[#56627A] flex items-center gap-2">

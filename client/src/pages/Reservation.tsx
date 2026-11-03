@@ -105,14 +105,16 @@ export default function Reservation() {
     <PublicLayout>
       <div className="max-w-4xl mx-auto px-6 py-10">
         {/* Étapes */}
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center mb-10">
           {([t('reservation.etape1'), t('reservation.etape2'), clientToken ? t('reservation.etape3') : t('reservation.titreCoordonnees')] as const).map((label, i) => (
-            <div key={label} className="flex items-center gap-2">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step > i + 1 ? 'bg-[#1E6B4A] text-white' : step === i + 1 ? 'bg-[#0A1D35] text-white' : 'bg-[#E7DCCD] text-[#56627A]'}`}>
-                {step > i + 1 ? <Check size={14} /> : i + 1}
+            <div key={label} className="flex items-center">
+              <div className="flex items-center gap-2">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${step > i + 1 ? 'bg-[#1E6B4A] text-white' : step === i + 1 ? 'bg-[#0A1D35] text-white ring-4 ring-[#0A1D35]/10' : 'bg-[#E7DCCD] text-[#56627A]'}`}>
+                  {step > i + 1 ? <Check size={12} /> : i + 1}
+                </div>
+                <span className={`text-sm font-semibold hidden sm:block ${step === i + 1 ? 'text-[#0A1D35]' : step > i + 1 ? 'text-[#1E6B4A]' : 'text-[#A8B8C8]'}`}>{label}</span>
               </div>
-              <span className={`text-sm font-medium ${step === i + 1 ? 'text-[#0A1D35]' : 'text-[#56627A]'}`}>{label}</span>
-              {i < 2 && <div className="w-8 h-px bg-[#E7DCCD] mx-1" />}
+              {i < 2 && <div className={`w-10 h-0.5 mx-2 rounded-full transition-colors ${step > i + 1 ? 'bg-[#1E6B4A]' : 'bg-[#E7DCCD]'}`} />}
             </div>
           ))}
         </div>
@@ -131,8 +133,11 @@ export default function Reservation() {
                   <div className="w-3 h-3 rounded-full mb-4" style={{ background: p.couleur }} />
                   <div className="font-bold text-[#0A1D35] mb-1">{p.nom}</div>
                   <div className="text-sm text-[#56627A] mb-3">{p.description}</div>
-                  <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-3 text-sm flex-wrap">
                     <span className="flex items-center gap-1 text-[#56627A]"><Clock size={13} />{p.duree} {t('reservation.min')}</span>
+                    {raw.prix ? (
+                      <span className="font-semibold text-[#0A1D35]">{raw.prix} €</span>
+                    ) : null}
                   </div>
                   {prestationId === p.id && <div className="mt-3 flex items-center gap-1 text-xs font-bold text-[#1E6B4A]"><Check size={13} />{t('reservation.selectionne')}</div>}
                 </button>
@@ -188,7 +193,7 @@ export default function Reservation() {
                           <button
                             key={s.debut}
                             onClick={() => setCreneau(s.debut)}
-                            className={`h-8 rounded-lg text-xs font-semibold transition-all ${creneau === s.debut ? 'bg-[#0A1D35] text-white' : 'bg-[#D0E7F5] text-[#0A1D35] hover:bg-[#6CAED6] hover:text-white'}`}
+                            className={`h-9 rounded-xl text-xs font-semibold transition-all shadow-sm ${creneau === s.debut ? 'bg-[#0A1D35] text-white shadow-md' : 'bg-[#D0E7F5] text-[#0A1D35] hover:bg-[#6CAED6] hover:text-white'}`}
                           >
                             {format(new Date(s.debut), timeFormat)}
                           </button>

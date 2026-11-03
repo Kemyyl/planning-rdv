@@ -39,44 +39,46 @@ export default function Services() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {prestations.map(raw => { const p = localizePrestation(raw, i18n.language); return (
-              <div key={p.id} className="bg-white border border-[#E7DCCD] rounded-[22px] p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between gap-3">
-                  <div
-                    className="w-3 h-3 rounded-full mt-1.5 shrink-0"
-                    style={{ backgroundColor: p.couleur || '#6CAED6' }}
-                  />
-                  <div className="flex-1">
-                    <h2 className="text-lg font-bold text-[#0A1D35] leading-snug">{p.nom}</h2>
+              <div key={p.id} className="bg-white border border-[#E7DCCD] rounded-[22px] overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+                {/* Color accent bar */}
+                <div className="h-1 w-full" style={{ background: p.couleur || '#6CAED6' }} />
+
+                <div className="p-7 flex flex-col gap-4 flex-1">
+                  <div>
+                    <h2 className="text-lg font-bold text-[#0A1D35] leading-snug mb-1">{p.nom}</h2>
+                    {p.description && (
+                      <p className="text-sm text-[#56627A] leading-relaxed">{p.description}</p>
+                    )}
                   </div>
+
+                  <div className="flex items-center gap-3 text-sm flex-wrap">
+                    <span className="flex items-center gap-1.5 text-[#56627A]">
+                      <Clock size={14} />
+                      {p.duree} {t('common.min')}
+                    </span>
+                    {raw.prix ? (
+                      <span className="font-bold text-[#0A1D35] bg-[#F7F2EB] px-2.5 py-1 rounded-full text-xs">
+                        {raw.prix} €
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-[#F7F2EB] text-[#56627A] px-2.5 py-1 rounded-full font-medium">
+                        {t('services.surDevis')}
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    to={`/reservation?prestation=${p.id}`}
+                    className="mt-auto flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-semibold text-sm py-2.5 rounded-[12px] hover:bg-[#1C3352] transition-colors"
+                  >
+                    {t('services.reserver')} <ArrowRight size={14} />
+                  </Link>
                 </div>
-
-                {p.description && (
-                  <p className="text-sm text-[#56627A] leading-relaxed">{p.description}</p>
-                )}
-
-                <div className="flex items-center gap-4 text-sm text-[#56627A]">
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={14} />
-                    {p.duree} {t('common.min')}
-                  </span>
-                  <span className="text-xs bg-[#F7F2EB] text-[#56627A] px-2.5 py-1 rounded-full font-medium">
-                    {t('services.surDevis')}
-                  </span>
-                </div>
-
-                <Link
-                  to={`/reservation?prestation=${p.id}`}
-                  className="mt-auto flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-semibold text-sm py-2.5 rounded-[12px] hover:bg-[#1C3352] transition-colors"
-                >
-                  {t('services.reserver')} <ArrowRight size={14} />
-                </Link>
               </div>
             );})}
-
           </div>
         </div>
       </section>
-
 
     </PublicLayout>
   );

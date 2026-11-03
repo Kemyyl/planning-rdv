@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
-import { CheckCircle, Calendar, Clock, Mail } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, Mail, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import type { RendezVous } from '@synego/shared';
@@ -72,6 +72,17 @@ export default function Confirmation() {
           </div>
 
           <div className="flex flex-col gap-3">
+            {rdv.lien_meet && (
+              <a
+                href={rdv.lien_meet}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 bg-[#1E6B4A] text-white font-bold py-3 rounded-[14px] hover:bg-[#155538] transition-colors"
+              >
+                <Video size={16} />
+                Rejoindre le Meet
+              </a>
+            )}
             <a
               href={googleCalUrl}
               target="_blank"
