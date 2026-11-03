@@ -3,6 +3,7 @@ export type StatutTicket = 'ouvert' | 'en_cours' | 'clos';
 
 export interface Client {
   id: string;
+  numero?: number;
   nom: string;
   prenom: string;
   email: string;
@@ -36,6 +37,7 @@ export interface Horaire {
 
 export interface RendezVous {
   id: string;
+  numero?: number;
   client_id?: string;
   prestation_id?: string;
   debut: string;

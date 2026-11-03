@@ -201,7 +201,10 @@ export default function AdminDashboard() {
                       {format(new Date(r.debut), `EEE d MMM '${atWord}' ${timeFormat}`, { locale: dateLocale })}
                     </td>
                     <td className="px-6 py-3.5">
-                      <div className="text-[#56627A]">{r.titre || r.prestation?.nom || '—'}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#56627A]">{r.titre || r.prestation?.nom || '—'}</span>
+                        {r.numero && <span className="text-[10px] font-mono text-[#A8B8C8]">#{r.numero}</span>}
+                      </div>
                       {r.commentaire && <div className="text-xs text-[#A8B8C8] mt-0.5 max-w-[260px] truncate cursor-help" title={r.commentaire}>{r.commentaire}</div>}
                     </td>
                     <td className="px-6 py-3.5"><StatutBadge statut={r.statut} /></td>

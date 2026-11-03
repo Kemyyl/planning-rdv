@@ -124,7 +124,10 @@ export default function AdminClients() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2.5">
                       <Avatar name={fullName} />
-                      <span className="font-medium text-[#0A1D35]">{fullName}</span>
+                      <div>
+                        <div className="font-medium text-[#0A1D35]">{fullName}</div>
+                        {c.numero && <div className="text-[10px] text-[#A8B8C8] font-mono">#{c.numero}</div>}
+                      </div>
                     </div>
                   </td>
                   <td className="px-5 py-3.5 text-[#56627A]">{c.email}</td>
