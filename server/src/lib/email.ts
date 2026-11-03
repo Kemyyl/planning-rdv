@@ -6,6 +6,7 @@ interface RdvInfo {
   debut: string;
   fin?: string;
   titre?: string;
+  duree?: number;
   prestation?: { nom: string };
   lien_meet?: string;
   jeton_annulation?: string;
@@ -44,7 +45,7 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
         <p>Bonjour <strong>${prenom}</strong>,</p>
         <p>Votre séance <strong>${rdv.prestation?.nom || rdv.titre || 'Séance'}</strong> est confirmée :</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:20px 0">
-          <p style="margin:0;font-size:18px;font-weight:bold">${dateStr}</p>
+          <p style="margin:0;font-size:18px;font-weight:bold">${dateStr}${rdv.duree ? ` · ${rdv.duree} min` : ''}</p>
         </div>
         ${rdv.lien_meet ? `
         <p style="margin-bottom:8px">Lien pour rejoindre la séance :</p>

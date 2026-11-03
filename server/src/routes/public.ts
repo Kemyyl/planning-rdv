@@ -118,7 +118,7 @@ publicRouter.post('/rdv', async (req, res) => {
     sendConfirmationEmail(
       (fullClient as { email: string }).email,
       (fullClient as { prenom: string }).prenom,
-      { debut, fin, prestation: prestation as { nom: string; duree: number }, lien_meet, jeton_annulation: (rdv as { jeton_annulation: string }).jeton_annulation }
+      { debut, fin, prestation: prestation as { nom: string; duree: number }, duree: (prestation as { duree: number }).duree, lien_meet, jeton_annulation: (rdv as { jeton_annulation: string }).jeton_annulation }
     ).catch(e => console.error('Confirmation email failed:', e));
   }
 

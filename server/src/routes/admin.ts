@@ -161,6 +161,7 @@ adminRouter.post('/rdv', async (req, res) => {
       debut: insert.debut as string,
       fin: insert.fin as string | undefined,
       titre: insert.titre as string | undefined,
+      duree,
     }).catch(() => {});
   }
 
