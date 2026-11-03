@@ -38,6 +38,7 @@ export function getGoogleOAuthUrl(adminId: string): string | null {
     scope: [
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/meetings.space.created',
+      'https://www.googleapis.com/auth/drive.readonly',
     ],
     state: adminId,
     prompt: 'consent',

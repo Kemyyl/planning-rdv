@@ -44,6 +44,7 @@ export interface RendezVous {
   commentaire?: string;
   titre?: string;
   lien_meet?: string;
+  resume_url?: string;
   google_event_id?: string;
   jeton_annulation?: string;
   created_at?: string;

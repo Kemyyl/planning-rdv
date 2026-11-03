@@ -2,7 +2,7 @@ import { useEffect, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../../hooks/useDateLocale';
-import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video } from 'lucide-react';
+import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -54,8 +54,28 @@ export default function AdminDashboard() {
   const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [period, setPeriod] = useState<Period>('today');
   const [pendingCount, setPendingCount] = useState(0);
+  const [resumeLoading, setResumeLoading] = useState<Set<string>>(new Set());
 
   const headers = { Authorization: `Bearer ${token}` };
+
+  async function fetchResume(rdv: RendezVous) {
+    if (resumeLoading.has(rdv.id)) return;
+    setResumeLoading(prev => new Set(prev).add(rdv.id));
+    try {
+      const res = await fetch(`/api/admin/rdv/${rdv.id}/find-resume`, { headers });
+      const data = await res.json();
+      if (data.url) {
+        setRdvs(prev => prev.map(r => r.id === rdv.id ? { ...r, resume_url: data.url } : r));
+        window.open(data.url, '_blank');
+      } else {
+        toast.error('Résumé non trouvé dans Drive');
+      }
+    } catch {
+      toast.error('Erreur lors de la recherche');
+    } finally {
+      setResumeLoading(prev => { const s = new Set(prev); s.delete(rdv.id); return s; });
+    }
+  }
 
   async function deleteRdv(id: string, e: MouseEvent) {
     e.stopPropagation();
@@ -181,6 +201,19 @@ export default function AdminDashboard() {
                             className="p-1.5 hover:bg-[#D0E7F5] rounded-[6px] text-[#0A1D35] transition-colors" title="Rejoindre le Meet">
                             <Video size={13} />
                           </a>
+                        )}
+                        {new Date(r.fin) < new Date() && (
+                          r.resume_url ? (
+                            <a href={r.resume_url} target="_blank" rel="noopener noreferrer"
+                              className="p-1.5 hover:bg-[#DCEFE4] rounded-[6px] text-[#1E6B4A] transition-colors" title="Voir le résumé Gemini">
+                              <FileText size={13} />
+                            </a>
+                          ) : (
+                            <button onClick={() => fetchResume(r)} disabled={resumeLoading.has(r.id)}
+                              className="p-1.5 hover:bg-[#F7F2EB] rounded-[6px] text-[#56627A] transition-colors disabled:opacity-40" title="Chercher le résumé Gemini">
+                              <FileText size={13} />
+                            </button>
+                          )
                         )}
                         <button onClick={e => deleteRdv(r.id, e)} className="p-1.5 hover:bg-[#F7DDD8] rounded-[6px] text-[#9B2C1F] transition-colors" title={t('dashboard.annuler')}>
                           <Trash2 size={13} />

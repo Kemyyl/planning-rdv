@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
 import { getGoogleOAuthUrl, exchangeGoogleCode } from '../lib/google-meet';
 import { sendInviteEmail, sendConfirmationEmail } from '../lib/email';
+import { findMeetNotes } from '../lib/google-drive';
 
 export const adminRouter = Router();
 
@@ -166,6 +167,27 @@ adminRouter.post('/rdv', async (req, res) => {
   }
 
   res.status(201).json(data);
+});
+
+// GET /api/admin/rdv/:id/find-resume — cherche le doc Gemini dans Drive
+adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
+  const { id } = (req as typeof req & { admin: { id: string } }).admin;
+  const { data: admin } = await supabase.from('admins').select('google_refresh_token').eq('id', id).single();
+  const refreshToken = (admin as { google_refresh_token?: string } | null)?.google_refresh_token;
+  if (!refreshToken) { res.status(400).json({ error: 'Google non connecté' }); return; }
+
+  const { data: rdv } = await supabase.from('rendez_vous').select('fin,resume_url').eq('id', req.params.id).single();
+  if (!rdv) { res.status(404).json({ error: 'RDV introuvable' }); return; }
+
+  const r = rdv as { fin: string; resume_url?: string };
+  if (r.resume_url) { res.json({ url: r.resume_url }); return; }
+  if (!r.fin || new Date(r.fin) > new Date()) { res.json({ url: null }); return; }
+
+  const url = await findMeetNotes(refreshToken, r.fin);
+  if (url) {
+    await supabase.from('rendez_vous').update({ resume_url: url }).eq('id', req.params.id);
+  }
+  res.json({ url });
 });
 
 // DELETE /api/admin/rdv/:id — annule un RDV (soft delete)
