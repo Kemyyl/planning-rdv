@@ -29,6 +29,8 @@ export interface Horaire {
   jour: number;
   ouverture?: string;
   fermeture?: string;
+  ouverture_aprem?: string;
+  fermeture_aprem?: string;
   actif: boolean;
 }
 

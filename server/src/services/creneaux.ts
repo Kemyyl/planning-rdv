@@ -23,22 +23,30 @@ export async function getCreneauxDisponibles(
   for (const jour of jours) {
     const jourSemaine = jour.getDay() === 0 ? 6 : jour.getDay() - 1;
     const horaire = horaires.find(h => h.jour === jourSemaine);
-    if (!horaire?.actif || !horaire.ouverture || !horaire.fermeture) continue;
+    if (!horaire?.actif) continue;
 
-    const [oH, oM] = (horaire.ouverture as string).split(':').map(Number);
-    const [fH, fM] = (horaire.fermeture as string).split(':').map(Number);
-    let current = setMinutes(setHours(jour, oH), oM);
-    const fermeture = setMinutes(setHours(jour, fH), fM);
+    const plages: { ouverture: string; fermeture: string }[] = [];
+    if (horaire.ouverture && horaire.fermeture)
+      plages.push({ ouverture: horaire.ouverture as string, fermeture: horaire.fermeture as string });
+    if (horaire.ouverture_aprem && horaire.fermeture_aprem)
+      plages.push({ ouverture: horaire.ouverture_aprem as string, fermeture: horaire.fermeture_aprem as string });
 
-    while (addMinutes(current, duree) <= fermeture) {
-      const slotFin = addMinutes(current, duree);
-      const chevauchement = reservations.some(r =>
-        isWithinInterval(current, { start: parseISO(r.debut), end: parseISO(r.fin) }) ||
-        isWithinInterval(slotFin, { start: parseISO(r.debut), end: parseISO(r.fin) }) ||
-        (current <= parseISO(r.debut) && slotFin >= parseISO(r.fin))
-      );
-      creneaux.push({ debut: current.toISOString(), fin: slotFin.toISOString(), disponible: !chevauchement });
-      current = addMinutes(current, 30);
+    for (const plage of plages) {
+      const [oH, oM] = plage.ouverture.split(':').map(Number);
+      const [fH, fM] = plage.fermeture.split(':').map(Number);
+      let current = setMinutes(setHours(jour, oH), oM);
+      const fermeture = setMinutes(setHours(jour, fH), fM);
+
+      while (addMinutes(current, duree) <= fermeture) {
+        const slotFin = addMinutes(current, duree);
+        const chevauchement = reservations.some(r =>
+          isWithinInterval(current, { start: parseISO(r.debut), end: parseISO(r.fin) }) ||
+          isWithinInterval(slotFin, { start: parseISO(r.debut), end: parseISO(r.fin) }) ||
+          (current <= parseISO(r.debut) && slotFin >= parseISO(r.fin))
+        );
+        creneaux.push({ debut: current.toISOString(), fin: slotFin.toISOString(), disponible: !chevauchement });
+        current = addMinutes(current, 30);
+      }
     }
   }
   return creneaux;

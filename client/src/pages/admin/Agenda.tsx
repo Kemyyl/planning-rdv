@@ -146,30 +146,68 @@ export default function AdminAgenda() {
           <p className="text-sm text-[#56627A] mb-4">{t('agendaParam.horairesDesc')}</p>
           <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[18px] divide-y divide-[#E7DCCD] mb-6">
             {horaires.sort((a, b) => a.jour - b.jour).map(h => (
-              <div key={h.id} className="flex items-center gap-4 px-6 py-4">
-                <div className="w-28 font-semibold text-sm text-[#0A1D35]">{JOURS[h.jour]}</div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={h.actif} onChange={e => update(h.id, 'actif', e.target.checked)} className="w-4 h-4 accent-[#0A1D35]" />
-                  <span className="text-sm text-[#56627A]">{t('agendaParam.ouvert')}</span>
-                </label>
+              <div key={h.id} className="px-6 py-4">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-28 font-semibold text-sm text-[#0A1D35]">{JOURS[h.jour]}</div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={h.actif} onChange={e => update(h.id, 'actif', e.target.checked)} className="w-4 h-4 accent-[#0A1D35]" />
+                    <span className="text-sm text-[#56627A]">{t('agendaParam.ouvert')}</span>
+                  </label>
+                  {!h.actif && <span className="text-sm text-[#56627A] italic">{t('agendaParam.ferme')}</span>}
+                </div>
+
                 {h.actif && (
-                  <>
-                    <input
-                      type="time"
-                      value={h.ouverture || ''}
-                      onChange={e => update(h.id, 'ouverture', e.target.value)}
-                      className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
-                    />
-                    <span className="text-[#56627A] text-sm">→</span>
-                    <input
-                      type="time"
-                      value={h.fermeture || ''}
-                      onChange={e => update(h.id, 'fermeture', e.target.value)}
-                      className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
-                    />
-                  </>
+                  <div className="ml-28 space-y-2">
+                    {/* Matin */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-[#56627A] uppercase tracking-wide w-20">{t('agendaParam.matin')}</span>
+                      <input
+                        type="time"
+                        value={h.ouverture || ''}
+                        onChange={e => update(h.id, 'ouverture', e.target.value)}
+                        className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
+                      />
+                      <span className="text-[#56627A] text-sm">→</span>
+                      <input
+                        type="time"
+                        value={h.fermeture || ''}
+                        onChange={e => update(h.id, 'fermeture', e.target.value)}
+                        className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
+                      />
+                      {(h.ouverture || h.fermeture) && (
+                        <button onClick={() => { update(h.id, 'ouverture', ''); update(h.id, 'fermeture', ''); }}
+                          className="text-xs text-[#9B2C1F] hover:underline">{t('agendaParam.supprimer')}</button>
+                      )}
+                    </div>
+
+                    {/* Après-midi */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-[#56627A] uppercase tracking-wide w-20">{t('agendaParam.aprem')}</span>
+                      {h.ouverture_aprem !== undefined && h.ouverture_aprem !== '' ? (
+                        <>
+                          <input
+                            type="time"
+                            value={h.ouverture_aprem || ''}
+                            onChange={e => update(h.id, 'ouverture_aprem', e.target.value)}
+                            className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
+                          />
+                          <span className="text-[#56627A] text-sm">→</span>
+                          <input
+                            type="time"
+                            value={h.fermeture_aprem || ''}
+                            onChange={e => update(h.id, 'fermeture_aprem', e.target.value)}
+                            className="border border-[#E7DCCD] rounded-[10px] px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
+                          />
+                          <button onClick={() => { update(h.id, 'ouverture_aprem', ''); update(h.id, 'fermeture_aprem', ''); }}
+                            className="text-xs text-[#9B2C1F] hover:underline">{t('agendaParam.supprimer')}</button>
+                        </>
+                      ) : (
+                        <button onClick={() => { update(h.id, 'ouverture_aprem', '14:00'); update(h.id, 'fermeture_aprem', '18:00'); }}
+                          className="text-xs text-[#6CAED6] hover:underline font-semibold">+ {t('agendaParam.ajouterAprem')}</button>
+                      )}
+                    </div>
+                  </div>
                 )}
-                {!h.actif && <span className="text-sm text-[#56627A] italic">{t('agendaParam.ferme')}</span>}
               </div>
             ))}
           </div>

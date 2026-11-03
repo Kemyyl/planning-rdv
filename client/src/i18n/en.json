@@ -207,6 +207,10 @@
     "horairesDesc": "Inactive days show no available slots.",
     "ouvert": "Open",
     "ferme": "Closed",
+    "matin": "Morning",
+    "aprem": "Afternoon",
+    "ajouterAprem": "Add afternoon",
+    "supprimer": "Remove",
     "enregistrer": "Save hours",
     "sauvegarde": "Saving…",
     "jours": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]

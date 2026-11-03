@@ -176,10 +176,16 @@ adminRouter.get('/horaires', async (_req, res) => {
 
 // PUT /api/admin/horaires
 adminRouter.put('/horaires', async (req, res) => {
-  const horaires = req.body as Array<{ id: string; jour: number; ouverture?: string; fermeture?: string; actif: boolean }>;
+  const horaires = req.body as Array<{ id: string; jour: number; ouverture?: string; fermeture?: string; ouverture_aprem?: string; fermeture_aprem?: string; actif: boolean }>;
   if (!Array.isArray(horaires)) { res.status(400).json({ error: 'Format invalide' }); return; }
   const updates = await Promise.all(horaires.map(h =>
-    supabase.from('horaires').update({ ouverture: h.ouverture, fermeture: h.fermeture, actif: h.actif }).eq('id', h.id)
+    supabase.from('horaires').update({
+      ouverture: h.ouverture || null,
+      fermeture: h.fermeture || null,
+      ouverture_aprem: h.ouverture_aprem || null,
+      fermeture_aprem: h.fermeture_aprem || null,
+      actif: h.actif,
+    }).eq('id', h.id)
   ));
   const err = updates.find(u => u.error);
   if (err?.error) { res.status(500).json({ error: err.error.message }); return; }

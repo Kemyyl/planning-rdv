@@ -207,6 +207,10 @@
     "horairesDesc": "Les jours non actifs ne proposent aucun créneau.",
     "ouvert": "Ouvert",
     "ferme": "Fermé",
+    "matin": "Matin",
+    "aprem": "Après-midi",
+    "ajouterAprem": "Ajouter après-midi",
+    "supprimer": "Supprimer",
     "enregistrer": "Enregistrer les horaires",
     "sauvegarde": "Sauvegarde…",
     "jours": ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
