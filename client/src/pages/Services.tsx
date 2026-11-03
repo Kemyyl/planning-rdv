@@ -109,15 +109,6 @@ export default function Services() {
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
                         <Video size={11} /> Visio
                       </span>
-                      {raw.prix ? (
-                        <span className="text-[11px] font-bold text-[#0A1D35] bg-[#F7F2EB] px-2.5 py-1 rounded-full ml-auto">
-                          {raw.prix} €
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-medium text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full ml-auto">
-                          {t('services.surDevis')}
-                        </span>
-                      )}
                     </div>
 
                     <Link

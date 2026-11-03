@@ -125,12 +125,6 @@ export default function Reservation() {
             <span className="text-[#56627A]">{t('reservation.duree')}</span>
             <span className="font-semibold text-[#0A1D35]">{prestation?.duree} {t('reservation.min')}</span>
           </div>
-          {prestation && (prestation as Prestation & { prix?: number }).prix ? (
-            <div className="flex justify-between">
-              <span className="text-[#56627A]">Prix</span>
-              <span className="font-bold text-[#0A1D35]">{(prestation as Prestation & { prix?: number }).prix} €</span>
-            </div>
-          ) : null}
           {creneau && (
             <div className="border-t border-[#E7DCCD] pt-3">
               <span className="text-[#56627A] block mb-1">{t('reservation.date')}</span>
@@ -211,9 +205,6 @@ export default function Reservation() {
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2 py-1 rounded-full">
                         <Clock size={10} /> {p.duree} {t('reservation.min')}
                       </span>
-                      {raw.prix ? (
-                        <span className="text-[11px] font-bold text-[#0A1D35] bg-[#F7F2EB] px-2 py-1 rounded-full">{raw.prix} €</span>
-                      ) : null}
                     </div>
                   </button>
                 );

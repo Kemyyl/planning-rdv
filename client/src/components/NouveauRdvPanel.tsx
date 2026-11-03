@@ -136,7 +136,7 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
                     <div className="w-3 h-3 rounded-full shrink-0" style={{ background: p.couleur }} />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-[#0A1D35] truncate">{p.nom}</div>
-                      <div className="text-xs text-[#56627A]">{p.duree} min{p.prix ? ` · ${p.prix} €` : ''}</div>
+                      <div className="text-xs text-[#56627A]">{p.duree} min</div>
                     </div>
                     {selectedPrestation?.id === p.id && (
                       <div className="w-2 h-2 rounded-full bg-[#0A1D35] shrink-0" />
