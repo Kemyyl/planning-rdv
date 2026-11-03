@@ -36,7 +36,7 @@ export default function AdminClients() {
   const [filter, setFilter] = useState<Filter>('tous');
   const [editingObjectif, setEditingObjectif] = useState<{ id: string; val: string } | null>(null);
   const [showNouveauClient, setShowNouveauClient] = useState(false);
-  const [clientPanel, setClientPanel] = useState<ClientWithStats | null>(null);
+  const [clientPanel, setClientPanel] = useState<{ client: ClientWithStats; readOnly: boolean } | null>(null);
   const headers = { Authorization: `Bearer ${token}` };
 
   async function saveObjectif(clientId: string, val: string) {
@@ -175,8 +175,8 @@ export default function AdminClients() {
                       }`}>
                         {isActif ? t('clients.actif') : t('clients.inactif')}
                       </span>
-                      <button onClick={() => setClientPanel(c)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Voir le profil"><Eye size={13} /></button>
-                      <button onClick={() => setClientPanel(c)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Modifier"><Pencil size={13} /></button>
+                      <button onClick={() => setClientPanel({ client: c, readOnly: true })} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Voir le profil"><Eye size={13} /></button>
+                      <button onClick={() => setClientPanel({ client: c, readOnly: false })} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Modifier"><Pencil size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -187,7 +187,8 @@ export default function AdminClients() {
       </div>
       {clientPanel && (
         <ClientPanel
-          client={clientPanel}
+          client={clientPanel.client}
+          readOnly={clientPanel.readOnly}
           onClose={() => setClientPanel(null)}
           onUpdated={updated => setClients(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c))}
         />

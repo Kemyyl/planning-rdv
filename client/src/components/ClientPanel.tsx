@@ -14,6 +14,7 @@ interface ClientWithStats extends ClientAccount {
 
 interface Props {
   client: ClientWithStats;
+  readOnly?: boolean;
   onClose: () => void;
   onUpdated: (c: ClientWithStats) => void;
 }
@@ -27,7 +28,7 @@ const STATUT_LABEL: Record<string, string> = {
   confirme: 'Confirmé', en_attente: 'En attente', annule: 'Annulé',
 };
 
-export default function ClientPanel({ client, onClose, onUpdated }: Props) {
+export default function ClientPanel({ client, readOnly = false, onClose, onUpdated }: Props) {
   const { token } = useAuth();
   const dateLocale = useDateLocale();
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -64,7 +65,9 @@ export default function ClientPanel({ client, onClose, onUpdated }: Props) {
     finally { setSaving(false); }
   }
 
-  const inputClass = 'w-full border border-[#E7DCCD] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] bg-white';
+  const inputClass = readOnly
+    ? 'w-full bg-[#F7F2EB] rounded-xl px-3 py-2.5 text-sm text-[#0A1D35] cursor-default'
+    : 'w-full border border-[#E7DCCD] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] bg-white';
   const labelClass = 'block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1.5';
 
   return (
@@ -90,26 +93,30 @@ export default function ClientPanel({ client, onClose, onUpdated }: Props) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Prénom</label>
-                <input value={prenom} onChange={e => setPrenom(e.target.value)} className={inputClass} autoFocus />
+                <input value={prenom} onChange={e => !readOnly && setPrenom(e.target.value)} readOnly={readOnly} className={inputClass} autoFocus={!readOnly} />
               </div>
               <div>
                 <label className={labelClass}>Nom</label>
-                <input value={nom} onChange={e => setNom(e.target.value)} className={inputClass} />
+                <input value={nom} onChange={e => !readOnly && setNom(e.target.value)} readOnly={readOnly} className={inputClass} />
               </div>
             </div>
             <div>
               <label className={labelClass}>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClass} />
+              <input type="email" value={email} onChange={e => !readOnly && setEmail(e.target.value)} readOnly={readOnly} className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>Téléphone</label>
-              <input type="tel" value={telephone} onChange={e => setTelephone(e.target.value)} className={inputClass} placeholder="+33 6 …" />
+              <input type="tel" value={telephone} onChange={e => !readOnly && setTelephone(e.target.value)} readOnly={readOnly} className={inputClass} placeholder="+33 6 …" />
             </div>
             <div className="flex items-center justify-between py-1">
               <span className="text-sm font-medium text-[#0A1D35]">Compte actif</span>
-              <button onClick={() => setActif(v => !v)} className="text-[#56627A] hover:text-[#0A1D35] transition-colors">
-                {actif ? <ToggleRight size={28} className="text-[#1E6B4A]" /> : <ToggleLeft size={28} />}
-              </button>
+              {readOnly ? (
+                actif ? <ToggleRight size={28} className="text-[#1E6B4A]" /> : <ToggleLeft size={28} className="text-[#D9C9B4]" />
+              ) : (
+                <button onClick={() => setActif(v => !v)} className="text-[#56627A] hover:text-[#0A1D35] transition-colors">
+                  {actif ? <ToggleRight size={28} className="text-[#1E6B4A]" /> : <ToggleLeft size={28} />}
+                </button>
+              )}
             </div>
           </div>
 
@@ -144,10 +151,12 @@ export default function ClientPanel({ client, onClose, onUpdated }: Props) {
             className="flex-1 border border-[#E7DCCD] text-[#56627A] font-semibold py-3 rounded-xl text-sm hover:bg-[#F7F2EB] transition-colors">
             Fermer
           </button>
-          <button onClick={save} disabled={!dirty || saving}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
-            <Save size={14} />{saving ? 'Enregistrement…' : 'Enregistrer'}
-          </button>
+          {!readOnly && (
+            <button onClick={save} disabled={!dirty || saving}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
+              <Save size={14} />{saving ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+          )}
         </div>
       </div>
     </div>

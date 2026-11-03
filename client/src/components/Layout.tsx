@@ -110,6 +110,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
   const location = useLocation();
   const navigate = useNavigate();
   const { nom, logout } = useAuth();
+  const { dark, toggle: toggleTheme } = useTheme();
 
   const NAV = [
     { href: '/admin/dashboard', label: t('admin.tableauDeBord'), icon: LayoutDashboard },
@@ -172,8 +173,16 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-[#E7DCCD] px-8 py-4">
+        <header className="bg-white border-b border-[#E7DCCD] px-8 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-[#0A1D35]">{title}</h1>
+          <div className="flex items-center gap-2">
+            <LangToggle />
+            <button onClick={toggleTheme}
+              className="p-2 rounded-xl border border-[#E7DCCD] bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
+              title={dark ? t('nav.modeClair') : t('nav.modeSombre')}>
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
         </header>
         <main className="flex-1 p-8 overflow-auto">{children}</main>
       </div>
