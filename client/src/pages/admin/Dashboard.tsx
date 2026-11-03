@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateLocale } from '../../hooks/useDateLocale';
 import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -41,6 +41,7 @@ function StatutBadge({ statut }: { statut: string }) {
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { token } = useAuth();
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, total: 0, clients: 0 });
@@ -143,7 +144,7 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-3.5 text-[#56627A] capitalize">
-                      {format(new Date(r.debut), "EEE d MMM 'à' HH:mm", { locale: fr })}
+                      {format(new Date(r.debut), "EEE d MMM 'à' HH:mm", { locale: dateLocale })}
                     </td>
                     <td className="px-6 py-3.5 text-[#56627A]">{r.prestation?.nom || '—'}</td>
                     <td className="px-6 py-3.5"><StatutBadge statut={r.statut} /></td>

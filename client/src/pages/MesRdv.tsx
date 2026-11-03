@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { format, isPast } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateLocale } from '../hooks/useDateLocale';
 import { Video, Calendar, AlertCircle, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -18,13 +18,14 @@ function DateBox({ date }: { date: Date }) {
   return (
     <div className="w-14 h-14 bg-[#0A1D35] rounded-[14px] flex flex-col items-center justify-center shrink-0">
       <span className="text-white font-bold text-xl leading-none">{format(date, 'd')}</span>
-      <span className="text-[#6CAED6] text-xs font-medium capitalize">{format(date, 'MMM', { locale: fr })}</span>
+      <span className="text-[#6CAED6] text-xs font-medium capitalize">{format(date, 'MMM', { locale: dateLocale })}</span>
     </div>
   );
 }
 
 export default function MesRdv() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const [params] = useSearchParams();
   const jeton = params.get('jeton');
   const { token: clientToken, prenom, nom, clientId } = useClientAuth();
@@ -225,7 +226,7 @@ export default function MesRdv() {
                     return (
                       <div key={r.id} className={`flex items-center gap-6 px-6 py-4 text-sm ${idx < sortedPast.slice(0,5).length - 1 ? 'border-b border-[#F7F2EB]' : ''}`}>
                         <span className="text-[#56627A] w-28 shrink-0 capitalize">
-                          {format(new Date(r.debut), 'd MMM yyyy', { locale: fr })}
+                          {format(new Date(r.debut), 'd MMM yyyy', { locale: dateLocale })}
                         </span>
                         <span className="text-[#56627A] w-16 shrink-0">{format(new Date(r.debut), 'HH:mm')}</span>
                         <span className="flex-1 font-medium text-[#0A1D35]">{r.prestation?.nom} — {t('mesRdv.seanceNo')}{n}</span>
@@ -264,7 +265,7 @@ export default function MesRdv() {
                 <div className="flex justify-between">
                   <span className="text-[#56627A]">{t('mesRdv.prochainRdv')}</span>
                   <span className="font-bold text-[#0A1D35]">
-                    {prochainRdv ? format(new Date(prochainRdv.debut), 'd MMM yyyy', { locale: fr }) : '—'}
+                    {prochainRdv ? format(new Date(prochainRdv.debut), 'd MMM yyyy', { locale: dateLocale }) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">

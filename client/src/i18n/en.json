@@ -254,6 +254,7 @@
   "common": {
     "chargement": "Loading…",
     "min": "min",
+    "at": "at",
     "erreur": "An error occurred"
   }
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateLocale } from '../../hooks/useDateLocale';
 import { Search, Plus, Eye, Pencil, FileText, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +27,7 @@ function Avatar({ name }: { name: string }) {
 
 export default function AdminClients() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { token } = useAuth();
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [search, setSearch] = useState('');
@@ -124,7 +125,7 @@ export default function AdminClients() {
                   <td className="px-5 py-3.5 text-[#56627A]">{c.email}</td>
                   <td className="px-5 py-3.5 text-[#56627A]">{c.telephone || '—'}</td>
                   <td className="px-5 py-3.5 text-[#56627A]">
-                    {c.created_at ? format(new Date(c.created_at), 'd MMM yyyy', { locale: fr }) : '—'}
+                    {c.created_at ? format(new Date(c.created_at), 'd MMM yyyy', { locale: dateLocale }) : '—'}
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">

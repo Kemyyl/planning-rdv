@@ -254,6 +254,7 @@
   "common": {
     "chargement": "Chargement…",
     "min": "min",
+    "at": "à",
     "erreur": "Une erreur est survenue"
   }
 }

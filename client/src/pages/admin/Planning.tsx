@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format, addDays, startOfWeek, differenceInMinutes } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { useDateLocale } from '../../hooks/useDateLocale';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -13,6 +13,7 @@ type ViewMode = 'jour' | 'semaine';
 
 export default function AdminPlanning() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { token } = useAuth();
   const [lundi, setLundi] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
@@ -58,8 +59,8 @@ export default function AdminPlanning() {
             </button>
             <span className="font-bold text-[#0A1D35] px-2 min-w-[160px] text-center text-sm">
               {view === 'semaine'
-                ? `${format(lundi, 'd MMM', { locale: fr })} – ${format(addDays(lundi, 6), 'd MMM yyyy', { locale: fr })}`
-                : format(lundi, 'EEEE d MMMM yyyy', { locale: fr })}
+                ? `${format(lundi, 'd MMM', { locale: dateLocale })} – ${format(addDays(lundi, 6), 'd MMM yyyy', { locale: dateLocale })}`
+                : format(lundi, 'EEEE d MMMM yyyy', { locale: dateLocale })}
             </span>
             <button onClick={() => setLundi(d => addDays(d, view === 'semaine' ? 7 : 1))}
               className="p-2 border border-[#E7DCCD] rounded-xl hover:bg-[#F7F2EB] transition-colors bg-white">
@@ -102,7 +103,7 @@ export default function AdminPlanning() {
             <div key={j.toISOString()} className={`py-3 px-2 text-center border-l border-[#E7DCCD] ${
               format(j, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd') ? 'bg-[#D0E7F5]' : ''
             }`}>
-              <div className="text-xs text-[#56627A] font-medium capitalize">{format(j, 'EEE', { locale: fr })}</div>
+              <div className="text-xs text-[#56627A] font-medium capitalize">{format(j, 'EEE', { locale: dateLocale })}</div>
               <div className="text-sm font-bold text-[#0A1D35]">{format(j, 'd')}</div>
             </div>
           ))}
