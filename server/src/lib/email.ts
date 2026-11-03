@@ -140,6 +140,52 @@ export async function sendDevisConfirmEmail(to: string, prenom: string) {
   });
 }
 
+export async function sendDevisPdfEmail(data: {
+  to: string;
+  prenom: string;
+  devisNum: string;
+  prestationNom: string;
+  duree: number;
+  nbSeances: number;
+  prixParSeance: number;
+  total: number;
+  notes?: string;
+  validiteDate: string;
+  pdfBuffer: Buffer;
+}) {
+  if (!isConfigured()) return;
+  const totalStr = data.total % 1 === 0 ? `${data.total} €` : `${data.total.toFixed(2)} €`;
+  await makeTransport().sendMail({
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
+    to: data.to,
+    subject: `Votre devis Synégo — ${data.devisNum}`,
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
+      <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
+        <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
+        <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
+      </div>
+      <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
+        <h2 style="margin-top:0">Votre devis personnalisé</h2>
+        <p>Bonjour <strong>${data.prenom}</strong>,</p>
+        <p>Veuillez trouver ci-joint votre devis personnalisé pour votre accompagnement.</p>
+        <div style="background:#F7F2EB;border-radius:12px;padding:20px 24px;margin:20px 0">
+          <p style="margin:0 0 6px;font-weight:bold;font-size:15px">${data.prestationNom}</p>
+          <p style="margin:0 0 4px;color:#56627A;font-size:13px">${data.nbSeances} séance${data.nbSeances > 1 ? 's' : ''} · ${data.duree} min chacune</p>
+          <p style="margin:10px 0 0;font-size:22px;font-weight:bold;color:#0A1D35">${totalStr}</p>
+        </div>
+        <p style="font-size:13px;color:#56627A">Ce devis est valable jusqu'au <strong>${data.validiteDate}</strong>.</p>
+        <p style="font-size:12px;color:#9BA8B8;margin-top:4px">Réf. ${data.devisNum}</p>
+        <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
+      </div>
+    </div>`,
+    attachments: [{
+      filename: `devis-${data.devisNum}.pdf`,
+      content: data.pdfBuffer,
+      contentType: 'application/pdf',
+    }],
+  });
+}
+
 export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo) {
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });

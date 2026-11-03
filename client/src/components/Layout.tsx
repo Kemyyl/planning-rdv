@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
@@ -133,6 +133,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
     { href: '/admin/dashboard', label: t('admin.tableauDeBord'), icon: LayoutDashboard },
     { href: '/admin/planning', label: t('admin.agenda'), icon: Calendar },
     { href: '/admin/clients', label: t('admin.clients'), icon: Users },
+    { href: '/admin/devis', label: t('admin.devis'), icon: FileText },
     { href: '/admin/agenda', label: t('admin.parametres'), icon: Settings },
   ];
 

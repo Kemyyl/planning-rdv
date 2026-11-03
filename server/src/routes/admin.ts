@@ -2,11 +2,14 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
+import PDFDocument from 'pdfkit';
+import { format, addDays } from 'date-fns';
+import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
 import { getGoogleOAuthUrl, exchangeGoogleCode } from '../lib/google-meet';
-import { sendInviteEmail, sendConfirmationEmail } from '../lib/email';
+import { sendInviteEmail, sendConfirmationEmail, sendDevisPdfEmail } from '../lib/email';
 import { findMeetNotes } from '../lib/google-drive';
 
 export const adminRouter = Router();
@@ -460,4 +463,140 @@ adminRouter.patch('/prestations/:id', async (req, res) => {
   const { data, error } = await supabase.from('prestations').update(update).eq('id', req.params.id).select().single();
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data);
+});
+
+// ── Devis ────────────────────────────────────────────────────
+
+function generateDevisPdf(data: {
+  devisNum: string; prenom: string; nom: string; email: string;
+  prestationNom: string; duree: number; nbSeances: number;
+  prixParSeance: number; total: number; notes?: string;
+  validiteDate: string; emissionDate: string;
+}): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks: Buffer[] = [];
+    doc.on('data', (c: Buffer) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    const L = 50; const R = 545; const W = 495;
+    const navy = '#0A1D35'; const blue = '#6CAED6';
+    const grey = '#56627A'; const light = '#E7DCCD'; const bg = '#F7F2EB';
+    const totalStr = data.total % 1 === 0 ? `${data.total} €` : `${data.total.toFixed(2)} €`;
+    const prixStr = data.prixParSeance % 1 === 0 ? `${data.prixParSeance} €` : `${data.prixParSeance.toFixed(2)} €`;
+
+    // ── Header ─────────────────────────────────────────────
+    doc.rect(L, 40, W, 68).fill(navy);
+    doc.fontSize(20).fillColor('white').text('Synégo', L + 20, 56, { lineBreak: false });
+    doc.fontSize(10).fillColor(blue).text('Accompagnement thérapeutique', L + 20, 80, { lineBreak: false });
+    doc.fontSize(11).fillColor('white').text('DEVIS', L, 56, { width: W - 20, align: 'right', lineBreak: false });
+    doc.fontSize(8).fillColor(blue).text(data.devisNum, L, 72, { width: W - 20, align: 'right', lineBreak: false });
+
+    // ── Destinataire + dates ───────────────────────────────
+    const y1 = 128;
+    doc.fontSize(7).fillColor(grey).text('DESTINATAIRE', L, y1, { lineBreak: false });
+    doc.fontSize(14).fillColor(navy).text(`${data.prenom} ${data.nom}`, L, y1 + 13, { lineBreak: false });
+    doc.fontSize(10).fillColor(grey).text(data.email, L, y1 + 32, { lineBreak: false });
+
+    doc.fontSize(7).fillColor(grey).text('ÉMIS LE', L, y1, { width: W, align: 'right', lineBreak: false });
+    doc.fontSize(10).fillColor(navy).text(data.emissionDate, L, y1 + 13, { width: W, align: 'right', lineBreak: false });
+    doc.fontSize(7).fillColor(grey).text("VALABLE JUSQU'AU", L, y1 + 30, { width: W, align: 'right', lineBreak: false });
+    doc.fontSize(10).fillColor(navy).text(data.validiteDate, L, y1 + 43, { width: W, align: 'right', lineBreak: false });
+
+    // ── Separator ─────────────────────────────────────────
+    doc.moveTo(L, 192).lineTo(R, 192).strokeColor(light).lineWidth(1).stroke();
+
+    // ── Table label ────────────────────────────────────────
+    doc.fontSize(7).fillColor(grey).text('DÉTAIL DES PRESTATIONS', L, 208, { lineBreak: false });
+
+    // Table header row
+    const th = 226;
+    doc.rect(L, th, W, 26).fill(bg);
+    doc.fontSize(7).fillColor(grey);
+    doc.text('PRESTATION', L + 10, th + 10, { lineBreak: false });
+    doc.text('DURÉE', L + 230, th + 10, { lineBreak: false });
+    doc.text('SÉANCES', L + 310, th + 10, { lineBreak: false });
+    doc.text('TOTAL', L, th + 10, { width: W - 10, align: 'right', lineBreak: false });
+
+    // Table data row
+    const tr = th + 26;
+    doc.moveTo(L, tr).lineTo(R, tr).strokeColor(light).lineWidth(0.5).stroke();
+    doc.fontSize(11).fillColor(navy).text(data.prestationNom, L + 10, tr + 10, { width: 210, lineBreak: false });
+    doc.fontSize(10).fillColor(grey);
+    doc.text(`${data.duree} min`, L + 230, tr + 10, { lineBreak: false });
+    doc.text(`${data.nbSeances}`, L + 310, tr + 10, { lineBreak: false });
+    doc.fontSize(11).fillColor(navy).text(totalStr, L, tr + 10, { width: W - 10, align: 'right', lineBreak: false });
+
+    // ── Separator ─────────────────────────────────────────
+    const sep2 = tr + 38;
+    doc.moveTo(L, sep2).lineTo(R, sep2).strokeColor(light).lineWidth(1).stroke();
+
+    // ── Total box ──────────────────────────────────────────
+    const tbX = R - 185; const tbY = sep2 + 14; const tbH = 44;
+    doc.rect(tbX, tbY, 185, tbH).fill(navy);
+    doc.fontSize(9).fillColor(blue).text('TOTAL TTC', tbX + 14, tbY + 9, { lineBreak: false });
+    doc.fontSize(17).fillColor('white').text(totalStr, tbX, tbY + 7, { width: 175, align: 'right', lineBreak: false });
+
+    // Prix unitaire
+    doc.fontSize(9).fillColor(grey).text(`Prix unitaire : ${prixStr} / séance`, tbX, tbY + tbH + 10, { width: 185, align: 'right', lineBreak: false });
+
+    // ── Notes ─────────────────────────────────────────────
+    if (data.notes?.trim()) {
+      const notesY = tbY + tbH + 50;
+      doc.moveTo(L, notesY).lineTo(R, notesY).strokeColor(light).lineWidth(1).stroke();
+      doc.fontSize(7).fillColor(grey).text('NOTES', L, notesY + 16, { lineBreak: false });
+      doc.fontSize(10).fillColor(navy).text(data.notes.trim(), L, notesY + 30, { width: W });
+    }
+
+    // ── Footer ─────────────────────────────────────────────
+    doc.moveTo(L, 762).lineTo(R, 762).strokeColor(light).lineWidth(1).stroke();
+    doc.fontSize(8).fillColor('#9BA8B8')
+      .text(`Synégo — Accompagnement thérapeutique — Document généré le ${data.emissionDate}`, L, 772, { width: W, align: 'center', lineBreak: false });
+
+    doc.end();
+  });
+}
+
+// POST /api/admin/devis
+adminRouter.post('/devis', requireAuth, async (req, res) => {
+  const schema = z.object({
+    prenom: z.string().min(1),
+    nom: z.string().min(1),
+    email: z.string().email(),
+    prestation_nom: z.string().min(1),
+    duree: z.number().int().min(1),
+    nb_seances: z.number().int().min(1).max(100),
+    prix_par_seance: z.number().min(0),
+    notes: z.string().optional(),
+    validite_jours: z.number().int().min(1).default(30),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+
+  const d = parsed.data;
+  const now = new Date();
+  const devisNum = `SYNEGO-${format(now, 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+  const emissionDate = format(now, 'd MMMM yyyy', { locale: fr });
+  const validiteDate = format(addDays(now, d.validite_jours), 'd MMMM yyyy', { locale: fr });
+  const total = d.nb_seances * d.prix_par_seance;
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum, prenom: d.prenom, nom: d.nom, email: d.email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total, notes: d.notes, validiteDate, emissionDate,
+    });
+    await sendDevisPdfEmail({
+      to: d.email, prenom: d.prenom, devisNum,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total, notes: d.notes, validiteDate, pdfBuffer,
+    });
+    res.json({ ok: true, devisNum });
+  } catch (e) {
+    console.error('Erreur génération devis:', e);
+    res.status(500).json({ error: 'Erreur lors de la génération du devis' });
+  }
 });
