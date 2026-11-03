@@ -82,6 +82,12 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
             <p className="text-xs text-[#56627A] capitalize mt-0.5">
               {format(new Date(rdv.debut), `EEEE d MMMM yyyy '${t('common.at')}' HH:mm`, { locale: dateLocale })} · {rdv.prestation?.nom}
             </p>
+            {rdv.commentaire && (
+              <div className="mt-3 bg-[#F7F2EB] border border-[#E7DCCD] rounded-[10px] px-4 py-2.5">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-[#56627A] mb-1">{t('noteSeance.motif')}</p>
+                <p className="text-xs text-[#0A1D35] leading-relaxed">{rdv.commentaire}</p>
+              </div>
+            )}
             {(rdv as typeof rdv & { lien_meet?: string }).lien_meet && (
               <a
                 href={(rdv as typeof rdv & { lien_meet?: string }).lien_meet}

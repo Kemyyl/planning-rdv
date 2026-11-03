@@ -228,6 +228,7 @@
   },
   "noteSeance": {
     "titre": "Session summary",
+    "motif": "Reason for consultation",
     "aucunResume": "No summary for this session.",
     "placeholder": "Write the session summary…",
     "enregistrer": "Save summary",

@@ -127,15 +127,18 @@ adminRouter.get('/rdv', async (req, res) => {
 
 // POST /api/admin/rdv (ajout manuel)
 adminRouter.post('/rdv', async (req, res) => {
-  const { client_id, prestation_id, debut } = req.body;
+  const { client_id, prestation_id, debut, note_interne } = req.body;
   if (!client_id || !prestation_id || !debut) { res.status(400).json({ error: 'Données manquantes' }); return; }
   const { data: p } = await supabase.from('prestations').select('duree').eq('id', prestation_id).single();
   if (!p) { res.status(404).json({ error: 'Prestation introuvable' }); return; }
   const fin = new Date(debut);
   fin.setMinutes(fin.getMinutes() + (p as { duree: number }).duree);
+  const insert: Record<string, unknown> = { client_id, prestation_id, debut, fin: fin.toISOString(), statut: 'confirme' };
+  if (note_interne?.trim()) insert.commentaire = note_interne.trim();
   const { data, error } = await supabase.from('rendez_vous')
-    .insert({ client_id, prestation_id, debut, fin: fin.toISOString(), statut: 'confirme' })
-    .select('id').single();
+    .insert(insert)
+    .select('id,debut,fin,statut,commentaire,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)')
+    .single();
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.status(201).json(data);
 });

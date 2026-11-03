@@ -228,6 +228,7 @@
   },
   "noteSeance": {
     "titre": "Résumé de séance",
+    "motif": "Motif de consultation",
     "aucunResume": "Aucun résumé pour cette séance.",
     "placeholder": "Rédigez le résumé de cette séance…",
     "enregistrer": "Enregistrer le résumé",

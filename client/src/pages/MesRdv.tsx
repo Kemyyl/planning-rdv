@@ -132,8 +132,6 @@ export default function MesRdv() {
   }
 
   const prochainRdv = upcoming[0];
-  const totalSeances = past.length;
-  const objectif = 12;
 
   return (
     <PublicLayout>
@@ -276,22 +274,6 @@ export default function MesRdv() {
               </div>
             </div>
 
-            {/* Mon suivi */}
-            <div className="bg-[#0A1D35] rounded-[20px] p-6 text-white">
-              <p className="text-xs font-bold text-[#6CAED6] uppercase tracking-wide mb-4">{t('mesRdv.monSuivi')}</p>
-              <p className="font-semibold text-sm mb-4">{totalSeances} séance{totalSeances > 1 ? 's' : ''} effectuée{totalSeances > 1 ? 's' : ''}</p>
-              <div className="bg-[#1C3352] rounded-full h-2 mb-2">
-                <div
-                  className="bg-[#6CAED6] h-2 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (totalSeances / objectif) * 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-[#8FA3B8] mb-5">{t('mesRdv.objectif')} : {objectif} séances</p>
-              <Link to="/reservation"
-                className="block w-full bg-[#6CAED6] text-[#0A1D35] text-sm font-bold text-center py-2.5 rounded-[10px] hover:opacity-90 transition-opacity">
-                {t('mesRdv.reserver')}
-              </Link>
-            </div>
           </div>
         </div>
       </div>
