@@ -1,9 +1,11 @@
 import { Router } from 'express';
 import { addMinutes, parseISO } from 'date-fns';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
+import bcrypt from 'bcrypt';
 import { supabase } from '../lib/supabase';
 import { getCreneauxDisponibles } from '../services/creneaux';
-import { sendConfirmationEmail } from '../lib/email';
+import { sendConfirmationEmail, sendInviteEmail } from '../lib/email';
 import { createMeetEvent } from '../lib/google-meet';
 
 function fallbackMeetLink(): string {
@@ -71,11 +73,19 @@ publicRouter.post('/rdv', async (req, res) => {
   if (existingClient) {
     clientId = existingClient.id;
   } else {
+    const inviteToken = randomUUID();
+    const inviteExpiry = new Date(); inviteExpiry.setDate(inviteExpiry.getDate() + 7);
     const { data: newClient, error: clientErr } = await supabase
-      .from('clients').insert({ nom: client.nom, prenom: client.prenom, email: client.email, telephone: client.telephone })
+      .from('clients').insert({
+        nom: client.nom, prenom: client.prenom, email: client.email, telephone: client.telephone,
+        compte_actif: true, token_reinitialisation: inviteToken, token_expire_le: inviteExpiry.toISOString(),
+      })
       .select('id').single();
     if (clientErr || !newClient) { res.status(500).json({ error: 'Erreur lors de la création du client' }); return; }
     clientId = newClient.id;
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    sendInviteEmail(client.email, client.prenom, `${appUrl}/definir-mot-de-passe?token=${inviteToken}`)
+      .catch(e => console.error('Invite email failed:', e));
   }
 
   // Récupérer les credentials Google du praticien (premier admin)
@@ -131,6 +141,36 @@ publicRouter.get('/rdv/jeton/:jeton', async (req, res) => {
     .eq('jeton_annulation', req.params.jeton).single();
   if (error || !data) { res.status(404).json({ error: 'Introuvable' }); return; }
   res.json(data);
+});
+
+// POST /api/public/definir-mot-de-passe
+publicRouter.post('/definir-mot-de-passe', async (req, res) => {
+  const parsed = z.object({
+    token: z.string().uuid(),
+    mot_de_passe: z.string().min(8, 'Minimum 8 caractères'),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { token, mot_de_passe } = parsed.data;
+
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id,email,prenom,nom,token_expire_le')
+    .eq('token_reinitialisation', token)
+    .single();
+
+  if (!client) { res.status(400).json({ error: 'Lien invalide ou expiré.' }); return; }
+  const c = client as { id: string; email: string; prenom: string; nom: string; token_expire_le: string };
+  if (new Date(c.token_expire_le) < new Date()) { res.status(400).json({ error: 'Ce lien a expiré.' }); return; }
+
+  const hash = await bcrypt.hash(mot_de_passe, 12);
+  await supabase.from('clients').update({
+    mot_de_passe: hash, token_reinitialisation: null, token_expire_le: null,
+  }).eq('id', c.id);
+
+  const jwtToken = (await import('jsonwebtoken')).default.sign(
+    { id: c.id, email: c.email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' }
+  );
+  res.json({ token: jwtToken, id: c.id, prenom: c.prenom });
 });
 
 // PATCH /api/public/rdv/:id/annuler

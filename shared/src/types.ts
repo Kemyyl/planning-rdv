@@ -42,6 +42,7 @@ export interface RendezVous {
   fin: string;
   statut: Statut;
   commentaire?: string;
+  titre?: string;
   lien_meet?: string;
   google_event_id?: string;
   jeton_annulation?: string;

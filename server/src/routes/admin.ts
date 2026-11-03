@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
 import { getGoogleOAuthUrl, exchangeGoogleCode } from '../lib/google-meet';
+import { sendInviteEmail } from '../lib/email';
 
 export const adminRouter = Router();
 
@@ -127,17 +129,19 @@ adminRouter.get('/rdv', async (req, res) => {
 
 // POST /api/admin/rdv (ajout manuel)
 adminRouter.post('/rdv', async (req, res) => {
-  const { client_id, prestation_id, debut, note_interne } = req.body;
+  const { client_id, prestation_id, debut, note_interne, titre, duree: dureeOverride } = req.body;
   if (!client_id || !prestation_id || !debut) { res.status(400).json({ error: 'Données manquantes' }); return; }
   const { data: p } = await supabase.from('prestations').select('duree').eq('id', prestation_id).single();
   if (!p) { res.status(404).json({ error: 'Prestation introuvable' }); return; }
+  const duree = (dureeOverride && Number.isInteger(+dureeOverride) && +dureeOverride > 0) ? +dureeOverride : (p as { duree: number }).duree;
   const fin = new Date(debut);
-  fin.setMinutes(fin.getMinutes() + (p as { duree: number }).duree);
+  fin.setMinutes(fin.getMinutes() + duree);
   const insert: Record<string, unknown> = { client_id, prestation_id, debut, fin: fin.toISOString(), statut: 'confirme' };
   if (note_interne?.trim()) insert.commentaire = note_interne.trim();
+  if (titre?.trim()) insert.titre = titre.trim();
   const { data, error } = await supabase.from('rendez_vous')
     .insert(insert)
-    .select('id,debut,fin,statut,commentaire,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)')
+    .select('id,debut,fin,statut,commentaire,titre,lien_meet,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)')
     .single();
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.status(201).json(data);
@@ -150,26 +154,32 @@ adminRouter.delete('/rdv/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
-// POST /api/admin/clients — créer un client manuellement
+// POST /api/admin/clients — créer un client manuellement (sans mot de passe, invite par email)
 adminRouter.post('/clients', async (req, res) => {
   const parsed = z.object({
     prenom: z.string().min(1),
     nom: z.string().min(1),
     email: z.string().email(),
     telephone: z.string().optional(),
-    mot_de_passe: z.string().min(8),
   }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
-  const { prenom, nom, email, telephone, mot_de_passe } = parsed.data;
+  const { prenom, nom, email, telephone } = parsed.data;
 
   const { data: existing } = await supabase.from('clients').select('id').eq('email', email).single();
   if (existing) { res.status(409).json({ error: 'Un compte existe déjà avec cet e-mail.' }); return; }
 
-  const hash = await bcrypt.hash(mot_de_passe, 12);
+  const token = randomUUID();
+  const expiry = new Date(); expiry.setDate(expiry.getDate() + 7);
+
   const { data, error } = await supabase.from('clients')
-    .insert({ prenom, nom, email, telephone, mot_de_passe: hash, compte_actif: true })
+    .insert({ prenom, nom, email, telephone, compte_actif: true, token_reinitialisation: token, token_expire_le: expiry.toISOString() })
     .select('id,prenom,nom,email,telephone,compte_actif,created_at').single();
   if (error || !data) { res.status(500).json({ error: error?.message || 'Erreur' }); return; }
+
+  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  sendInviteEmail(email, prenom, `${appUrl}/definir-mot-de-passe?token=${token}`)
+    .catch(e => console.error('Invite email failed:', e));
+
   res.status(201).json(data);
 });
 

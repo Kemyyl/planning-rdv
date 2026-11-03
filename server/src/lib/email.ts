@@ -59,6 +59,33 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
   });
 }
 
+export async function sendInviteEmail(to: string, prenom: string, inviteUrl: string) {
+  if (!isConfigured()) return;
+  await makeTransport().sendMail({
+    from: process.env.EMAIL_FROM || 'noreply@synego.fr',
+    to,
+    subject: 'Bienvenue sur Synégo – Activez votre compte',
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
+      <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
+        <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
+        <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
+      </div>
+      <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
+        <h2 style="margin-top:0">Bienvenue, ${prenom} !</h2>
+        <p>Un compte a été créé pour vous sur Synégo.</p>
+        <p>Cliquez sur le bouton ci-dessous pour définir votre mot de passe et accéder à votre espace :</p>
+        <div style="margin:24px 0">
+          <a href="${inviteUrl}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
+            Activer mon compte
+          </a>
+        </div>
+        <p style="font-size:13px;color:#56627A">Ce lien est valable 7 jours. Si vous n'avez pas demandé ce compte, ignorez cet e-mail.</p>
+        <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
+      </div>
+    </div>`,
+  });
+}
+
 export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo) {
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });

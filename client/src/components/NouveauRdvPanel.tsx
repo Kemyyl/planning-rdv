@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { X, Search, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,8 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
   const [prestationId, setPrestationId] = useState('');
   const [date, setDate] = useState('');
   const [heure, setHeure] = useState('');
+  const [titre, setTitre] = useState('');
+  const [dureeOverride, setDureeOverride] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -51,10 +53,10 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
     setSaving(true);
     try {
       const debut = new Date(`${date}T${heure}`).toISOString();
-      const res = await fetch('/api/admin/rdv', {
-        method: 'POST', headers,
-        body: JSON.stringify({ client_id: selectedClient.id, prestation_id: prestationId, debut, note_interne: note }),
-      });
+      const body: Record<string, unknown> = { client_id: selectedClient.id, prestation_id: prestationId, debut, note_interne: note };
+      if (titre.trim()) body.titre = titre.trim();
+      if (dureeOverride && +dureeOverride > 0) body.duree = +dureeOverride;
+      const res = await fetch('/api/admin/rdv', { method: 'POST', headers, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       toast.success(t('nouveauRdvPanel.ajouter'));
@@ -110,6 +112,16 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
             )}
           </div>
 
+          {/* Titre personnalisé */}
+          <div>
+            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">
+              Titre <span className="font-normal text-[#A8B8C8]">(facultatif)</span>
+            </label>
+            <input value={titre} onChange={e => setTitre(e.target.value)}
+              placeholder="Ex : Séance bilan, Suivi mensuel…"
+              className="w-full border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+          </div>
+
           {/* Prestation */}
           <div>
             <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">{t('nouveauRdvPanel.prestation')}</label>
@@ -119,6 +131,16 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
                 <option key={p.id} value={p.id}>{p.nom} · {p.duree} min</option>
               ))}
             </select>
+          </div>
+
+          {/* Durée variable */}
+          <div>
+            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">
+              Durée (min) <span className="font-normal text-[#A8B8C8]">(laissez vide pour utiliser la durée par défaut)</span>
+            </label>
+            <input type="number" min="5" max="480" value={dureeOverride} onChange={e => setDureeOverride(e.target.value)}
+              placeholder={selectedPrestation ? `${selectedPrestation.duree} min par défaut` : ''}
+              className="w-full border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
           </div>
 
           {/* Date & Heure */}
@@ -135,11 +157,17 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
             </div>
           </div>
 
-          {/* Disponibilité */}
+          {/* Disponibilité + Meet badge */}
           {date && heure && selectedPrestation && (
-            <div className="flex items-center gap-2 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-medium px-4 py-2.5 rounded-xl">
-              <span className="w-2 h-2 rounded-full bg-[#1E6B4A]" />
-              Créneau disponible — {selectedPrestation.duree} min
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-medium px-4 py-2.5 rounded-xl">
+                <span className="w-2 h-2 rounded-full bg-[#1E6B4A]" />
+                Créneau disponible — {dureeOverride && +dureeOverride > 0 ? +dureeOverride : selectedPrestation.duree} min
+              </div>
+              <div className="flex items-center gap-2 bg-[#D0E7F5] text-[#0A1D35] text-xs font-medium px-4 py-2.5 rounded-xl">
+                <Video size={13} />
+                Un lien Google Meet sera généré automatiquement
+              </div>
             </div>
           )}
 

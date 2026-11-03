@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -14,12 +14,11 @@ export default function NouveauClientPanel({ onClose, onCreated }: Props) {
   const [nom, setNom] = useState('');
   const [email, setEmail] = useState('');
   const [telephone, setTelephone] = useState('');
-  const [motDePasse, setMotDePasse] = useState('');
   const [saving, setSaving] = useState(false);
 
   async function creer() {
-    if (!prenom.trim() || !nom.trim() || !email.trim() || motDePasse.length < 8) {
-      toast.error('Remplissez tous les champs obligatoires (mot de passe : 8 car. min)');
+    if (!prenom.trim() || !nom.trim() || !email.trim()) {
+      toast.error('Remplissez tous les champs obligatoires');
       return;
     }
     setSaving(true);
@@ -27,11 +26,11 @@ export default function NouveauClientPanel({ onClose, onCreated }: Props) {
       const res = await fetch('/api/admin/clients', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prenom, nom, email, telephone, mot_de_passe: motDePasse }),
+        body: JSON.stringify({ prenom, nom, email, telephone }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Client créé avec succès');
+      toast.success('Client créé — invitation envoyée par email');
       onCreated();
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Erreur');
@@ -70,10 +69,12 @@ export default function NouveauClientPanel({ onClose, onCreated }: Props) {
             <label className={labelClass}>Téléphone</label>
             <input type="tel" value={telephone} onChange={e => setTelephone(e.target.value)} className={inputClass} placeholder="+33 6 …" />
           </div>
-          <div>
-            <label className={labelClass}>Mot de passe *</label>
-            <input type="password" value={motDePasse} onChange={e => setMotDePasse(e.target.value)}
-              placeholder="Minimum 8 caractères" className={inputClass} />
+
+          <div className="flex items-start gap-3 bg-[#F7F2EB] border border-[#E7DCCD] rounded-[12px] px-4 py-3">
+            <Mail size={15} className="text-[#56627A] shrink-0 mt-0.5" />
+            <p className="text-xs text-[#56627A] leading-relaxed">
+              Un email d'invitation sera envoyé au client pour qu'il définisse son mot de passe lors de sa première connexion. Le lien est valable 7 jours.
+            </p>
           </div>
         </div>
 
@@ -83,9 +84,9 @@ export default function NouveauClientPanel({ onClose, onCreated }: Props) {
             Annuler
           </button>
           <button onClick={creer}
-            disabled={saving || !prenom.trim() || !nom.trim() || !email.trim() || motDePasse.length < 8}
+            disabled={saving || !prenom.trim() || !nom.trim() || !email.trim()}
             className="flex-1 bg-[#0A1D35] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
-            {saving ? 'Création…' : 'Créer le client'}
+            {saving ? 'Création…' : 'Créer et inviter'}
           </button>
         </div>
       </div>

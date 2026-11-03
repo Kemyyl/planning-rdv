@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -50,6 +51,18 @@ export default function AdminDashboard() {
   const [pendingCount, setPendingCount] = useState(0);
 
   const headers = { Authorization: `Bearer ${token}` };
+
+  async function deleteRdv(id: string, e: MouseEvent) {
+    e.stopPropagation();
+    if (!confirm('Annuler ce rendez-vous ?')) return;
+    const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
+    if (res.ok) {
+      setRdvs(prev => prev.filter(r => r.id !== id));
+      toast.success('RDV annulé');
+    } else {
+      toast.error('Erreur lors de l\'annulation');
+    }
+  }
 
   useEffect(() => {
     fetch('/api/admin/dashboard', { headers }).then(r => r.json()).then(data => {
@@ -153,7 +166,13 @@ export default function AdminDashboard() {
                         <button onClick={() => setNoteRdv(r)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title={t('dashboard.resume')}>
                           <Pencil size={13} />
                         </button>
-                        <button className="p-1.5 hover:bg-[#F7DDD8] rounded-[6px] text-[#9B2C1F] transition-colors" title={t('dashboard.annuler')}>
+                        {r.lien_meet && (
+                          <a href={r.lien_meet} target="_blank" rel="noopener noreferrer"
+                            className="p-1.5 hover:bg-[#D0E7F5] rounded-[6px] text-[#0A1D35] transition-colors" title="Rejoindre le Meet">
+                            <Video size={13} />
+                          </a>
+                        )}
+                        <button onClick={e => deleteRdv(r.id, e)} className="p-1.5 hover:bg-[#F7DDD8] rounded-[6px] text-[#9B2C1F] transition-colors" title={t('dashboard.annuler')}>
                           <Trash2 size={13} />
                         </button>
                       </div>
