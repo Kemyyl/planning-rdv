@@ -155,7 +155,7 @@ adminRouter.post('/rdv', async (req, res) => {
   if (error) { res.status(500).json({ error: error.message }); return; }
 
   // Send confirmation email to client
-  const d = data as unknown as { client?: { prenom: string; email: string } | { prenom: string; email: string }[] };
+  const d = data as unknown as { lien_meet?: string; client?: { prenom: string; email: string } | { prenom: string; email: string }[] };
   const clientInfo = Array.isArray(d.client) ? d.client[0] : d.client;
   if (clientInfo?.email) {
     sendConfirmationEmail(clientInfo.email, clientInfo.prenom, {
@@ -163,6 +163,7 @@ adminRouter.post('/rdv', async (req, res) => {
       fin: insert.fin as string | undefined,
       titre: insert.titre as string | undefined,
       duree,
+      lien_meet: d.lien_meet,
     }).catch(() => {});
   }
 
