@@ -305,15 +305,22 @@ adminRouter.post('/clients', async (req, res) => {
 adminRouter.get('/clients', async (req, res) => {
   const withStats = req.query.stats === '1';
   if (withStats) {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*, rdvs:rendez_vous(count), notes:notes_seance(count)')
-      .order('created_at', { ascending: false });
-    if (error) { res.status(500).json({ error: error.message }); return; }
-    const mapped = (data || []).map((c: Record<string, unknown>) => ({
+    const [clientsRes, lastRdvsRes] = await Promise.all([
+      supabase.from('clients').select('*, rdvs:rendez_vous(count), notes:notes_seance(count)').order('created_at', { ascending: false }),
+      supabase.from('rendez_vous').select('client_id, debut').eq('statut', 'confirme').order('debut', { ascending: false }),
+    ]);
+    if (clientsRes.error) { res.status(500).json({ error: clientsRes.error.message }); return; }
+
+    const lastRdvByClient = new Map<number, string>();
+    for (const r of (lastRdvsRes.data || []) as Array<{ client_id: number; debut: string }>) {
+      if (!lastRdvByClient.has(r.client_id)) lastRdvByClient.set(r.client_id, r.debut);
+    }
+
+    const mapped = (clientsRes.data || []).map((c: Record<string, unknown>) => ({
       ...c,
       seances_count: Array.isArray(c.rdvs) ? (c.rdvs as Array<{ count: number }>)[0]?.count ?? 0 : 0,
       has_notes: Array.isArray(c.notes) ? ((c.notes as Array<{ count: number }>)[0]?.count ?? 0) > 0 : false,
+      dernier_rdv: lastRdvByClient.get(c.id as number) ?? null,
       rdvs: undefined,
       notes: undefined,
     }));
