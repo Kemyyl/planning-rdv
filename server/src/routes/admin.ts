@@ -176,14 +176,18 @@ adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
   const refreshToken = (admin as { google_refresh_token?: string } | null)?.google_refresh_token;
   if (!refreshToken) { res.status(400).json({ error: 'Google non connecté' }); return; }
 
-  const { data: rdv } = await supabase.from('rendez_vous').select('fin,resume_url').eq('id', req.params.id).single();
+  const { data: rdv } = await supabase.from('rendez_vous')
+    .select('fin,resume_url,titre,prestation:prestations(nom)')
+    .eq('id', req.params.id).single();
   if (!rdv) { res.status(404).json({ error: 'RDV introuvable' }); return; }
 
-  const r = rdv as { fin: string; resume_url?: string };
+  const r = rdv as { fin: string; resume_url?: string; titre?: string; prestation?: { nom: string } | { nom: string }[] };
   if (r.resume_url) { res.json({ url: r.resume_url }); return; }
   if (!r.fin || new Date(r.fin) > new Date()) { res.json({ url: null }); return; }
 
-  const url = await findMeetNotes(refreshToken, r.fin);
+  const prestation = Array.isArray(r.prestation) ? r.prestation[0] : r.prestation;
+  const rdvTitle = r.titre || prestation?.nom;
+  const url = await findMeetNotes(refreshToken, r.fin, rdvTitle);
   if (url) {
     await supabase.from('rendez_vous').update({ resume_url: url }).eq('id', req.params.id);
   }
