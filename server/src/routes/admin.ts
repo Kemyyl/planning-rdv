@@ -194,10 +194,37 @@ adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
   res.json({ url });
 });
 
-// DELETE /api/admin/rdv/:id — annule un RDV (soft delete)
+// DELETE /api/admin/rdv/:id — annule un RDV (soft delete + annulation Google Calendar)
 adminRouter.delete('/rdv/:id', async (req, res) => {
-  const { error } = await supabase.from('rendez_vous').update({ statut: 'annule' }).eq('id', req.params.id);
+  const { data: rdv } = await supabase.from('rendez_vous')
+    .select('google_event_id').eq('id', req.params.id).single();
+
+  const { error } = await supabase.from('rendez_vous')
+    .update({ statut: 'annule', lien_meet: null }).eq('id', req.params.id);
   if (error) { res.status(500).json({ error: error.message }); return; }
+
+  // Annuler l'événement Google Calendar si existant
+  const googleEventId = (rdv as { google_event_id?: string } | null)?.google_event_id;
+  if (googleEventId) {
+    const { id: adminId } = (req as typeof req & { admin: { id: string } }).admin;
+    const { data: admin } = await supabase.from('admins')
+      .select('google_refresh_token,google_calendar_id').eq('id', adminId).single();
+    const a = admin as { google_refresh_token?: string; google_calendar_id?: string } | null;
+    if (a?.google_refresh_token) {
+      const { google } = await import('googleapis');
+      const oauth2 = new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_REDIRECT_URI
+      );
+      oauth2.setCredentials({ refresh_token: a.google_refresh_token });
+      const calendar = google.calendar({ version: 'v3', auth: oauth2 });
+      calendar.events.delete({
+        calendarId: a.google_calendar_id || 'primary',
+        eventId: googleEventId,
+        sendUpdates: 'all',
+      }).catch(() => {});
+    }
+  }
+
   res.json({ ok: true });
 });
 

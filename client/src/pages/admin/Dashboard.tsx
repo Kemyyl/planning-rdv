@@ -82,7 +82,7 @@ export default function AdminDashboard() {
     if (!confirm('Annuler ce rendez-vous ?')) return;
     const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
     if (res.ok) {
-      setRdvs(prev => prev.filter(r => r.id !== id));
+      setRdvs(prev => prev.map(r => r.id === id ? { ...r, statut: 'annule', lien_meet: undefined } : r));
       toast.success('RDV annulé');
     } else {
       toast.error('Erreur lors de l\'annulation');
