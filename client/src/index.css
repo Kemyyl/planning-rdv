@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0A1D35;
+  --color-navy-2: #1C3352;
+  --color-ivory: #F2E8DC;
+  --color-bg: #F7F2EB;
+  --color-card: #FFFDFA;
+  --color-sky: #6CAED6;
+  --color-champ: #D9C9B4;
+  --color-diamond: #D0E7F5;
+  --color-muted: #56627A;
+  --color-line: #E7DCCD;
+  --color-ok: #1E6B4A;
+  --color-ok-bg: #DCEFE4;
+  --color-warn: #8A5A12;
+  --color-warn-bg: #F6E7C8;
+  --color-err: #9B2C1F;
+  --color-err-bg: #F7DDD8;
+
+  --font-family-sans: "DM Sans", sans-serif;
+  --radius-card: 22px;
+  --radius-btn: 14px;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--color-bg);
+  color: var(--color-navy);
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+/* ── Dark mode (CSS invert) ───────────────────────── */
+html.dark body {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #1a1a1a;
+}
+
+html.dark img,
+html.dark video,
+html.dark [style*="background-image"] {
+  filter: invert(1) hue-rotate(180deg);
+}

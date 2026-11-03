@@ -1,0 +1,167 @@
+import { useEffect, useState } from 'react';
+import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2 } from 'lucide-react';
+import { AdminLayout } from '../../components/Layout';
+import { useAuth } from '../../contexts/AuthContext';
+import NoteSeancePanel from '../../components/NoteSeancePanel';
+import type { RendezVous } from '@synego/shared';
+
+interface Stats { today: number; week: number; total: number; clients: number }
+type Period = 'today' | 'week' | 'month';
+
+function Avatar({ name }: { name: string }) {
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  return (
+    <div className="w-8 h-8 rounded-full bg-[#D0E7F5] flex items-center justify-center text-xs font-bold text-[#0A1D35] shrink-0">
+      {initials}
+    </div>
+  );
+}
+
+function StatutBadge({ statut }: { statut: string }) {
+  const styles: Record<string, string> = {
+    confirme: 'bg-[#DCEFE4] text-[#1E6B4A]',
+    en_attente: 'bg-[#F6E7C8] text-[#8A5A12]',
+    annule: 'bg-[#F7DDD8] text-[#9B2C1F]',
+  };
+  const labels: Record<string, string> = {
+    confirme: 'Confirmé',
+    en_attente: 'En attente',
+    annule: 'Annulé',
+  };
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${styles[statut] || 'bg-[#F7F2EB] text-[#56627A]'}`}>
+      {labels[statut] || statut}
+    </span>
+  );
+}
+
+export default function AdminDashboard() {
+  const { token } = useAuth();
+  const [rdvs, setRdvs] = useState<RendezVous[]>([]);
+  const [stats, setStats] = useState<Stats>({ today: 0, week: 0, total: 0, clients: 0 });
+  const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
+  const [period, setPeriod] = useState<Period>('today');
+  const [pendingCount, setPendingCount] = useState(0);
+
+  const headers = { Authorization: `Bearer ${token}` };
+
+  useEffect(() => {
+    fetch('/api/admin/dashboard', { headers }).then(r => r.json()).then(data => {
+      setRdvs(data.prochains || []);
+      setStats(data.stats || {});
+      setPendingCount(data.pendingCount || 0);
+    });
+  }, []);
+
+  const filtered = rdvs.filter(r => {
+    const d = new Date(r.debut);
+    if (period === 'today') return isToday(d);
+    if (period === 'week') return isThisWeek(d, { weekStartsOn: 1 });
+    return isThisMonth(d);
+  });
+
+  const prochaineSeance = rdvs[0];
+  const prochaineHeure = prochaineSeance
+    ? format(new Date(prochaineSeance.debut), 'HH:mm')
+    : '—';
+
+  const STATS = [
+    { label: 'RDV aujourd\'hui', value: stats.today, icon: Clock, color: 'bg-[#D0E7F5]' },
+    { label: 'Cette semaine', value: stats.week, icon: Calendar, color: 'bg-[#F2E8DC]' },
+    { label: 'Clients actifs', value: stats.clients, icon: Users, color: 'bg-[#DCEFE4]' },
+    { label: 'Prochaine séance', value: prochaineHeure, icon: Clock, color: 'bg-[#F6E7C8]' },
+  ];
+
+  return (
+    <AdminLayout title="Tableau de bord">
+      {pendingCount > 0 && (
+        <div className="flex items-center justify-between bg-[#FFF8EC] border border-[#F6E7C8] rounded-[14px] px-5 py-3 mb-6 text-sm">
+          <div className="flex items-center gap-2 text-[#8A5A12] font-medium">
+            <Bell size={15} />
+            {pendingCount} nouvelle{pendingCount > 1 ? 's' : ''} demande{pendingCount > 1 ? 's' : ''} de RDV en attente de confirmation
+          </div>
+          <button className="text-[#8A5A12] font-semibold text-xs hover:underline flex items-center gap-1">
+            Voir →
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        {STATS.map(({ label, value, icon: Icon, color }) => (
+          <div key={label} className="bg-white border border-[#E7DCCD] rounded-[18px] p-5">
+            <div className={`w-9 h-9 ${color} rounded-xl flex items-center justify-center mb-3`}>
+              <Icon size={16} className="text-[#0A1D35]" />
+            </div>
+            <div className="text-2xl font-extrabold text-[#0A1D35]">{value}</div>
+            <div className="text-xs text-[#56627A] mt-0.5">{label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7DCCD]">
+          <div className="flex gap-1 bg-[#F7F2EB] rounded-xl p-1">
+            {([['today', "Aujourd'hui"], ['week', 'Cette semaine'], ['month', 'Ce mois']] as [Period, string][]).map(([p, label]) => (
+              <button key={p} onClick={() => setPeriod(p)}
+                className={`px-4 py-1.5 rounded-[10px] text-sm font-medium transition-colors ${
+                  period === p ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <button className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-xs font-semibold px-3 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors">
+            <Plus size={13} /> Nouveau RDV
+          </button>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="p-10 text-center text-[#56627A] text-sm">Aucun rendez-vous sur cette période.</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[#F7F2EB]">
+                {['Client', 'Date & heure', 'Type', 'Statut', 'Actions'].map(h => (
+                  <th key={h} className="text-left px-6 py-3 text-xs font-bold text-[#56627A] uppercase tracking-wide">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E7DCCD]">
+              {filtered.map(r => {
+                const clientName = r.client ? `${r.client.prenom} ${r.client.nom}` : '—';
+                return (
+                  <tr key={r.id} className="hover:bg-[#F7F2EB] transition-colors">
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={clientName} />
+                        <span className="font-medium text-[#0A1D35]">{clientName}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3.5 text-[#56627A] capitalize">
+                      {format(new Date(r.debut), "EEE d MMM 'à' HH:mm", { locale: fr })}
+                    </td>
+                    <td className="px-6 py-3.5 text-[#56627A]">{r.prestation?.nom || '—'}</td>
+                    <td className="px-6 py-3.5"><StatutBadge statut={r.statut} /></td>
+                    <td className="px-6 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setNoteRdv(r)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Résumé">
+                          <Pencil size={13} />
+                        </button>
+                        <button className="p-1.5 hover:bg-[#F7DDD8] rounded-[6px] text-[#9B2C1F] transition-colors" title="Annuler">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+      {noteRdv && <NoteSeancePanel rdv={noteRdv} onClose={() => setNoteRdv(null)} />}
+    </AdminLayout>
+  );
+}

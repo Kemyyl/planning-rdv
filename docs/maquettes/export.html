@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+:root{
+  --navy:#0A1D35;--navy2:#1C3352;--bg:#F7F2EB;--card:#FFFDFA;
+  --sky:#6CAED6;--champ:#D9C9B4;--muted:#56627A;--line:#E7DCCD;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:297mm 210mm;margin:0}
+body{font-family:'DM Sans',sans-serif;background:#fff}
+
+.page{width:297mm;height:210mm;page-break-after:always;overflow:hidden;position:relative;display:flex}
+
+/* cover */
+.cover{background:var(--navy)}
+.cover-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:16mm 14mm}
+.cover-dot{width:44px;height:44px;background:var(--sky);border-radius:12px;margin-bottom:28px;display:flex;align-items:center;justify-content:center}
+.cover-dot svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round}
+.cover-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sky);margin-bottom:12px}
+.cover-title{font-size:30px;font-weight:800;color:#FFFDFA;line-height:1.18;margin-bottom:12px}
+.cover-sub{font-size:14px;color:var(--champ);line-height:1.5}
+.cover-right{width:110mm;background:var(--navy2);display:flex;align-items:center;justify-content:center}
+.cover-right img{width:90px;height:90px;opacity:.85}
+.cover-foot{position:absolute;bottom:9mm;left:14mm;font-size:9.5px;color:var(--muted)}
+
+/* section */
+.section-page{background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.section-icon{width:54px;height:54px;background:var(--navy);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.section-icon svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round}
+.section-tag{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.section-title{font-size:26px;font-weight:800;color:var(--navy)}
+
+/* screen */
+.screen-page{flex-direction:column;background:var(--bg)}
+.screen-bar{height:26px;background:var(--navy);display:flex;align-items:center;padding:0 12mm;gap:14px;flex-shrink:0}
+.screen-bar .brand{font-size:12px;font-weight:700;color:#FFFDFA}
+.screen-bar .sep{width:1px;height:12px;background:rgba(255,255,255,.22)}
+.screen-bar .label{font-size:11px;color:var(--sky);font-weight:600}
+.screen-body{flex:1;display:flex;align-items:stretch;padding:8mm 12mm 6mm;gap:10mm;min-height:0}
+.screen-img-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 2px 4px rgba(10,29,53,.07),0 6px 18px rgba(10,29,53,.10);min-width:0}
+.screen-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.screen-aside{width:70mm;display:flex;flex-direction:column;padding-top:1mm;gap:0;flex-shrink:0}
+.aside-tag{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--sky);margin-bottom:8px}
+.aside-title{font-size:16px;font-weight:800;color:var(--navy);line-height:1.25;margin-bottom:11px}
+.pts{display:flex;flex-direction:column;gap:9px}
+.pt{display:flex;gap:8px;align-items:flex-start}
+.pt-num{width:20px;height:20px;border-radius:50%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.pt strong{display:block;font-size:13px;font-weight:700;color:var(--navy);line-height:1.2}
+.pt span{font-size:11.5px;color:var(--muted);line-height:1.4}
+.screen-foot{height:7mm;display:flex;align-items:center;justify-content:space-between;padding:0 12mm;flex-shrink:0}
+.screen-foot span{font-size:9px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="cover-left">
+    <div class="cover-dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+    <div class="cover-eyebrow">Synégo · Accompagnement thérapeutique</div>
+    <div class="cover-title">Maquettes du site<br>de prise de rendez-vous</div>
+    <div class="cover-sub">Parcours client et espace administrateur<br>Version 1 · 2 novembre 2026</div>
+  </div>
+  <div class="cover-right"><img src="logo.png" alt="Logo Synégo"></div>
+  <div class="cover-foot">Confidentiel · Projet Synégo Planning RDV</div>
+</div>
+
+<!-- SECTION 1 -->
+<div class="page section-page">
+  <div class="section-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+  <div class="section-tag">Partie 1</div>
+  <div class="section-title">Parcours client</div>
+</div>
+
+<!-- 00 · Accueil -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo</span><span class="sep"></span><span class="label">00 · Accueil — Site vitrine</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="oWZdo.png" alt="Accueil"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 00</div>
+      <div class="aside-title">Page d'accueil et présentation</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Présenter le praticien</strong><span>Spécialité, approche et photo de confiance.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Témoignages clients</strong><span>Avis vérifiés pour rassurer les nouveaux visiteurs.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Appel à l'action clair</strong><span>Bouton « Prendre RDV » visible dès l'arrivée.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>2</span></div>
+</div>
+
+<!-- 01 · Prise de RDV -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo</span><span class="sep"></span><span class="label">01 · Client — Prise de RDV</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="VIlZl.png" alt="Prise de RDV"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 01</div>
+      <div class="aside-title">Réservation en une seule page</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Sélecteur de prestation</strong><span>Cartes avec durée et tarif. Sélection cochée.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Calendrier interactif</strong><span>Créneaux libres et occupés visibles d'un coup d'œil.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Récapitulatif en temps réel</strong><span>Le client voit toujours ce qu'il réserve.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>3</span></div>
+</div>
+
+<!-- 03 · Formulaire -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo</span><span class="sep"></span><span class="label">03 · Client — Formulaire</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="SKccn.png" alt="Formulaire"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 02</div>
+      <div class="aside-title">Coordonnées et confirmation</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Formulaire minimal</strong><span>Prénom, nom, e-mail, téléphone — c'est tout.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Étapes de progression</strong><span>Le client sait exactement où il en est.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Récapitulatif toujours visible</strong><span>Prestation, date, heure avant de valider.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>4</span></div>
+</div>
+
+<!-- 02 · Confirmation -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo</span><span class="sep"></span><span class="label">02 · Client — Confirmation</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="vprJB.png" alt="Confirmation"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 03</div>
+      <div class="aside-title">Confirmation immédiate</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Message rassurant</strong><span>Le client sait tout de suite que c'est réservé.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Ajouter à l'agenda</strong><span>Un clic pour Google Agenda ou iPhone.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Modifier ou annuler</strong><span>Lien direct dans l'e-mail, sans créer de compte.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>5</span></div>
+</div>
+
+<!-- 07 · Mes RDV -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo</span><span class="sep"></span><span class="label">07 · Client — Mes RDV</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="s7PqhJ.png" alt="Mes RDV"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 04</div>
+      <div class="aside-title">Espace client — Mes rendez-vous</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>RDV à venir</strong><span>Prochain rendez-vous mis en avant avec lien Google Meet.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Historique complet</strong><span>Tous les RDV passés et à venir en un coup d'œil.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Annuler ou reporter</strong><span>Actions disponibles directement depuis la liste.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>6</span></div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="page section-page">
+  <div class="section-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+  <div class="section-tag">Partie 2</div>
+  <div class="section-title">Espace administrateur</div>
+</div>
+
+<!-- 08 · Connexion -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo Admin</span><span class="sep"></span><span class="label">08 · Admin — Connexion</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="SM2Rl.png" alt="Connexion admin"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 05</div>
+      <div class="aside-title">Connexion à l'espace pro</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Accès réservé</strong><span>Les clients n'ont jamais accès à cet espace.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Message d'erreur utile</strong><span>On sait quoi faire si le mot de passe est faux.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Mot de passe oublié</strong><span>Réinitialisation par e-mail en autonomie.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>8</span></div>
+</div>
+
+<!-- 04 · Dashboard -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo Admin</span><span class="sep"></span><span class="label">04 · Admin — Dashboard</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="r5ca2X.png" alt="Dashboard"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 06</div>
+      <div class="aside-title">Tableau de bord principal</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Vue d'ensemble</strong><span>Prochains RDV, statistiques du jour et de la semaine.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Notifications</strong><span>Nouvelles réservations et annulations en temps réel.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Accès rapide</strong><span>Ajouter un RDV manuel ou accéder au planning en 1 clic.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>9</span></div>
+</div>
+
+<!-- 05 · Clients -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo Admin</span><span class="sep"></span><span class="label">05 · Admin — Clients</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="LVO6u.png" alt="Clients"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 07</div>
+      <div class="aside-title">Fiches clients et historique</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Recherche rapide</strong><span>Par nom, e-mail ou téléphone.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Historique complet</strong><span>Tous les RDV passés et à venir avec statut.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Données protégées</strong><span>Accès réservé à l'équipe, conforme RGPD.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>10</span></div>
+</div>
+
+<!-- 06 · Agenda -->
+<div class="page screen-page">
+  <div class="screen-bar"><span class="brand">Synégo Admin</span><span class="sep"></span><span class="label">06 · Admin — Agenda</span></div>
+  <div class="screen-body">
+    <div class="screen-img-wrap"><img src="IZhpI.png" alt="Agenda"></div>
+    <div class="screen-aside">
+      <div class="aside-tag">Écran 08</div>
+      <div class="aside-title">Agenda et gestion du planning</div>
+      <div class="pts">
+        <div class="pt"><div class="pt-num">1</div><div><strong>Synchronisation Google Agenda</strong><span>Les absences bloquent automatiquement les créneaux.</span></div></div>
+        <div class="pt"><div class="pt-num">2</div><div><strong>Vue semaine ou jour</strong><span>Chaque type de séance a sa propre couleur.</span></div></div>
+        <div class="pt"><div class="pt-num">3</div><div><strong>Paramétrer les horaires</strong><span>Plages d'ouverture, pauses et jours fermés.</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-foot"><span>Maquettes Synégo · v1 · 02/11/2026</span><span>11</span></div>
+</div>
+
+<!-- END -->
+<div class="page cover" style="page-break-after:avoid">
+  <div class="cover-left">
+    <div class="cover-eyebrow">Prochaine étape</div>
+    <div class="cover-title">Vos retours<br>sur ces maquettes</div>
+    <div class="cover-sub">Valider les écrans, puis développer<br>la réservation en ligne.</div>
+  </div>
+  <div class="cover-right" style="flex-direction:column;justify-content:flex-end;align-items:flex-end;padding:12mm;gap:6px">
+    <span style="font-size:10px;color:var(--muted)">Synégo · Planning RDV</span>
+    <span style="font-size:10px;color:var(--muted)">v1 · 2 novembre 2026</span>
+  </div>
+</div>
+
+</body>
+</html>
