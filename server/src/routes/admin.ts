@@ -100,10 +100,13 @@ adminRouter.get('/dashboard', async (_req, res) => {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
   const nextWeek = new Date(today); nextWeek.setDate(nextWeek.getDate() + 7);
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const startOfNextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
-  const [rdvsToday, rdvsWeek, rdvsTotal, clientsTotal, prochains, pending] = await Promise.all([
+  const [rdvsToday, rdvsWeek, rdvsMonth, rdvsTotal, clientsTotal, prochains, pending] = await Promise.all([
     supabase.from('rendez_vous').select('id', { count: 'exact', head: true }).eq('statut', 'confirme').gte('debut', today.toISOString()).lt('debut', tomorrow.toISOString()),
     supabase.from('rendez_vous').select('id', { count: 'exact', head: true }).eq('statut', 'confirme').gte('debut', today.toISOString()).lt('debut', nextWeek.toISOString()),
+    supabase.from('rendez_vous').select('id', { count: 'exact', head: true }).eq('statut', 'confirme').gte('debut', startOfMonth.toISOString()).lt('debut', startOfNextMonth.toISOString()),
     supabase.from('rendez_vous').select('id', { count: 'exact', head: true }).eq('statut', 'confirme'),
     supabase.from('clients').select('id', { count: 'exact', head: true }).eq('compte_actif', true),
     supabase.from('rendez_vous').select('*,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)').in('statut', ['confirme', 'en_attente']).gte('debut', today.toISOString()).order('debut').limit(50),
@@ -111,7 +114,7 @@ adminRouter.get('/dashboard', async (_req, res) => {
   ]);
 
   res.json({
-    stats: { today: rdvsToday.count || 0, week: rdvsWeek.count || 0, total: rdvsTotal.count || 0, clients: clientsTotal.count || 0 },
+    stats: { today: rdvsToday.count || 0, week: rdvsWeek.count || 0, month: rdvsMonth.count || 0, total: rdvsTotal.count || 0, clients: clientsTotal.count || 0 },
     prochains: prochains.data || [],
     pendingCount: pending.count || 0,
   });
