@@ -19,6 +19,16 @@ const allowedOrigins = isProd
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
+if (isProd) {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] === 'http') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    next();
+  });
+}
+
 app.use('/api/auth', authRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/admin', adminRouter);
