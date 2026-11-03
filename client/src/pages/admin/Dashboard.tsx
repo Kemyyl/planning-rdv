@@ -165,7 +165,10 @@ export default function AdminDashboard() {
                     <td className="px-6 py-3.5 text-[#56627A] capitalize">
                       {format(new Date(r.debut), "EEE d MMM 'à' HH:mm", { locale: dateLocale })}
                     </td>
-                    <td className="px-6 py-3.5 text-[#56627A]">{r.prestation?.nom || '—'}</td>
+                    <td className="px-6 py-3.5">
+                      <div className="text-[#56627A]">{r.titre || r.prestation?.nom || '—'}</div>
+                      {r.commentaire && <div className="text-xs text-[#A8B8C8] mt-0.5 max-w-[220px] truncate" title={r.commentaire}>{r.commentaire}</div>}
+                    </td>
                     <td className="px-6 py-3.5"><StatutBadge statut={r.statut} /></td>
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-2">

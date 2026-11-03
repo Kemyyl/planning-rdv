@@ -129,14 +129,22 @@ adminRouter.get('/rdv', async (req, res) => {
 
 // POST /api/admin/rdv (ajout manuel)
 adminRouter.post('/rdv', async (req, res) => {
-  const { client_id, prestation_id, debut, note_interne, titre, duree: dureeOverride } = req.body;
-  if (!client_id || !prestation_id || !debut) { res.status(400).json({ error: 'Données manquantes' }); return; }
-  const { data: p } = await supabase.from('prestations').select('duree').eq('id', prestation_id).single();
-  if (!p) { res.status(404).json({ error: 'Prestation introuvable' }); return; }
-  const duree = (dureeOverride && Number.isInteger(+dureeOverride) && +dureeOverride > 0) ? +dureeOverride : (p as { duree: number }).duree;
+  const { client_id, prestation_id, debut, note_interne, titre, duree: dureeRaw } = req.body;
+  if (!client_id || !debut) { res.status(400).json({ error: 'Données manquantes' }); return; }
+
+  let duree = 60;
+  if (dureeRaw && +dureeRaw > 0) {
+    duree = +dureeRaw;
+  } else if (prestation_id) {
+    const { data: p } = await supabase.from('prestations').select('duree').eq('id', prestation_id).single();
+    if (!p) { res.status(404).json({ error: 'Prestation introuvable' }); return; }
+    duree = (p as { duree: number }).duree;
+  }
+
   const fin = new Date(debut);
   fin.setMinutes(fin.getMinutes() + duree);
-  const insert: Record<string, unknown> = { client_id, prestation_id, debut, fin: fin.toISOString(), statut: 'confirme' };
+  const insert: Record<string, unknown> = { client_id, debut, fin: fin.toISOString(), statut: 'confirme' };
+  if (prestation_id) insert.prestation_id = prestation_id;
   if (note_interne?.trim()) insert.commentaire = note_interne.trim();
   if (titre?.trim()) insert.titre = titre.trim();
   const { data, error } = await supabase.from('rendez_vous')
