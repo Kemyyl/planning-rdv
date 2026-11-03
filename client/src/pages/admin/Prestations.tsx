@@ -12,6 +12,9 @@ export default function AdminPrestations() {
   const [prestations, setPrestations] = useState<Prestation[]>([]);
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Partial<Prestation>>({});
+  const [showCreate, setShowCreate] = useState(false);
+  const [createData, setCreateData] = useState<Partial<Prestation>>({ nom: '', duree: 60, couleur: '#6CAED6' });
+  const [creating, setCreating] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
@@ -42,6 +45,24 @@ export default function AdminPrestations() {
     } catch { toast.error('Erreur'); }
   }
 
+  async function creerPrestation() {
+    if (!createData.nom?.trim() || !createData.duree) { toast.error('Nom et durée requis'); return; }
+    setCreating(true);
+    try {
+      const res = await fetch('/api/admin/prestations', {
+        method: 'POST', headers,
+        body: JSON.stringify({ ...createData, duree: Number(createData.duree) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPrestations(prev => [...prev, data]);
+      setShowCreate(false);
+      setCreateData({ nom: '', duree: 60, couleur: '#6CAED6' });
+      toast.success('Prestation créée');
+    } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Erreur'); }
+    finally { setCreating(false); }
+  }
+
   function startEdit(p: Prestation) {
     setEditId(p.id);
     setEditData({ nom: p.nom, nom_en: p.nom_en, description: p.description, description_en: p.description_en, duree: p.duree, prix: p.prix, couleur: p.couleur });
@@ -51,12 +72,61 @@ export default function AdminPrestations() {
     <AdminLayout title={t('prestations.titre')}>
       <div className="flex justify-between items-center mb-6">
         <p className="text-sm text-[#56627A]">{t('prestations.desc')}</p>
-        <button className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-4 py-2 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
+        <button onClick={() => { setShowCreate(true); setEditId(null); }} className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-4 py-2 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
           <Plus size={15} />{t('prestations.ajouter')}
         </button>
       </div>
 
       <div className="space-y-3">
+        {showCreate && (
+          <div className="bg-[#FFFDFA] border-2 border-[#6CAED6] rounded-[18px] p-5">
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">Nom 🇫🇷 *</label>
+                  <input value={createData.nom || ''} onChange={e => setCreateData(d => ({ ...d, nom: e.target.value }))}
+                    autoFocus placeholder="Ex : Consultation individuelle"
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">Nom 🇬🇧</label>
+                  <input value={(createData as Partial<Prestation> & { nom_en?: string }).nom_en || ''} onChange={e => setCreateData(d => ({ ...d, nom_en: e.target.value }))}
+                    placeholder="English name"
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">Description 🇫🇷</label>
+                  <input value={createData.description || ''} onChange={e => setCreateData(d => ({ ...d, description: e.target.value }))}
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('prestations.duree')} *</label>
+                  <input type="number" value={createData.duree || 60} onChange={e => setCreateData(d => ({ ...d, duree: +e.target.value }))}
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('prestations.prix')}</label>
+                  <input type="number" value={createData.prix || ''} onChange={e => setCreateData(d => ({ ...d, prix: +e.target.value }))}
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('prestations.couleur')}</label>
+                  <input type="color" value={createData.couleur || '#6CAED6'} onChange={e => setCreateData(d => ({ ...d, couleur: e.target.value }))}
+                    className="w-full h-[38px] border border-[#E7DCCD] rounded-[10px] px-1 cursor-pointer" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={creerPrestation} disabled={creating || !createData.nom?.trim()}
+                  className="flex items-center gap-1 bg-[#1E6B4A] text-white font-bold px-4 py-2 rounded-[10px] text-sm disabled:opacity-40">
+                  <Check size={14} />{creating ? 'Création…' : 'Créer la prestation'}
+                </button>
+                <button onClick={() => setShowCreate(false)} className="flex items-center gap-1 border border-[#E7DCCD] text-[#56627A] font-medium px-4 py-2 rounded-[10px] text-sm">
+                  <X size={14} />{t('prestations.annuler')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {prestations.map(p => (
           <div key={p.id} className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[18px] p-5">
             {editId === p.id ? (

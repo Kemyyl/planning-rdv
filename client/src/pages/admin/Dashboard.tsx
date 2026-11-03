@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
 import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video } from 'lucide-react';
@@ -45,6 +46,7 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, total: 0, clients: 0 });
   const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
@@ -103,7 +105,7 @@ export default function AdminDashboard() {
             <Bell size={15} />
             {pendingCount} {t('dashboard.enAttente')}
           </div>
-          <button className="text-[#8A5A12] font-semibold text-xs hover:underline flex items-center gap-1">
+          <button onClick={() => navigate('/admin/planning')} className="text-[#8A5A12] font-semibold text-xs hover:underline flex items-center gap-1">
             {t('dashboard.voir')} →
           </button>
         </div>

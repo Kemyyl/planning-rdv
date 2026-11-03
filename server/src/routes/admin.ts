@@ -239,7 +239,39 @@ adminRouter.get('/prestations', async (_req, res) => {
   res.json(data);
 });
 
+// POST /api/admin/prestations
+adminRouter.post('/prestations', async (req, res) => {
+  const parsed = z.object({
+    nom: z.string().min(1),
+    nom_en: z.string().optional(),
+    description: z.string().optional(),
+    description_en: z.string().optional(),
+    duree: z.number().int().min(5),
+    prix: z.number().optional(),
+    couleur: z.string().default('#6CAED6'),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { data: last } = await supabase.from('prestations').select('ordre').order('ordre', { ascending: false }).limit(1).single();
+  const ordre = ((last as { ordre: number } | null)?.ordre ?? 0) + 1;
+  const { data, error } = await supabase.from('prestations')
+    .insert({ ...parsed.data, actif: true, ordre })
+    .select('*').single();
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.status(201).json(data);
+});
+
 // ── Notes de séance ─────────────────────────────────────────
+
+// GET /api/admin/clients/:id/rdvs
+adminRouter.get('/clients/:id/rdvs', async (req, res) => {
+  const { data, error } = await supabase
+    .from('rendez_vous')
+    .select('*,prestation:prestations(nom,couleur,duree)')
+    .eq('client_id', req.params.id)
+    .order('debut', { ascending: false });
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
 
 // GET /api/admin/clients/:id/notes
 adminRouter.get('/clients/:id/notes', async (req, res) => {

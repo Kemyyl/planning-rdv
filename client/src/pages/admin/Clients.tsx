@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import NouveauClientPanel from '../../components/NouveauClientPanel';
+import ClientPanel from '../../components/ClientPanel';
 import type { ClientAccount } from '@synego/shared';
 
 interface ClientWithStats extends ClientAccount {
@@ -35,6 +36,7 @@ export default function AdminClients() {
   const [filter, setFilter] = useState<Filter>('tous');
   const [editingObjectif, setEditingObjectif] = useState<{ id: string; val: string } | null>(null);
   const [showNouveauClient, setShowNouveauClient] = useState(false);
+  const [clientPanel, setClientPanel] = useState<ClientWithStats | null>(null);
   const headers = { Authorization: `Bearer ${token}` };
 
   async function saveObjectif(clientId: string, val: string) {
@@ -173,8 +175,8 @@ export default function AdminClients() {
                       }`}>
                         {isActif ? t('clients.actif') : t('clients.inactif')}
                       </span>
-                      <button className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors"><Eye size={13} /></button>
-                      <button className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors"><Pencil size={13} /></button>
+                      <button onClick={() => setClientPanel(c)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Voir le profil"><Eye size={13} /></button>
+                      <button onClick={() => setClientPanel(c)} className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors" title="Modifier"><Pencil size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -183,6 +185,13 @@ export default function AdminClients() {
           </tbody>
         </table>
       </div>
+      {clientPanel && (
+        <ClientPanel
+          client={clientPanel}
+          onClose={() => setClientPanel(null)}
+          onUpdated={updated => setClients(prev => prev.map(c => c.id === updated.id ? { ...c, ...updated } : c))}
+        />
+      )}
       {showNouveauClient && (
         <NouveauClientPanel
           onClose={() => setShowNouveauClient(false)}
