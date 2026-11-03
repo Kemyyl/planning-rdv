@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { format, addDays, startOfWeek, differenceInMinutes } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2, Video } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,6 +24,18 @@ export default function AdminPlanning() {
   const [creneauxLibres, setCreneauxLibres] = useState(0);
 
   const headers = { Authorization: `Bearer ${token}` };
+
+  async function deleteRdv(id: string, e: MouseEvent) {
+    e.stopPropagation();
+    if (!confirm('Annuler ce rendez-vous ?')) return;
+    const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
+    if (res.ok) {
+      setRdvs(prev => prev.filter(r => r.id !== id));
+      toast.success('RDV annulé');
+    } else {
+      toast.error('Erreur lors de l\'annulation');
+    }
+  }
 
   function loadRdvs() {
     const fin = addDays(lundi, 6);
@@ -89,6 +102,11 @@ export default function AdminPlanning() {
               </button>
             ))}
           </div>
+          <button onClick={loadRdvs}
+            className="p-2 border border-[#E7DCCD] rounded-xl bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
+            title="Actualiser">
+            <RefreshCw size={15} />
+          </button>
           <button onClick={() => setShowNouveauRdv(true)}
             className="flex items-center gap-1.5 bg-[#0A1D35] text-white font-semibold px-4 py-2 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
             <Plus size={14} /> {t('planning.nouveauRdv')}
@@ -122,11 +140,23 @@ export default function AdminPlanning() {
                     const color = r.prestation?.couleur || '#6CAED6';
                     return (
                       <div key={r.id}
-                        className="rounded-[8px] px-2 py-1.5 text-xs font-medium mb-1 cursor-pointer hover:opacity-80 transition-opacity"
+                        className="rounded-[8px] px-2 py-1.5 text-xs font-medium mb-1 cursor-pointer hover:opacity-90 transition-opacity"
                         style={{ background: color + '33', borderLeft: `3px solid ${color}`, color: '#0A1D35' }}
                         onClick={() => setNoteRdv(r)}>
                         <div className="font-semibold">{r.client?.prenom} {r.client?.nom}</div>
                         <div className="text-[10px] opacity-70">{r.prestation?.nom} · {duree} min</div>
+                        <div className="flex items-center gap-1 mt-1.5" onClick={e => e.stopPropagation()}>
+                          {r.lien_meet && (
+                            <a href={r.lien_meet} target="_blank" rel="noopener noreferrer"
+                              className="flex items-center gap-0.5 bg-[#0A1D35] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] hover:bg-[#1C3352] transition-colors">
+                              <Video size={9} /> Meet
+                            </a>
+                          )}
+                          <button onClick={e => deleteRdv(r.id, e)}
+                            className="flex items-center gap-0.5 bg-[#F7DDD8] text-[#9B2C1F] text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] hover:bg-[#f0ccc5] transition-colors">
+                            <Trash2 size={9} /> Annuler
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

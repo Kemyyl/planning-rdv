@@ -33,7 +33,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
   return (
-    <div className="min-h-screen bg-[#F7F2EB]">
+    <div className="min-h-screen bg-[#F7F2EB] flex flex-col">
       <header className="bg-white border-b border-[#E7DCCD] px-6 py-3.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <footer className="mt-0 border-t border-[#E7DCCD] py-6 bg-white">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-[#56627A]">
           <span>{t('footer.copyright')}</span>

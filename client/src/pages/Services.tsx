@@ -77,20 +77,7 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="py-14 bg-white border-t border-[#E7DCCD]">
-        <div className="max-w-xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-3">{t('services.decouverteTitre')}</h2>
-          <p className="text-[#56627A] text-sm leading-relaxed mb-8">
-            {t('services.decouverteDesc')}
-          </p>
-          <Link
-            to="/reservation"
-            className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-8 py-3.5 rounded-[14px] hover:bg-[#1C3352] transition-colors"
-          >
-            {t('services.decouverteCta')}
-          </Link>
-        </div>
-      </section>
+
     </PublicLayout>
   );
 }

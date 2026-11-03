@@ -33,10 +33,6 @@ export default function Accueil() {
       <section className="bg-[#F7F2EB] pt-14 pb-16">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-12 items-center">
           <div className="flex-1">
-            <div className="inline-flex items-center gap-2 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B4A]" />
-              {t('accueil.badge')}
-            </div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#0A1D35] leading-tight mb-5">
               {t('accueil.titre1')}<br />
               {t('accueil.titre2')}

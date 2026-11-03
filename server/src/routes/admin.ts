@@ -143,6 +143,36 @@ adminRouter.post('/rdv', async (req, res) => {
   res.status(201).json(data);
 });
 
+// DELETE /api/admin/rdv/:id — annule un RDV (soft delete)
+adminRouter.delete('/rdv/:id', async (req, res) => {
+  const { error } = await supabase.from('rendez_vous').update({ statut: 'annule' }).eq('id', req.params.id);
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json({ ok: true });
+});
+
+// POST /api/admin/clients — créer un client manuellement
+adminRouter.post('/clients', async (req, res) => {
+  const parsed = z.object({
+    prenom: z.string().min(1),
+    nom: z.string().min(1),
+    email: z.string().email(),
+    telephone: z.string().optional(),
+    mot_de_passe: z.string().min(8),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { prenom, nom, email, telephone, mot_de_passe } = parsed.data;
+
+  const { data: existing } = await supabase.from('clients').select('id').eq('email', email).single();
+  if (existing) { res.status(409).json({ error: 'Un compte existe déjà avec cet e-mail.' }); return; }
+
+  const hash = await bcrypt.hash(mot_de_passe, 12);
+  const { data, error } = await supabase.from('clients')
+    .insert({ prenom, nom, email, telephone, mot_de_passe: hash, compte_actif: true })
+    .select('id,prenom,nom,email,telephone,compte_actif,created_at').single();
+  if (error || !data) { res.status(500).json({ error: error?.message || 'Erreur' }); return; }
+  res.status(201).json(data);
+});
+
 // GET /api/admin/clients
 adminRouter.get('/clients', async (req, res) => {
   const withStats = req.query.stats === '1';

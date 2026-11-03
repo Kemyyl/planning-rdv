@@ -88,9 +88,9 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                 <p className="text-xs text-[#0A1D35] leading-relaxed">{rdv.commentaire}</p>
               </div>
             )}
-            {(rdv as typeof rdv & { lien_meet?: string }).lien_meet && (
+            {rdv.lien_meet && (
               <a
-                href={(rdv as typeof rdv & { lien_meet?: string }).lien_meet}
+                href={rdv.lien_meet}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 inline-flex items-center gap-2 bg-[#0A1D35] text-white text-xs font-bold px-4 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors"

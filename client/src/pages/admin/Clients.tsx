@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
+import NouveauClientPanel from '../../components/NouveauClientPanel';
 import type { ClientAccount } from '@synego/shared';
 
 interface ClientWithStats extends ClientAccount {
@@ -33,6 +34,7 @@ export default function AdminClients() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('tous');
   const [editingObjectif, setEditingObjectif] = useState<{ id: string; val: string } | null>(null);
+  const [showNouveauClient, setShowNouveauClient] = useState(false);
   const headers = { Authorization: `Bearer ${token}` };
 
   async function saveObjectif(clientId: string, val: string) {
@@ -94,7 +96,8 @@ export default function AdminClients() {
               className="border border-[#E7DCCD] rounded-xl pl-8 pr-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6] transition w-56" />
           </div>
         </div>
-        <button className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-[12px] hover:bg-[#1C3352] transition-colors">
+        <button onClick={() => setShowNouveauClient(true)}
+          className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-[12px] hover:bg-[#1C3352] transition-colors">
           <Plus size={14} /> {t('clients.nouveau')}
         </button>
       </div>
@@ -180,6 +183,16 @@ export default function AdminClients() {
           </tbody>
         </table>
       </div>
+      {showNouveauClient && (
+        <NouveauClientPanel
+          onClose={() => setShowNouveauClient(false)}
+          onCreated={() => {
+            setShowNouveauClient(false);
+            fetch('/api/admin/clients?stats=1', { headers })
+              .then(r => r.json()).then(data => setClients(Array.isArray(data) ? data : []));
+          }}
+        />
+      )}
     </AdminLayout>
   );
 }
