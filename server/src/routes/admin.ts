@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
 import { getGoogleOAuthUrl, exchangeGoogleCode } from '../lib/google-meet';
-import { sendInviteEmail } from '../lib/email';
+import { sendInviteEmail, sendConfirmationEmail } from '../lib/email';
 
 export const adminRouter = Router();
 
@@ -152,6 +152,18 @@ adminRouter.post('/rdv', async (req, res) => {
     .select('id,debut,fin,statut,commentaire,titre,lien_meet,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)')
     .single();
   if (error) { res.status(500).json({ error: error.message }); return; }
+
+  // Send confirmation email to client
+  const d = data as unknown as { client?: { prenom: string; email: string } | { prenom: string; email: string }[] };
+  const clientInfo = Array.isArray(d.client) ? d.client[0] : d.client;
+  if (clientInfo?.email) {
+    sendConfirmationEmail(clientInfo.email, clientInfo.prenom, {
+      debut: insert.debut as string,
+      fin: insert.fin as string | undefined,
+      titre: insert.titre as string | undefined,
+    }).catch(() => {});
+  }
+
   res.status(201).json(data);
 });
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { useDateLocale } from '../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { CheckCircle, Calendar, Clock, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
@@ -10,6 +10,7 @@ import type { RendezVous } from '@synego/shared';
 export default function Confirmation() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
+  const { timeFormat } = useTimeFormat();
   const { id } = useParams<{ id: string }>();
   const [rdv, setRdv] = useState<RendezVous | null>(null);
   const [error, setError] = useState(false);
@@ -53,7 +54,7 @@ export default function Confirmation() {
             <div className="flex items-center gap-3 text-sm">
               <Clock size={16} className="text-[#56627A] shrink-0" />
               <span className="text-[#0A1D35] font-semibold capitalize">
-                {format(new Date(rdv.debut), `EEEE d MMMM yyyy '${t('common.at')}' HH:mm`, { locale: dateLocale })}
+                {format(new Date(rdv.debut), `EEEE d MMMM yyyy '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })}
               </span>
             </div>
             {rdv.prestation && (

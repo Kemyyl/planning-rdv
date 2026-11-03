@@ -5,6 +5,7 @@ import { fr } from 'date-fns/locale';
 interface RdvInfo {
   debut: string;
   fin?: string;
+  titre?: string;
   prestation?: { nom: string };
   lien_meet?: string;
   jeton_annulation?: string;
@@ -32,7 +33,7 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
   await makeTransport().sendMail({
     from: process.env.EMAIL_FROM || 'noreply@synego.fr',
     to,
-    subject: `Confirmation – ${rdv.prestation?.nom || 'Séance'}`,
+    subject: `Confirmation – ${rdv.prestation?.nom || rdv.titre || 'Séance'}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
       <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
         <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
@@ -41,7 +42,7 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Votre rendez-vous est confirmé ✓</h2>
         <p>Bonjour <strong>${prenom}</strong>,</p>
-        <p>Votre séance <strong>${rdv.prestation?.nom}</strong> est confirmée :</p>
+        <p>Votre séance <strong>${rdv.prestation?.nom || rdv.titre || 'Séance'}</strong> est confirmée :</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:20px 0">
           <p style="margin:0;font-size:18px;font-weight:bold">${dateStr}</p>
         </div>

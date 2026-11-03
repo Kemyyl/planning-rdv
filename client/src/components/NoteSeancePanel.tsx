@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { useDateLocale } from '../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { X, Send, Pencil, Trash2, Check, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,7 @@ interface Props {
 export default function NoteSeancePanel({ rdv, onClose }: Props) {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
+  const { timeFormat } = useTimeFormat();
   const { token } = useAuth();
   const [notes, setNotes] = useState<NoteSeance[]>([]);
   const [contenu, setContenu] = useState('');
@@ -80,7 +81,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
               {rdv.client ? `${rdv.client.prenom} ${rdv.client.nom}` : 'Client'}
             </h3>
             <p className="text-xs text-[#56627A] capitalize mt-0.5">
-              {format(new Date(rdv.debut), `EEEE d MMMM yyyy '${t('common.at')}' HH:mm`, { locale: dateLocale })} · {rdv.prestation?.nom}
+              {format(new Date(rdv.debut), `EEEE d MMMM yyyy '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })} · {rdv.prestation?.nom || rdv.titre}
             </p>
             {rdv.commentaire && (
               <div className="mt-3 bg-[#F7F2EB] border border-[#E7DCCD] rounded-[10px] px-4 py-2.5">
@@ -124,7 +125,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                 <>
                   <p className="text-sm text-[#0A1D35] leading-relaxed whitespace-pre-wrap">{n.contenu}</p>
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs text-[#56627A]">{format(new Date(n.created_at!), `d MMM yyyy '${t('common.at')}' HH:mm`, { locale: dateLocale })}</span>
+                    <span className="text-xs text-[#56627A]">{format(new Date(n.created_at!), `d MMM yyyy '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })}</span>
                     <div className="flex gap-2">
                       <button onClick={() => { setEditId(n.id); setEditContenu(n.contenu); }} className="text-[#56627A] hover:text-[#0A1D35]"><Pencil size={13} /></button>
                       <button onClick={() => supprimer(n.id)} className="text-[#9B2C1F] hover:opacity-70"><Trash2 size={13} /></button>

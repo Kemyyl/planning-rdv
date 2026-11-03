@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { format, isPast } from 'date-fns';
-import { useDateLocale } from '../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { Video, Calendar, AlertCircle, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +27,7 @@ function DateBox({ date }: { date: Date }) {
 export default function MesRdv() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
+  const { timeFormat } = useTimeFormat();
   const [params] = useSearchParams();
   const jeton = params.get('jeton');
   const { token: clientToken, prenom, nom, clientId } = useClientAuth();
@@ -103,7 +104,7 @@ export default function MesRdv() {
               <div>
                 <div className="font-bold text-[#0A1D35]">{rdvJeton.prestation?.nom}</div>
                 <div className="text-sm text-[#56627A]">
-                  {format(new Date(rdvJeton.debut), 'HH:mm')} – {rdvJeton.fin ? format(new Date(rdvJeton.fin), 'HH:mm') : ''}
+                  {format(new Date(rdvJeton.debut), timeFormat)} – {rdvJeton.fin ? format(new Date(rdvJeton.fin), timeFormat) : ''}
                 </div>
               </div>
               <span className={`ml-auto text-xs font-semibold px-2.5 py-1 rounded-full ${rdvJeton.statut === 'confirme' ? 'bg-[#DCEFE4] text-[#1E6B4A]' : 'bg-[#F7DDD8] text-[#9B2C1F]'}`}>
@@ -174,8 +175,8 @@ export default function MesRdv() {
                         <div className="flex items-center gap-4 text-sm text-[#56627A] mb-2">
                           <span className="flex items-center gap-1">
                             <span className="text-[#56627A]">⏰</span>
-                            {format(debut, 'HH:mm')}
-                            {fin ? ` – ${format(fin, 'HH:mm')}` : ''}
+                            {format(debut, timeFormat)}
+                            {fin ? ` – ${format(fin, timeFormat)}` : ''}
                           </span>
                           <span className="flex items-center gap-1">
                             <Video size={13} />
@@ -227,7 +228,7 @@ export default function MesRdv() {
                         <span className="text-[#56627A] w-28 shrink-0 capitalize">
                           {format(new Date(r.debut), 'd MMM yyyy', { locale: dateLocale })}
                         </span>
-                        <span className="text-[#56627A] w-16 shrink-0">{format(new Date(r.debut), 'HH:mm')}</span>
+                        <span className="text-[#56627A] w-16 shrink-0">{format(new Date(r.debut), timeFormat)}</span>
                         <span className="flex-1 font-medium text-[#0A1D35]">{r.prestation?.nom} — {t('mesRdv.seanceNo')}{n}</span>
                         <span className="bg-[#F7F2EB] text-[#56627A] text-xs font-semibold px-2.5 py-1 rounded-full">{t('mesRdv.effectuee')}</span>
                         <button onClick={() => downloadPdf(r.id)}

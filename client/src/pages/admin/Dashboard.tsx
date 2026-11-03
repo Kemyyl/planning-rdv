@@ -1,7 +1,7 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
-import { useDateLocale } from '../../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../../hooks/useDateLocale';
 import { Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -45,6 +45,7 @@ function StatutBadge({ statut }: { statut: string }) {
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const dateLocale = useDateLocale();
+  const { timeFormat, atWord } = useTimeFormat();
   const { token } = useAuth();
   const navigate = useNavigate();
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
@@ -87,7 +88,7 @@ export default function AdminDashboard() {
 
   const prochaineSeance = rdvs[0];
   const prochaineHeure = prochaineSeance
-    ? format(new Date(prochaineSeance.debut), 'HH:mm')
+    ? format(new Date(prochaineSeance.debut), timeFormat)
     : '—';
 
   const STATS = [
@@ -163,7 +164,7 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-3.5 text-[#56627A] capitalize">
-                      {format(new Date(r.debut), "EEE d MMM 'à' HH:mm", { locale: dateLocale })}
+                      {format(new Date(r.debut), `EEE d MMM '${atWord}' ${timeFormat}`, { locale: dateLocale })}
                     </td>
                     <td className="px-6 py-3.5">
                       <div className="text-[#56627A]">{r.titre || r.prestation?.nom || '—'}</div>

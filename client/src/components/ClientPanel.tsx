@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { useDateLocale } from '../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { X, Save, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,6 +31,7 @@ const STATUT_LABEL: Record<string, string> = {
 export default function ClientPanel({ client, readOnly = false, onClose, onUpdated }: Props) {
   const { token } = useAuth();
   const dateLocale = useDateLocale();
+  const { timeFormat } = useTimeFormat();
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
 
   const [prenom, setPrenom] = useState(client.prenom);
@@ -131,7 +132,7 @@ export default function ClientPanel({ client, readOnly = false, onClose, onUpdat
                   <div key={r.id} className="flex items-center justify-between bg-[#F7F2EB] rounded-[12px] px-4 py-2.5">
                     <div>
                       <div className="text-xs font-semibold text-[#0A1D35] capitalize">
-                        {format(new Date(r.debut), 'd MMM yyyy · HH:mm', { locale: dateLocale })}
+                        {format(new Date(r.debut), `d MMM yyyy · ${timeFormat}`, { locale: dateLocale })}
                       </div>
                       <div className="text-xs text-[#56627A]">{r.prestation?.nom || '—'}</div>
                     </div>

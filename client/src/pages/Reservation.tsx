@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format, addDays, startOfDay, isBefore } from 'date-fns';
-import { useDateLocale } from '../hooks/useDateLocale';
+import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { Check, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import type { Prestation, Creneau } from '@synego/shared';
 export default function Reservation() {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateLocale();
+  const { timeFormat } = useTimeFormat();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token: clientToken, prenom: authPrenom, nom: authNom } = useClientAuth();
@@ -186,7 +187,7 @@ export default function Reservation() {
                             onClick={() => setCreneau(s.debut)}
                             className={`h-8 rounded-lg text-xs font-semibold transition-all ${creneau === s.debut ? 'bg-[#0A1D35] text-white' : 'bg-[#D0E7F5] text-[#0A1D35] hover:bg-[#6CAED6] hover:text-white'}`}
                           >
-                            {format(new Date(s.debut), 'HH:mm')}
+                            {format(new Date(s.debut), timeFormat)}
                           </button>
                         ))}
                       </div>
@@ -197,7 +198,7 @@ export default function Reservation() {
             </div>
             {creneau && (
               <div className="mt-4 p-4 bg-[#DCEFE4] rounded-[14px] text-sm font-medium text-[#1E6B4A]">
-                ✓ {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' HH:mm`, { locale: dateLocale })}
+                ✓ {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })}
               </div>
             )}
             <div className="flex gap-3 mt-6">
@@ -265,7 +266,7 @@ export default function Reservation() {
                   <div className="border-t border-[#E7DCCD] pt-3">
                     <span className="text-[#56627A]">{t('reservation.date')}</span>
                     <p className="font-semibold text-[#0A1D35] capitalize">
-                      {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' HH:mm`, { locale: dateLocale })}
+                      {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })}
                     </p>
                   </div>
                 </div>
@@ -349,7 +350,7 @@ export default function Reservation() {
                   <div className="border-t border-[#E7DCCD] pt-3">
                     <span className="text-[#56627A]">{t('reservation.date')}</span>
                     <p className="font-semibold text-[#0A1D35] capitalize">
-                      {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' HH:mm`, { locale: dateLocale })}
+                      {format(new Date(creneau), `EEEE d MMMM '${t('common.at')}' ${timeFormat}`, { locale: dateLocale })}
                     </p>
                   </div>
                 </div>
