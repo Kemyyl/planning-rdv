@@ -248,7 +248,7 @@ adminRouter.patch('/clients/:id', async (req, res) => {
 
 // PATCH /api/admin/prestations/:id
 adminRouter.patch('/prestations/:id', async (req, res) => {
-  const allowed = ['nom', 'description', 'duree', 'prix', 'couleur', 'actif', 'ordre'];
+  const allowed = ['nom', 'nom_en', 'description', 'description_en', 'duree', 'prix', 'couleur', 'actif', 'ordre'];
   const update: Record<string, unknown> = {};
   for (const k of allowed) if (req.body[k] !== undefined) update[k] = req.body[k];
   const { data, error } = await supabase.from('prestations').update(update).eq('id', req.params.id).select().single();

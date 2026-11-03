@@ -14,7 +14,9 @@ export interface Client {
 export interface Prestation {
   id: string;
   nom: string;
+  nom_en?: string;
   description?: string;
+  description_en?: string;
   duree: number;
   prix?: number;
   couleur: string;

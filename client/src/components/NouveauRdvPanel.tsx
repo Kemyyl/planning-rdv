@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { X, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import type { Client, Prestation } from '@synego/shared';
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [prestations, setPrestations] = useState<Prestation[]>([]);
@@ -43,7 +45,7 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
 
   async function creer() {
     if (!selectedClient || !prestationId || !date || !heure) {
-      toast.error('Remplissez tous les champs obligatoires');
+      toast.error(t('nouveauRdvPanel.champsObligatoires'));
       return;
     }
     setSaving(true);
@@ -55,7 +57,7 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Rendez-vous ajouté au planning');
+      toast.success(t('nouveauRdvPanel.ajouter'));
       onCreated();
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Erreur'); }
     finally { setSaving(false); }
@@ -65,14 +67,14 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-end" onClick={onClose}>
       <div className="bg-white w-full max-w-sm h-full flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#E7DCCD]">
-          <h2 className="font-bold text-[#0A1D35] text-base">Nouveau rendez-vous</h2>
+          <h2 className="font-bold text-[#0A1D35] text-base">{t('nouveauRdvPanel.titre')}</h2>
           <button onClick={onClose} className="text-[#56627A] hover:text-[#0A1D35]"><X size={18} /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* Client */}
           <div>
-            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">Client</label>
+            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">{t('nouveauRdvPanel.client')}</label>
             {selectedClient ? (
               <div className="flex items-center justify-between border border-[#E7DCCD] rounded-xl px-4 py-3 bg-[#F7F2EB]">
                 <div>
@@ -88,13 +90,13 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
                   value={search}
                   onChange={e => { setSearch(e.target.value); setShowDropdown(true); }}
                   onFocus={() => setShowDropdown(true)}
-                  placeholder="Rechercher un client…"
+                  placeholder={t('nouveauRdvPanel.rechercherClient')}
                   className="w-full border border-[#E7DCCD] rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]"
                 />
                 {showDropdown && search.length > 0 && (
                   <div className="absolute top-full left-0 right-0 bg-white border border-[#E7DCCD] rounded-xl shadow-lg mt-1 z-10 overflow-hidden">
                     {filtered.length === 0 ? (
-                      <div className="px-4 py-3 text-sm text-[#56627A]">Aucun client trouvé</div>
+                      <div className="px-4 py-3 text-sm text-[#56627A]">{t('nouveauRdvPanel.aucunClient')}</div>
                     ) : filtered.map(c => (
                       <button key={c.id} onClick={() => { setSelectedClient(c); setShowDropdown(false); setSearch(''); }}
                         className="w-full text-left px-4 py-2.5 hover:bg-[#F7F2EB] transition-colors">
@@ -110,7 +112,7 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
 
           {/* Prestation */}
           <div>
-            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">Prestation</label>
+            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">{t('nouveauRdvPanel.prestation')}</label>
             <select value={prestationId} onChange={e => setPrestationId(e.target.value)}
               className="w-full border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] bg-white">
               {prestations.map(p => (
@@ -122,12 +124,12 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
           {/* Date & Heure */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">Date</label>
+              <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">{t('nouveauRdvPanel.date')}</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)}
                 className="w-full border border-[#E7DCCD] rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">Heure</label>
+              <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">{t('nouveauRdvPanel.heure')}</label>
               <input type="time" value={heure} onChange={e => setHeure(e.target.value)}
                 className="w-full border border-[#E7DCCD] rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
             </div>
@@ -143,9 +145,11 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
 
           {/* Note interne */}
           <div>
-            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">Note interne <span className="font-normal text-[#A8B8C8]">(facultatif)</span></label>
+            <label className="block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-2">
+              {t('nouveauRdvPanel.note')} <span className="font-normal text-[#A8B8C8]">({t('nouveauRdvPanel.facultatif')})</span>
+            </label>
             <textarea value={note} onChange={e => setNote(e.target.value)}
-              placeholder="Rendez-vous pris par téléphone…"
+              placeholder={t('nouveauRdvPanel.notePlaceholder')}
               rows={3}
               className="w-full border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] resize-none" />
           </div>
@@ -153,11 +157,11 @@ export default function NouveauRdvPanel({ onClose, onCreated }: Props) {
 
         <div className="p-6 border-t border-[#E7DCCD] flex gap-3">
           <button onClick={onClose} className="flex-1 border border-[#E7DCCD] text-[#56627A] font-semibold py-3 rounded-xl text-sm hover:bg-[#F7F2EB] transition-colors">
-            Annuler
+            {t('nouveauRdvPanel.annuler')}
           </button>
           <button onClick={creer} disabled={saving || !selectedClient || !prestationId || !date || !heure}
             className="flex-1 bg-[#0A1D35] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
-            {saving ? 'Ajout…' : 'Ajouter au planning'}
+            {saving ? t('nouveauRdvPanel.ajout') : t('nouveauRdvPanel.ajouter')}
           </button>
         </div>
       </div>

@@ -3,10 +3,12 @@ import { useParams, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { CheckCircle, Calendar, Clock, Mail } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import type { RendezVous } from '@synego/shared';
 
 export default function Confirmation() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [rdv, setRdv] = useState<RendezVous | null>(null);
   const [error, setError] = useState(false);
@@ -22,15 +24,15 @@ export default function Confirmation() {
   if (error) return (
     <PublicLayout>
       <div className="max-w-xl mx-auto px-6 py-20 text-center">
-        <p className="text-[#56627A]">Rendez-vous introuvable.</p>
-        <Link to="/" className="text-[#0A1D35] font-bold mt-4 inline-block">Retour à l'accueil</Link>
+        <p className="text-[#56627A]">{t('confirmation.introuvable')}</p>
+        <Link to="/" className="text-[#0A1D35] font-bold mt-4 inline-block">{t('confirmation.retourAccueil')}</Link>
       </div>
     </PublicLayout>
   );
 
   if (!rdv) return (
     <PublicLayout>
-      <div className="max-w-xl mx-auto px-6 py-20 text-center text-[#56627A]">Chargement…</div>
+      <div className="max-w-xl mx-auto px-6 py-20 text-center text-[#56627A]">{t('confirmation.chargement')}</div>
     </PublicLayout>
   );
 
@@ -43,8 +45,8 @@ export default function Confirmation() {
           <div className="w-16 h-16 bg-[#DCEFE4] rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={32} className="text-[#1E6B4A]" />
           </div>
-          <h1 className="text-2xl font-extrabold text-[#0A1D35] mb-2">Rendez-vous confirmé !</h1>
-          <p className="text-[#56627A] mb-8">Un e-mail de confirmation vous a été envoyé.</p>
+          <h1 className="text-2xl font-extrabold text-[#0A1D35] mb-2">{t('confirmation.titre')}</h1>
+          <p className="text-[#56627A] mb-8">{t('confirmation.email')}</p>
 
           <div className="bg-[#F7F2EB] rounded-[14px] p-5 text-left space-y-3 mb-8">
             <div className="flex items-center gap-3 text-sm">
@@ -75,13 +77,13 @@ export default function Confirmation() {
               className="flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-bold py-3 rounded-[14px] hover:bg-[#1C3352] transition-colors"
             >
               <Calendar size={16} />
-              Ajouter à Google Agenda
+              {t('confirmation.ajouterCalendrier')}
             </a>
             <Link
               to={`/mes-rdv?jeton=${rdv.jeton_annulation}`}
               className="flex items-center justify-center gap-2 border border-[#E7DCCD] text-[#56627A] font-semibold py-3 rounded-[14px] hover:border-[#0A1D35] hover:text-[#0A1D35] transition-colors text-sm"
             >
-              Voir ou modifier mon rendez-vous
+              {t('confirmation.voirRdv')}
             </Link>
           </div>
         </div>

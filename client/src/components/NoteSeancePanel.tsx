@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { X, Send, Pencil, Trash2, Check, Video } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import type { RendezVous, NoteSeance } from '@synego/shared';
 
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export default function NoteSeancePanel({ rdv, onClose }: Props) {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [notes, setNotes] = useState<NoteSeance[]>([]);
   const [contenu, setContenu] = useState('');
@@ -40,7 +42,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
       if (!res.ok) throw new Error(data.error);
       setNotes(prev => [data, ...prev]);
       setContenu('');
-      toast.success('Résumé enregistré');
+      toast.success(t('noteSeance.enregistrement'));
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Erreur'); }
     finally { setSaving(false); }
   }
@@ -60,7 +62,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
   }
 
   async function supprimer(id: string) {
-    if (!confirm('Supprimer ce résumé ?')) return;
+    if (!confirm(t('noteSeance.supprimer'))) return;
     await fetch(`/api/admin/notes/${id}`, { method: 'DELETE', headers });
     setNotes(prev => prev.filter(n => n.id !== id));
     toast.success('Supprimé');
@@ -72,7 +74,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-[#E7DCCD]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#56627A] mb-1">Résumé de séance</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#56627A] mb-1">{t('noteSeance.titre')}</p>
             <h3 className="font-bold text-[#0A1D35]">
               {rdv.client ? `${rdv.client.prenom} ${rdv.client.nom}` : 'Client'}
             </h3>
@@ -86,7 +88,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                 rel="noopener noreferrer"
                 className="mt-3 inline-flex items-center gap-2 bg-[#0A1D35] text-white text-xs font-bold px-4 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors"
               >
-                <Video size={13} /> Rejoindre le Meet
+                <Video size={13} /> {t('noteSeance.rejoindre')}
               </a>
             )}
           </div>
@@ -96,7 +98,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
         {/* Notes existantes */}
         <div className="flex-1 overflow-y-auto p-6 space-y-3">
           {notes.length === 0 && (
-            <p className="text-sm text-[#56627A] text-center py-4">Aucun résumé pour cette séance.</p>
+            <p className="text-sm text-[#56627A] text-center py-4">{t('noteSeance.aucunResume')}</p>
           )}
           {notes.map(n => (
             <div key={n.id} className="bg-[#F7F2EB] rounded-[14px] p-4">
@@ -106,9 +108,9 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                     className="w-full border border-[#E7DCCD] rounded-[10px] p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] resize-none bg-white" />
                   <div className="flex gap-2">
                     <button onClick={() => modifier(n.id)} className="flex items-center gap-1 bg-[#1E6B4A] text-white text-xs font-bold px-3 py-1.5 rounded-[8px]">
-                      <Check size={12} />Enregistrer
+                      <Check size={12} />{t('noteSeance.enregistrer')}
                     </button>
-                    <button onClick={() => setEditId(null)} className="text-xs text-[#56627A] px-3 py-1.5 border border-[#E7DCCD] rounded-[8px]">Annuler</button>
+                    <button onClick={() => setEditId(null)} className="text-xs text-[#56627A] px-3 py-1.5 border border-[#E7DCCD] rounded-[8px]">{t('prestations.annuler')}</button>
                   </div>
                 </div>
               ) : (
@@ -132,14 +134,14 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
           <textarea
             value={contenu}
             onChange={e => setContenu(e.target.value)}
-            placeholder="Rédigez le résumé de cette séance…"
+            placeholder={t('noteSeance.placeholder')}
             rows={3}
             className="w-full border border-[#E7DCCD] rounded-[12px] p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] resize-none bg-white mb-3"
           />
           <button onClick={ajouter} disabled={!contenu.trim() || saving}
             className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
             <Send size={14} />
-            {saving ? 'Enregistrement…' : 'Enregistrer le résumé'}
+            {saving ? t('noteSeance.enregistrement') : t('noteSeance.enregistrer')}
           </button>
         </div>
       </div>

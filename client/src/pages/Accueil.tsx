@@ -1,14 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Video, Zap, Shield, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
-
-const FEATURES = [
-  { icon: Calendar, title: 'Réservation en ligne', desc: 'Créneaux disponibles 24h/24' },
-  { icon: Video, title: 'Séance en visio', desc: 'Google Meet, lien généré auto.' },
-  { icon: Zap, title: 'Flexibilité totale', desc: 'Séances de 50 min, sur mesure' },
-  { icon: Shield, title: 'Confidentialité', desc: 'Données protégées RGPD' },
-];
 
 const TEMOIGNAGES = [
   { initiales: 'ML', nom: 'Marie L.', texte: "J'ai pu reprendre confiance en moi sans jugement. Le praticien est très à l'écoute." },
@@ -16,14 +10,22 @@ const TEMOIGNAGES = [
   { initiales: 'SC', nom: 'Sophie C.', texte: "Très professionnel. J'ai vu une vraie évolution en quelques séances. Je recommande vivement." },
 ];
 
-const FAQ = [
-  { q: 'Comment se déroule une séance en visio ?', r: 'Un lien Google Meet vous est envoyé automatiquement par email. Il vous suffit de cliquer pour rejoindre la séance à l\'heure prévue.' },
-  { q: 'Puis-je annuler ou reporter ?', r: 'Oui, vous pouvez annuler gratuitement jusqu\'à 24h avant votre rendez-vous depuis votre espace personnel ou via le lien reçu par email.' },
-  { q: 'Combien coûte une séance ?', r: 'Les tarifs varient selon le type de séance. Consultez la page Services pour les détails, ou contactez-nous directement.' },
-];
-
 export default function Accueil() {
+  const { t } = useTranslation();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const FEATURES = [
+    { icon: Calendar, title: t('accueil.feature1Titre'), desc: t('accueil.feature1Desc') },
+    { icon: Video, title: t('accueil.feature2Titre'), desc: t('accueil.feature2Desc') },
+    { icon: Zap, title: t('accueil.feature3Titre'), desc: t('accueil.feature3Desc') },
+    { icon: Shield, title: t('accueil.feature4Titre'), desc: t('accueil.feature4Desc') },
+  ];
+
+  const FAQ = [
+    { q: t('accueil.faq1Question'), r: t('accueil.faq1Reponse') },
+    { q: t('accueil.faq2Question'), r: t('accueil.faq2Reponse') },
+    { q: t('accueil.faq3Question'), r: t('accueil.faq3Reponse') },
+  ];
 
   return (
     <PublicLayout>
@@ -33,23 +35,23 @@ export default function Accueil() {
           <div className="flex-1">
             <div className="inline-flex items-center gap-2 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1E6B4A]" />
-              Première séance découverte offerte
+              {t('accueil.badge')}
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#0A1D35] leading-tight mb-5">
-              Retrouvez l'équilibre,<br />
-              où que vous soyez.
+              {t('accueil.titre1')}<br />
+              {t('accueil.titre2')}
             </h1>
             <p className="text-[#56627A] text-base mb-8 leading-relaxed max-w-md">
-              Un accompagnement thérapeutique bienveillant et certifié. Réservez votre séance en ligne en quelques secondes.
+              {t('accueil.description')}
             </p>
             <div className="flex gap-3 flex-wrap">
               <Link to="/reservation"
                 className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-6 py-3 rounded-[12px] hover:bg-[#1C3352] transition-colors">
-                Réserver une séance
+                {t('accueil.cta')}
               </Link>
               <a href="#services"
                 className="inline-flex items-center gap-2 border border-[#D9C9B4] text-[#0A1D35] font-semibold px-6 py-3 rounded-[12px] hover:bg-white transition-colors">
-                En savoir plus
+                {t('accueil.ctaSecondaire')}
               </a>
             </div>
           </div>
@@ -87,21 +89,21 @@ export default function Accueil() {
       {/* Témoignages */}
       <section className="py-16 bg-[#F7F2EB]">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-2xl font-extrabold text-[#0A1D35] text-center mb-10">Ce que disent nos clients</h2>
+          <h2 className="text-2xl font-extrabold text-[#0A1D35] text-center mb-10">{t('accueil.avisTitle')}</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {TEMOIGNAGES.map(t => (
-              <div key={t.nom} className="bg-white border border-[#E7DCCD] rounded-[22px] p-6">
+            {TEMOIGNAGES.map(item => (
+              <div key={item.nom} className="bg-white border border-[#E7DCCD] rounded-[22px] p-6">
                 <div className="flex gap-0.5 mb-4">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} size={13} className="fill-[#F6C90E] text-[#F6C90E]" />
                   ))}
                 </div>
-                <p className="text-[#0A1D35] text-sm leading-relaxed mb-5">"{t.texte}"</p>
+                <p className="text-[#0A1D35] text-sm leading-relaxed mb-5">"{item.texte}"</p>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#D0E7F5] flex items-center justify-center text-xs font-bold text-[#0A1D35]">
-                    {t.initiales}
+                    {item.initiales}
                   </div>
-                  <span className="text-xs font-bold text-[#56627A]">{t.nom}</span>
+                  <span className="text-xs font-bold text-[#56627A]">{item.nom}</span>
                 </div>
               </div>
             ))}
@@ -112,7 +114,7 @@ export default function Accueil() {
       {/* FAQ */}
       <section id="contact" className="py-16 bg-white border-t border-[#E7DCCD]">
         <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-2xl font-extrabold text-[#0A1D35] text-center mb-10">Questions fréquentes</h2>
+          <h2 className="text-2xl font-extrabold text-[#0A1D35] text-center mb-10">{t('accueil.faqTitle')}</h2>
           <div className="space-y-3">
             {FAQ.map((item, i) => (
               <div key={i} className="border border-[#E7DCCD] rounded-[14px] overflow-hidden">

@@ -1,11 +1,30 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 
+function LangToggle() {
+  const { i18n: i } = useTranslation();
+  const current = i.language === 'fr' ? 'fr' : 'en';
+  function toggle() {
+    const next = current === 'fr' ? 'en' : 'fr';
+    i18n.changeLanguage(next);
+    localStorage.setItem('lang', next);
+  }
+  return (
+    <button onClick={toggle}
+      className="px-2.5 py-1.5 rounded-xl border border-[#E7DCCD] bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A] text-xs font-bold tracking-wide">
+      {current === 'fr' ? 'EN' : 'FR'}
+    </button>
+  );
+}
+
 export function PublicLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const { token, prenom, nom, logout } = useClientAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const { dark, toggle } = useTheme();
@@ -23,19 +42,20 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
-            {[['/', 'Accueil'], ['/services', 'Services'], ['/#contact', 'Contact']].map(([href, label]) => (
+            {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/#contact', t('nav.contact')]] as [string, string][]).map(([href, label]) => (
               <Link key={href} to={href} className="text-sm text-[#56627A] hover:text-[#0A1D35] font-medium transition-colors">{label}</Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-3">
+            <LangToggle />
             <button onClick={toggle}
               className="p-2 rounded-xl border border-[#E7DCCD] bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
-              title={dark ? 'Mode clair' : 'Mode sombre'}>
+              title={dark ? t('nav.modeClair') : t('nav.modeSombre')}>
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <Link to="/reservation" className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#1C3352] transition-colors">
-              <Plus size={14} /> Nouveau RDV
+              <Plus size={14} /> {t('nav.nouveauRdv')}
             </Link>
             {token ? (
               <div className="relative">
@@ -51,11 +71,11 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   <div className="absolute right-0 top-full mt-2 bg-white border border-[#E7DCCD] rounded-[14px] shadow-lg w-44 py-1 z-50">
                     <Link to="/mes-rdv" onClick={() => setShowDropdown(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#0A1D35] hover:bg-[#F7F2EB]">
-                      <User size={14} /> Mon espace
+                      <User size={14} /> {t('nav.monEspace')}
                     </Link>
                     <button onClick={() => { logout(); setShowDropdown(false); }}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#9B2C1F] hover:bg-[#F7F2EB] w-full text-left">
-                      <LogOut size={14} /> Déconnexion
+                      <LogOut size={14} /> {t('nav.deconnexion')}
                     </button>
                   </div>
                 )}
@@ -63,7 +83,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             ) : (
               <Link to="/login"
                 className="flex items-center gap-1.5 text-sm text-[#56627A] hover:text-[#0A1D35] font-medium border border-[#E7DCCD] px-3 py-2 rounded-xl bg-white transition-colors">
-                <User size={14} /> Se connecter
+                <User size={14} /> {t('nav.seConnecter')}
               </Link>
             )}
           </div>
@@ -72,12 +92,12 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       <main>{children}</main>
       <footer className="mt-0 border-t border-[#E7DCCD] py-6 bg-white">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-xs text-[#56627A]">
-          <span>© 2026 Synégo — Accompagnement thérapeutique</span>
+          <span>{t('footer.copyright')}</span>
           <div className="flex gap-6">
-            {['Mentions légales', 'Confidentialité', 'Instagram', 'WhatsApp'].map(l => (
+            {([t('footer.mentionsLegales'), t('footer.confidentialite'), t('footer.instagram'), t('footer.whatsapp')] as string[]).map(l => (
               <a key={l} href="#" className="hover:text-[#0A1D35] transition-colors">{l}</a>
             ))}
-            <a href="/admin" className="hover:text-[#0A1D35]">Espace pro</a>
+            <a href="/admin" className="hover:text-[#0A1D35]">{t('footer.espacePro')}</a>
           </div>
         </div>
       </footer>
@@ -85,17 +105,18 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const NAV = [
-  { href: '/admin/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-  { href: '/admin/planning', label: 'Agenda', icon: Calendar },
-  { href: '/admin/clients', label: 'Clients', icon: Users },
-  { href: '/admin/agenda', label: 'Paramètres', icon: Settings },
-];
-
 export function AdminLayout({ children, title }: { children: React.ReactNode; title: string }) {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { nom, logout } = useAuth();
+
+  const NAV = [
+    { href: '/admin/dashboard', label: t('admin.tableauDeBord'), icon: LayoutDashboard },
+    { href: '/admin/planning', label: t('admin.agenda'), icon: Calendar },
+    { href: '/admin/clients', label: t('admin.clients'), icon: Users },
+    { href: '/admin/agenda', label: t('admin.parametres'), icon: Settings },
+  ];
 
   const initiales = nom
     ? nom.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
@@ -114,7 +135,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
             <img src="/logo.png" alt="Synégo" className="h-7 w-7 object-contain brightness-0 invert" />
             <div className="text-lg font-bold tracking-tight">Synégo</div>
           </div>
-          <div className="text-xs text-[#6CAED6] mt-0.5">Espace praticien</div>
+          <div className="text-xs text-[#6CAED6] mt-0.5">{t('admin.espacePraticien')}</div>
         </div>
 
         <nav className="flex-1 py-3">
@@ -143,7 +164,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
               <div className="text-xs font-semibold text-white truncate">{nom || 'Admin'}</div>
               <button onClick={handleLogout} className="flex items-center gap-1 text-xs text-[#56627A] hover:text-[#D9C9B4] transition-colors mt-0.5">
                 <LogOut size={11} />
-                Déconnexion
+                {t('nav.deconnexion')}
               </button>
             </div>
           </div>

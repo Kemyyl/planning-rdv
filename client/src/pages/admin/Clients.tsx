@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Search, Plus, Eye, Pencil, FileText, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ClientAccount } from '@synego/shared';
@@ -25,6 +26,7 @@ function Avatar({ name }: { name: string }) {
 }
 
 export default function AdminClients() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [search, setSearch] = useState('');
@@ -68,11 +70,11 @@ export default function AdminClients() {
   };
 
   return (
-    <AdminLayout title="Clients">
+    <AdminLayout title={t('clients.titre')}>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <div className="flex gap-1 bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl p-1">
-            {([['tous', 'Tous'], ['actif', 'Actif'], ['inactif', 'Inactif']] as [Filter, string][]).map(([f, label]) => (
+            {([['tous', t('clients.tous')], ['actif', t('clients.actif')], ['inactif', t('clients.inactif')]] as [Filter, string][]).map(([f, label]) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors flex items-center gap-1.5 ${
                   filter === f ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'
@@ -87,12 +89,12 @@ export default function AdminClients() {
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#56627A]" />
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher…"
+              placeholder={t('clients.rechercher')}
               className="border border-[#E7DCCD] rounded-xl pl-8 pr-4 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6CAED6] transition w-56" />
           </div>
         </div>
         <button className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-[12px] hover:bg-[#1C3352] transition-colors">
-          <Plus size={14} /> Nouveau client
+          <Plus size={14} /> {t('clients.nouveau')}
         </button>
       </div>
 
@@ -100,14 +102,14 @@ export default function AdminClients() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-[#F7F2EB] border-b border-[#E7DCCD]">
-              {['Nom', 'Email', 'Téléphone', 'Dernier RDV', 'Séances / Objectif', 'Notes', 'Actions'].map(h => (
+              {[t('clients.nom'), t('clients.email'), t('clients.telephone'), t('clients.dernierRdv'), t('clients.seancesObjectif'), t('clients.notes'), t('clients.actions')].map(h => (
                 <th key={h} className="text-left px-5 py-3 text-xs font-bold text-[#56627A] uppercase tracking-wide">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E7DCCD]">
             {filtered.length === 0 ? (
-              <tr><td colSpan={7} className="px-6 py-10 text-center text-[#56627A] text-sm">Aucun client trouvé.</td></tr>
+              <tr><td colSpan={7} className="px-6 py-10 text-center text-[#56627A] text-sm">{t('clients.aucunClient')}</td></tr>
             ) : filtered.map(c => {
               const fullName = `${c.prenom} ${c.nom}`;
               const isActif = c.compte_actif;
@@ -165,7 +167,7 @@ export default function AdminClients() {
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                         isActif ? 'bg-[#DCEFE4] text-[#1E6B4A]' : 'bg-[#F7DDD8] text-[#9B2C1F]'
                       }`}>
-                        {isActif ? 'Actif' : 'Inactif'}
+                        {isActif ? t('clients.actif') : t('clients.inactif')}
                       </span>
                       <button className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors"><Eye size={13} /></button>
                       <button className="p-1.5 hover:bg-[#E7DCCD] rounded-[6px] text-[#56627A] transition-colors"><Pencil size={13} /></button>

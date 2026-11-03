@@ -4,16 +4,19 @@ import { format, addDays, startOfDay, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Check, ChevronLeft, ChevronRight, Clock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
+import { localizePrestation } from '../lib/i18nUtils';
 import type { Prestation, Creneau } from '@synego/shared';
 
-const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-
 export default function Reservation() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token: clientToken, prenom: authPrenom, nom: authNom } = useClientAuth();
+
+  const JOURS = t('agendaParam.jours', { returnObjects: true }) as string[];
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [prestations, setPrestations] = useState<Prestation[]>([]);
@@ -70,6 +73,7 @@ export default function Reservation() {
   }, [prestationId, semaine]);
 
   const prestation = prestations.find(p => p.id === prestationId);
+  const prestationLocalized = prestation ? localizePrestation(prestation, i18n.language) : undefined;
 
   const jours = Array.from({ length: 7 }, (_, i) => addDays(addDays(startOfDay(new Date()), semaine * 7), i));
 
@@ -97,7 +101,7 @@ export default function Reservation() {
       <div className="max-w-4xl mx-auto px-6 py-10">
         {/* Étapes */}
         <div className="flex items-center gap-4 mb-10">
-          {(['Prestation', 'Créneau', clientToken ? 'Confirmation' : 'Coordonnées'] as const).map((label, i) => (
+          {([t('reservation.etape1'), t('reservation.etape2'), clientToken ? t('reservation.etape3') : t('reservation.titreCoordonnees')] as const).map((label, i) => (
             <div key={label} className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${step > i + 1 ? 'bg-[#1E6B4A] text-white' : step === i + 1 ? 'bg-[#0A1D35] text-white' : 'bg-[#E7DCCD] text-[#56627A]'}`}>
                 {step > i + 1 ? <Check size={14} /> : i + 1}
@@ -111,9 +115,9 @@ export default function Reservation() {
         {/* Étape 1 : Prestation */}
         {step === 1 && (
           <div>
-            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-6">Choisissez votre prestation</h2>
+            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-6">{t('reservation.titreEtape1')}</h2>
             <div className="grid md:grid-cols-3 gap-4 mb-8">
-              {prestations.map(p => (
+              {prestations.map(raw => { const p = localizePrestation(raw, i18n.language); return (
                 <button
                   key={p.id}
                   onClick={() => setPrestationId(p.id)}
@@ -123,18 +127,19 @@ export default function Reservation() {
                   <div className="font-bold text-[#0A1D35] mb-1">{p.nom}</div>
                   <div className="text-sm text-[#56627A] mb-3">{p.description}</div>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="flex items-center gap-1 text-[#56627A]"><Clock size={13} />{p.duree} min</span>
+                    <span className="flex items-center gap-1 text-[#56627A]"><Clock size={13} />{p.duree} {t('reservation.min')}</span>
                   </div>
-                  {prestationId === p.id && <div className="mt-3 flex items-center gap-1 text-xs font-bold text-[#1E6B4A]"><Check size={13} />Sélectionné</div>}
+                  {prestationId === p.id && <div className="mt-3 flex items-center gap-1 text-xs font-bold text-[#1E6B4A]"><Check size={13} />{t('reservation.selectionne')}</div>}
                 </button>
-              ))}
+              );})}
+
             </div>
             <button
               disabled={!prestationId}
               onClick={() => setStep(2)}
               className="bg-[#0A1D35] text-white font-bold px-8 py-3 rounded-[14px] disabled:opacity-40 hover:bg-[#1C3352] transition-colors"
             >
-              Continuer →
+              {t('reservation.continuer')} →
             </button>
           </div>
         )}
@@ -142,8 +147,8 @@ export default function Reservation() {
         {/* Étape 2 : Créneau */}
         {step === 2 && (
           <div>
-            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">Choisissez un créneau</h2>
-            <p className="text-[#56627A] mb-6 text-sm">{prestation?.nom} · {prestation?.duree} min</p>
+            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">{t('reservation.titreEtape2')}</h2>
+            <p className="text-[#56627A] mb-6 text-sm">{prestationLocalized?.nom} · {prestation?.duree} {t('reservation.min')}</p>
             <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[22px] p-6">
               <div className="flex items-center justify-between mb-4">
                 <button onClick={() => setSemaine(s => Math.max(0, s - 1))} className="p-2 rounded-lg hover:bg-[#F7F2EB] transition-colors" disabled={semaine === 0}>
@@ -196,14 +201,14 @@ export default function Reservation() {
             )}
             <div className="flex gap-3 mt-6">
               <button onClick={() => setStep(1)} className="flex items-center gap-1 text-[#56627A] hover:text-[#0A1D35] font-medium">
-                <ChevronLeft size={16} />Retour
+                <ChevronLeft size={16} />{t('reservation.retour')}
               </button>
               <button
                 disabled={!creneau}
                 onClick={() => setStep(3)}
                 className="bg-[#0A1D35] text-white font-bold px-8 py-3 rounded-[14px] disabled:opacity-40 hover:bg-[#1C3352] transition-colors"
               >
-                Continuer →
+                {t('reservation.continuer')} →
               </button>
             </div>
           </div>
@@ -212,8 +217,8 @@ export default function Reservation() {
         {/* Étape 3 : Confirmation (connecté) ou Coordonnées (non connecté) */}
         {step === 3 && clientToken && (
           <div>
-            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">Confirmer la réservation</h2>
-            <p className="text-[#56627A] text-sm mb-8">Vérifiez les informations avant de confirmer.</p>
+            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">{t('reservation.titreEtape3')}</h2>
+            <p className="text-[#56627A] text-sm mb-8">{t('reservation.connecteInfo')}</p>
             <div className="grid md:grid-cols-2 gap-8">
               {/* Compte connecté */}
               <div className="bg-white border border-[#E7DCCD] rounded-[22px] p-6">
@@ -231,14 +236,14 @@ export default function Reservation() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-[#0A1D35] mb-1.5">
-                    Motif de consultation <span className="text-[#9B2C1F]">*</span>
+                    {t('reservation.motif')} <span className="text-[#9B2C1F]">*</span>
                   </label>
                   <textarea
                     required
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     rows={3}
-                    placeholder="Décrivez brièvement le motif de votre consultation…"
+                    placeholder={t('reservation.motifPlaceholder')}
                     className="w-full border border-[#E7DCCD] rounded-[12px] px-4 py-3 text-sm bg-[#FFFDFA] focus:outline-none focus:ring-2 focus:ring-[#6CAED6] transition resize-none"
                   />
                 </div>
@@ -246,18 +251,18 @@ export default function Reservation() {
 
               {/* Récapitulatif */}
               <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[22px] p-6 h-fit">
-                <p className="text-xs font-bold tracking-widest uppercase text-[#56627A] mb-4">Récapitulatif</p>
+                <p className="text-xs font-bold tracking-widest uppercase text-[#56627A] mb-4">{t('reservation.recap')}</p>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#56627A]">Prestation</span>
-                    <span className="font-semibold text-[#0A1D35]">{prestation?.nom}</span>
+                    <span className="font-semibold text-[#0A1D35]">{prestationLocalized?.nom}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#56627A]">Durée</span>
-                    <span className="font-semibold text-[#0A1D35]">{prestation?.duree} min</span>
+                    <span className="text-[#56627A]">{t('reservation.duree')}</span>
+                    <span className="font-semibold text-[#0A1D35]">{prestation?.duree} {t('reservation.min')}</span>
                   </div>
                   <div className="border-t border-[#E7DCCD] pt-3">
-                    <span className="text-[#56627A]">Date</span>
+                    <span className="text-[#56627A]">{t('reservation.date')}</span>
                     <p className="font-semibold text-[#0A1D35] capitalize">
                       {format(new Date(creneau), "EEEE d MMMM 'à' HH:mm", { locale: fr })}
                     </p>
@@ -268,14 +273,14 @@ export default function Reservation() {
 
             <div className="flex gap-3 mt-8">
               <button onClick={() => setStep(2)} className="flex items-center gap-1 text-[#56627A] hover:text-[#0A1D35] font-medium">
-                <ChevronLeft size={16} />Retour
+                <ChevronLeft size={16} />{t('reservation.retour')}
               </button>
               <button
                 disabled={loading || !motif.trim()}
                 onClick={reserver}
                 className="bg-[#0A1D35] text-white font-bold px-8 py-3 rounded-[14px] disabled:opacity-40 hover:bg-[#1C3352] transition-colors"
               >
-                {loading ? 'Réservation…' : 'Confirmer la réservation'}
+                {loading ? t('reservation.enCours') : t('reservation.confirmer')}
               </button>
             </div>
           </div>
@@ -283,14 +288,14 @@ export default function Reservation() {
 
         {step === 3 && !clientToken && (
           <div>
-            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-6">Vos coordonnées</h2>
+            <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-6">{t('reservation.titreCoordonnees')}</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 {[
-                  { key: 'prenom', label: 'Prénom', type: 'text', required: true },
-                  { key: 'nom', label: 'Nom', type: 'text', required: true },
-                  { key: 'email', label: 'E-mail', type: 'email', required: true },
-                  { key: 'telephone', label: 'Téléphone', type: 'tel', required: false },
+                  { key: 'prenom', label: t('reservation.prenom'), type: 'text', required: true },
+                  { key: 'nom', label: t('reservation.nom'), type: 'text', required: true },
+                  { key: 'email', label: t('reservation.email'), type: 'email', required: true },
+                  { key: 'telephone', label: t('reservation.telephone'), type: 'tel', required: false },
                 ].map(f => (
                   <div key={f.key}>
                     <label className="block text-sm font-semibold text-[#0A1D35] mb-1">{f.label}{f.required && ' *'}</label>
@@ -304,14 +309,14 @@ export default function Reservation() {
                 ))}
                 <div>
                   <label className="block text-sm font-semibold text-[#0A1D35] mb-1.5">
-                    Motif de consultation <span className="text-[#9B2C1F]">*</span>
+                    {t('reservation.motif')} <span className="text-[#9B2C1F]">*</span>
                   </label>
                   <textarea
                     required
                     value={motif}
                     onChange={e => setMotif(e.target.value)}
                     rows={3}
-                    placeholder="Décrivez brièvement le motif de votre consultation…"
+                    placeholder={t('reservation.motifPlaceholder')}
                     className="w-full border border-[#E7DCCD] rounded-[12px] px-4 py-3 text-sm bg-[#FFFDFA] focus:outline-none focus:ring-2 focus:ring-[#6CAED6] transition resize-none"
                   />
                 </div>
@@ -323,25 +328,25 @@ export default function Reservation() {
                     className="mt-0.5 w-4 h-4 accent-[#0A1D35]"
                   />
                   <span className="text-xs text-[#56627A] leading-relaxed">
-                    J'accepte que mes données soient utilisées pour la gestion de mes rendez-vous conformément au RGPD.
+                    {t('reservation.rgpd')}
                   </span>
                 </label>
               </div>
 
               {/* Récapitulatif */}
               <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[22px] p-6 h-fit">
-                <p className="text-xs font-bold tracking-widest uppercase text-[#56627A] mb-4">Récapitulatif</p>
+                <p className="text-xs font-bold tracking-widest uppercase text-[#56627A] mb-4">{t('reservation.recap')}</p>
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-[#56627A]">Prestation</span>
-                    <span className="font-semibold text-[#0A1D35]">{prestation?.nom}</span>
+                    <span className="font-semibold text-[#0A1D35]">{prestationLocalized?.nom}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-[#56627A]">Durée</span>
-                    <span className="font-semibold text-[#0A1D35]">{prestation?.duree} min</span>
+                    <span className="text-[#56627A]">{t('reservation.duree')}</span>
+                    <span className="font-semibold text-[#0A1D35]">{prestation?.duree} {t('reservation.min')}</span>
                   </div>
                   <div className="border-t border-[#E7DCCD] pt-3">
-                    <span className="text-[#56627A]">Date</span>
+                    <span className="text-[#56627A]">{t('reservation.date')}</span>
                     <p className="font-semibold text-[#0A1D35] capitalize">
                       {format(new Date(creneau), "EEEE d MMMM 'à' HH:mm", { locale: fr })}
                     </p>
@@ -352,14 +357,14 @@ export default function Reservation() {
 
             <div className="flex gap-3 mt-8">
               <button onClick={() => setStep(2)} className="flex items-center gap-1 text-[#56627A] hover:text-[#0A1D35] font-medium">
-                <ChevronLeft size={16} />Retour
+                <ChevronLeft size={16} />{t('reservation.retour')}
               </button>
               <button
                 disabled={!form.nom || !form.prenom || !form.email || !motif.trim() || loading}
                 onClick={reserver}
                 className="bg-[#0A1D35] text-white font-bold px-8 py-3 rounded-[14px] disabled:opacity-40 hover:bg-[#1C3352] transition-colors"
               >
-                {loading ? 'Réservation…' : 'Confirmer la réservation'}
+                {loading ? t('reservation.enCours') : t('reservation.confirmer')}
               </button>
             </div>
           </div>

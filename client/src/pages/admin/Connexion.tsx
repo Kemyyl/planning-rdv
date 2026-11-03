@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Calendar, Video, Shield, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useClientAuth } from '../../contexts/ClientAuthContext';
 
 export default function Connexion() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { login: adminLogin } = useAuth();
   const { login: clientLogin } = useClientAuth();
@@ -49,7 +51,7 @@ export default function Connexion() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur');
         clientLogin(data.token, data.id, data.prenom || prenom, nom);
-        toast.success('Compte créé avec succès !');
+        toast.success(t('connexion.compteCreé'));
         navigate('/mes-rdv');
       }
     } catch (e: unknown) {
@@ -70,17 +72,17 @@ export default function Connexion() {
 
         <div className="flex-1 flex flex-col justify-center">
           <h2 className="text-3xl font-bold leading-snug mb-3">
-            Retrouvez l'équilibre,<br />où que vous soyez.
+            {t('connexion.titre1')}<br />{t('connexion.titre2')}
           </h2>
           <p className="text-sm text-[#8FA3B8] mb-10 leading-relaxed">
-            Réservez et suivez vos séances depuis votre espace personnel. Simple, sécurisé et bienveillant.
+            {t('connexion.desc')}
           </p>
           <ul className="space-y-4">
             {[
-              { icon: Calendar, text: 'Accédez à tous vos rendez-vous' },
-              { icon: Video, text: 'Rejoignez vos séances en visio' },
-              { icon: Star, text: 'Suivez votre progression' },
-              { icon: Shield, text: 'Données protégées RGPD' },
+              { icon: Calendar, text: t('connexion.bullet1') },
+              { icon: Video, text: t('connexion.bullet2') },
+              { icon: Star, text: t('connexion.bullet3') },
+              { icon: Shield, text: t('connexion.bullet4') },
             ].map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3 text-sm text-[#D9C9B4]">
                 <Icon size={16} className="text-[#6CAED6] shrink-0" />
@@ -90,7 +92,7 @@ export default function Connexion() {
           </ul>
         </div>
 
-        <p className="text-xs text-[#56627A] mt-8">© 2026 Synégo — Accompagnement thérapeutique</p>
+        <p className="text-xs text-[#56627A] mt-8">{t('footer.copyright')}</p>
       </div>
 
       {/* Right form */}
@@ -109,36 +111,36 @@ export default function Connexion() {
               onClick={() => setMode('login')}
               className={`flex-1 py-2 text-sm font-semibold rounded-[9px] transition-colors ${mode === 'login' ? 'bg-[#0A1D35] text-white' : 'text-[#56627A] hover:text-[#0A1D35]'}`}
             >
-              Se connecter
+              {t('connexion.ongletConnexion')}
             </button>
             <button
               type="button"
               onClick={() => setMode('register')}
               className={`flex-1 py-2 text-sm font-semibold rounded-[9px] transition-colors ${mode === 'register' ? 'bg-[#0A1D35] text-white' : 'text-[#56627A] hover:text-[#0A1D35]'}`}
             >
-              Créer un compte
+              {t('connexion.ongletCreer')}
             </button>
           </div>
 
           <h1 className="text-2xl font-bold text-[#0A1D35] mb-1">
-            {mode === 'login' ? 'Connexion' : 'Créer mon espace'}
+            {mode === 'login' ? t('connexion.sousTitreConnexion') : t('connexion.sousTitreCreer')}
           </h1>
           <p className="text-sm text-[#56627A] mb-6">
             {mode === 'login'
-              ? 'Accédez à votre espace personnel ou praticien.'
-              : 'Créez votre compte pour suivre vos séances.'}
+              ? t('connexion.desc')
+              : t('connexion.sousTitreCreer')}
           </p>
 
           <form onSubmit={submit} className="space-y-4">
             {mode === 'register' && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#0A1D35] mb-1.5">Prénom *</label>
+                  <label className="block text-xs font-semibold text-[#0A1D35] mb-1.5">{t('connexion.prenom')} *</label>
                   <input required value={prenom} onChange={e => setPrenom(e.target.value)}
                     className="w-full border border-[#D9C9B4] rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0A1D35] transition" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#0A1D35] mb-1.5">Nom *</label>
+                  <label className="block text-xs font-semibold text-[#0A1D35] mb-1.5">{t('connexion.nom')} *</label>
                   <input required value={nom} onChange={e => setNom(e.target.value)}
                     className="w-full border border-[#D9C9B4] rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0A1D35] transition" />
                 </div>
@@ -146,27 +148,27 @@ export default function Connexion() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">Adresse email *</label>
+              <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">{t('connexion.email')} *</label>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="votre@email.com"
+                placeholder={t('connexion.emailPlaceholder')}
                 className="w-full border border-[#D9C9B4] rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0A1D35] transition" />
             </div>
 
             {mode === 'register' && (
               <div>
-                <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">Téléphone</label>
+                <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">{t('connexion.telephone')}</label>
                 <input type="tel" value={telephone} onChange={e => setTelephone(e.target.value)}
                   className="w-full border border-[#D9C9B4] rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0A1D35] transition" />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">Mot de passe *</label>
+              <label className="block text-sm font-medium text-[#0A1D35] mb-1.5">{t('connexion.motDePasse')} *</label>
               <div className="relative">
                 <input type={show ? 'text' : 'password'} required value={mdp}
                   onChange={e => setMdp(e.target.value)}
                   minLength={mode === 'register' ? 8 : 1}
-                  placeholder={mode === 'register' ? 'Minimum 8 caractères' : ''}
+                  placeholder={mode === 'register' ? t('connexion.motDePasseMin') : ''}
                   className="w-full border border-[#D9C9B4] rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0A1D35] transition pr-10" />
                 <button type="button" onClick={() => setShow(s => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#56627A]">
@@ -177,12 +179,12 @@ export default function Connexion() {
 
             <button type="submit" disabled={loading}
               className="w-full bg-[#0A1D35] text-white font-bold py-3.5 rounded-xl hover:bg-[#1C3352] transition-colors disabled:opacity-50 mt-2">
-              {loading ? '…' : mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+              {loading ? '…' : mode === 'login' ? t('connexion.btnConnexion') : t('connexion.btnCreer')}
             </button>
           </form>
 
           <p className="text-center text-xs text-[#56627A] mt-6">
-            <Link to="/" className="hover:text-[#0A1D35] transition-colors">← Retour au site</Link>
+            <Link to="/" className="hover:text-[#0A1D35] transition-colors">← {t('connexion.retour')}</Link>
           </p>
         </div>
       </div>

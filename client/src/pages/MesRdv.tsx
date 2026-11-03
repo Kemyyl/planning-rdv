@@ -4,6 +4,7 @@ import { format, isPast } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Video, Calendar, AlertCircle, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import type { RendezVous } from '@synego/shared';
@@ -23,6 +24,7 @@ function DateBox({ date }: { date: Date }) {
 }
 
 export default function MesRdv() {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const jeton = params.get('jeton');
   const { token: clientToken, prenom, nom, clientId } = useClientAuth();
@@ -80,8 +82,8 @@ export default function MesRdv() {
         <div className="max-w-lg mx-auto px-6 py-20 text-center">
           <div className="bg-[#F6E7C8] border border-[#D9C9B4] rounded-[18px] p-8 flex flex-col items-center gap-4">
             <AlertCircle size={28} className="text-[#8A5A12]" />
-            <p className="font-semibold text-[#0A1D35]">Connectez-vous pour accéder à votre espace</p>
-            <p className="text-sm text-[#56627A]">Ou utilisez le lien reçu par e-mail pour accéder à un rendez-vous spécifique.</p>
+            <p className="font-semibold text-[#0A1D35]">{t('mesRdv.connexionRequise')}</p>
+            <p className="text-sm text-[#56627A]">{t('mesRdv.ouLienEmail')}</p>
           </div>
         </div>
       </PublicLayout>
@@ -103,12 +105,12 @@ export default function MesRdv() {
                 </div>
               </div>
               <span className={`ml-auto text-xs font-semibold px-2.5 py-1 rounded-full ${rdvJeton.statut === 'confirme' ? 'bg-[#DCEFE4] text-[#1E6B4A]' : 'bg-[#F7DDD8] text-[#9B2C1F]'}`}>
-                {rdvJeton.statut === 'confirme' ? 'Confirmé' : rdvJeton.statut}
+                {rdvJeton.statut === 'confirme' ? t('mesRdv.confirme') : rdvJeton.statut}
               </span>
             </div>
             {rdvJeton.statut === 'confirme' && !isPast(new Date(rdvJeton.debut)) && (
               <button onClick={() => annuler(rdvJeton)} className="text-sm border border-[#F7DDD8] text-[#9B2C1F] px-4 py-2 rounded-[10px] hover:bg-[#F7DDD8] transition-colors">
-                Annuler (gratuit avant 24h)
+                {t('mesRdv.annuler')}
               </button>
             )}
           </div>
@@ -139,20 +141,20 @@ export default function MesRdv() {
           <div className="flex-1 min-w-0">
             {/* Prochains RDV */}
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-extrabold text-[#0A1D35]">Prochains rendez-vous</h2>
+              <h2 className="text-xl font-extrabold text-[#0A1D35]">{t('mesRdv.aVenir')}</h2>
               {upcoming.length > 0 && (
                 <span className="bg-[#D0E7F5] text-[#0A1D35] text-xs font-bold px-3 py-1 rounded-full">
-                  {upcoming.length} à venir
+                  {upcoming.length} {t('mesRdv.aVenir')}
                 </span>
               )}
             </div>
 
-            {loading && <div className="text-[#56627A] text-sm py-8">Chargement…</div>}
+            {loading && <div className="text-[#56627A] text-sm py-8">{t('mesRdv.chargement')}</div>}
 
             {!loading && upcoming.length === 0 && (
               <div className="bg-white border border-dashed border-[#D9C9B4] rounded-[18px] p-8 text-center text-[#56627A] text-sm mb-8">
-                Aucun rendez-vous à venir.{' '}
-                <Link to="/reservation" className="text-[#0A1D35] font-semibold hover:underline">Réserver une séance →</Link>
+                {t('mesRdv.aucunRdv')}{' '}
+                <Link to="/reservation" className="text-[#0A1D35] font-semibold hover:underline">{t('mesRdv.reserver')} →</Link>
               </div>
             )}
 
@@ -167,7 +169,7 @@ export default function MesRdv() {
                       <DateBox date={debut} />
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-[#0A1D35] text-base mb-1">
-                          {r.prestation?.nom} — Séance n°{n}
+                          {r.prestation?.nom} — {t('mesRdv.seanceNo')}{n}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-[#56627A] mb-2">
                           <span className="flex items-center gap-1">
@@ -181,28 +183,28 @@ export default function MesRdv() {
                           </span>
                         </div>
                         <span className="inline-flex items-center gap-1 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-semibold px-2.5 py-1 rounded-full">
-                          Confirmé
+                          {t('mesRdv.confirme')}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2 shrink-0">
                         {r.lien_meet ? (
                           <a href={r.lien_meet} target="_blank" rel="noopener noreferrer"
                             className="flex items-center gap-1.5 bg-[#6CAED6] text-white text-xs font-bold px-4 py-2 rounded-[10px] hover:opacity-90 transition-opacity">
-                            <Video size={12} /> Rejoindre
+                            <Video size={12} /> {t('mesRdv.rejoindre')}
                           </a>
                         ) : (
                           <button disabled className="flex items-center gap-1.5 bg-[#D0E7F5] text-[#6CAED6] text-xs font-bold px-4 py-2 rounded-[10px] cursor-not-allowed">
-                            <Video size={12} /> Rejoindre
+                            <Video size={12} /> {t('mesRdv.rejoindre')}
                           </button>
                         )}
                         <button className="flex items-center gap-1.5 border border-[#E7DCCD] text-[#56627A] text-xs font-medium px-4 py-2 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
-                          <Calendar size={12} /> Ajouter au calendrier
+                          <Calendar size={12} /> {t('mesRdv.ajouterCalendrier')}
                         </button>
                       </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-[#F7F2EB]">
                       <button onClick={() => annuler(r)} className="text-xs text-[#9B2C1F] hover:underline flex items-center gap-1">
-                        <span className="text-[#9B2C1F]">⊗</span> Annuler (gratuit avant 24h)
+                        <span className="text-[#9B2C1F]">⊗</span> {t('mesRdv.annuler')}
                       </button>
                     </div>
                   </div>
@@ -214,8 +216,8 @@ export default function MesRdv() {
             {sortedPast.length > 0 && (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-base font-bold text-[#0A1D35]">Séances passées</h2>
-                  <button className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium">Voir tout →</button>
+                  <h2 className="text-base font-bold text-[#0A1D35]">{t('mesRdv.passees')}</h2>
+                  <button className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium">{t('mesRdv.voirTout')} →</button>
                 </div>
                 <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
                   {sortedPast.slice(0, 5).map((r, idx) => {
@@ -226,8 +228,8 @@ export default function MesRdv() {
                           {format(new Date(r.debut), 'd MMM yyyy', { locale: fr })}
                         </span>
                         <span className="text-[#56627A] w-16 shrink-0">{format(new Date(r.debut), 'HH:mm')}</span>
-                        <span className="flex-1 font-medium text-[#0A1D35]">{r.prestation?.nom} — Séance n°{n}</span>
-                        <span className="bg-[#F7F2EB] text-[#56627A] text-xs font-semibold px-2.5 py-1 rounded-full">Effectuée</span>
+                        <span className="flex-1 font-medium text-[#0A1D35]">{r.prestation?.nom} — {t('mesRdv.seanceNo')}{n}</span>
+                        <span className="bg-[#F7F2EB] text-[#56627A] text-xs font-semibold px-2.5 py-1 rounded-full">{t('mesRdv.effectuee')}</span>
                         <button onClick={() => downloadPdf(r.id)}
                           className="text-[#56627A] hover:text-[#0A1D35] transition-colors">
                           <Download size={14} />
@@ -244,7 +246,7 @@ export default function MesRdv() {
           <div className="w-72 shrink-0 space-y-4">
             {/* Mon compte */}
             <div className="bg-white border border-[#E7DCCD] rounded-[20px] p-6">
-              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-4">Mon compte</p>
+              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-4">{t('mesRdv.monCompte')}</p>
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-full bg-[#D0E7F5] flex items-center justify-center text-sm font-bold text-[#0A1D35]">
                   {initials}
@@ -256,17 +258,17 @@ export default function MesRdv() {
               </div>
               <div className="space-y-3 text-sm border-t border-[#F7F2EB] pt-4">
                 <div className="flex justify-between">
-                  <span className="text-[#56627A]">Séances totales</span>
+                  <span className="text-[#56627A]">{t('mesRdv.seancesTotales')}</span>
                   <span className="font-bold text-[#0A1D35]">{allConfirmed.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#56627A]">Prochain RDV</span>
+                  <span className="text-[#56627A]">{t('mesRdv.prochainRdv')}</span>
                   <span className="font-bold text-[#0A1D35]">
                     {prochainRdv ? format(new Date(prochainRdv.debut), 'd MMM yyyy', { locale: fr }) : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#56627A]">Praticien</span>
+                  <span className="text-[#56627A]">{t('mesRdv.praticien')}</span>
                   <span className="font-bold text-[#0A1D35]">Dr. Synégo</span>
                 </div>
               </div>
@@ -274,7 +276,7 @@ export default function MesRdv() {
 
             {/* Mon suivi */}
             <div className="bg-[#0A1D35] rounded-[20px] p-6 text-white">
-              <p className="text-xs font-bold text-[#6CAED6] uppercase tracking-wide mb-4">Mon suivi</p>
+              <p className="text-xs font-bold text-[#6CAED6] uppercase tracking-wide mb-4">{t('mesRdv.monSuivi')}</p>
               <p className="font-semibold text-sm mb-4">{totalSeances} séance{totalSeances > 1 ? 's' : ''} effectuée{totalSeances > 1 ? 's' : ''}</p>
               <div className="bg-[#1C3352] rounded-full h-2 mb-2">
                 <div
@@ -282,10 +284,10 @@ export default function MesRdv() {
                   style={{ width: `${Math.min(100, (totalSeances / objectif) * 100)}%` }}
                 />
               </div>
-              <p className="text-xs text-[#8FA3B8] mb-5">Objectif : {objectif} séances</p>
+              <p className="text-xs text-[#8FA3B8] mb-5">{t('mesRdv.objectif')} : {objectif} séances</p>
               <Link to="/reservation"
                 className="block w-full bg-[#6CAED6] text-[#0A1D35] text-sm font-bold text-center py-2.5 rounded-[10px] hover:opacity-90 transition-opacity">
-                Réserver une séance
+                {t('mesRdv.reserver')}
               </Link>
             </div>
           </div>

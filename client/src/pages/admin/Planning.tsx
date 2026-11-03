@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { format, addDays, startOfWeek, differenceInMinutes } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import NoteSeancePanel from '../../components/NoteSeancePanel';
@@ -11,6 +12,7 @@ import type { RendezVous } from '@synego/shared';
 type ViewMode = 'jour' | 'semaine';
 
 export default function AdminPlanning() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [lundi, setLundi] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
@@ -46,7 +48,7 @@ export default function AdminPlanning() {
   const cols = view === 'semaine' ? 8 : 2;
 
   return (
-    <AdminLayout title="Agenda">
+    <AdminLayout title={t('planning.titre')}>
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
@@ -66,29 +68,29 @@ export default function AdminPlanning() {
           </div>
           <button onClick={() => setLundi(startOfWeek(new Date(), { weekStartsOn: 1 }))}
             className="text-xs text-[#56627A] hover:text-[#0A1D35] border border-[#E7DCCD] px-3 py-1.5 rounded-xl bg-white transition-colors">
-            Aujourd'hui
+            {t('planning.aujourdHui')}
           </button>
 
           <div className="flex items-center gap-1.5 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-semibold px-3 py-1.5 rounded-xl">
             <RefreshCw size={11} />
-            {creneauxLibres} créneaux libres
+            {creneauxLibres} {t('planning.creneauxLibres')}
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl p-1">
-            {(['jour', 'semaine'] as ViewMode[]).map(v => (
+            {([['jour', t('planning.jour')], ['semaine', t('planning.semaine')]] as [ViewMode, string][]).map(([v, label]) => (
               <button key={v} onClick={() => setView(v)}
                 className={`px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors capitalize ${
                   view === v ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A]'
                 }`}>
-                {v.charAt(0).toUpperCase() + v.slice(1)}
+                {label}
               </button>
             ))}
           </div>
           <button onClick={() => setShowNouveauRdv(true)}
             className="flex items-center gap-1.5 bg-[#0A1D35] text-white font-semibold px-4 py-2 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
-            <Plus size={14} /> Nouveau RDV
+            <Plus size={14} /> {t('planning.nouveauRdv')}
           </button>
         </div>
       </div>

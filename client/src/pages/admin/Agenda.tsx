@@ -5,10 +5,10 @@ import type { Horaire } from '@synego/shared';
 import toast from 'react-hot-toast';
 import { Calendar, CheckCircle, Unlink } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-
-const JOURS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+import { useTranslation } from 'react-i18next';
 
 export default function AdminAgenda() {
+  const { t } = useTranslation();
   const { token } = useAuth();
   const [horaires, setHoraires] = useState<Horaire[]>([]);
   const [saving, setSaving] = useState(false);
@@ -16,6 +16,8 @@ export default function AdminAgenda() {
   const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [connecting, setConnecting] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const JOURS = t('agendaParam.jours', { returnObjects: true }) as string[];
 
   useEffect(() => {
     fetch('/api/admin/horaires', { headers: { Authorization: `Bearer ${token}` } })
@@ -31,7 +33,7 @@ export default function AdminAgenda() {
   useEffect(() => {
     const googleStatus = searchParams.get('google');
     if (googleStatus === 'connected') {
-      toast.success('Google Calendar connecté !');
+      toast.success(t('agendaParam.googleConnecte'));
       setGoogleConnected(true);
       fetch('/api/admin/me', { headers: { Authorization: `Bearer ${token}` } })
         .then(r => r.json()).then(data => setGoogleCalendarId(data.google_calendar_id || ''));
@@ -60,7 +62,7 @@ export default function AdminAgenda() {
     await fetch('/api/admin/me/google', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     setGoogleConnected(false);
     setGoogleCalendarId('');
-    toast.success('Google Calendar déconnecté');
+    toast.success(t('agendaParam.deconnecter'));
   }
 
   async function sauvegarder() {
@@ -72,7 +74,7 @@ export default function AdminAgenda() {
         body: JSON.stringify(horaires),
       });
       if (!res.ok) throw new Error();
-      toast.success('Horaires sauvegardés');
+      toast.success(t('agendaParam.sauvegarde'));
     } catch {
       toast.error('Erreur lors de la sauvegarde');
     } finally {
@@ -85,14 +87,14 @@ export default function AdminAgenda() {
   }
 
   return (
-    <AdminLayout title="Agenda & Paramètres">
+    <AdminLayout title={t('agendaParam.titre')}>
       <div className="max-w-2xl space-y-8">
 
         {/* Section Google Calendar */}
         <div>
-          <h2 className="text-base font-bold text-[#0A1D35] mb-1">Intégration Google Calendar</h2>
+          <h2 className="text-base font-bold text-[#0A1D35] mb-1">{t('agendaParam.googleTitre')}</h2>
           <p className="text-sm text-[#56627A] mb-4">
-            Connecte ton compte Google pour que chaque RDV génère automatiquement un lien Meet et apparaisse dans ton agenda.
+            {t('agendaParam.googleDesc')}
           </p>
           <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[18px] p-6">
             {googleConnected ? (
@@ -102,7 +104,7 @@ export default function AdminAgenda() {
                     <CheckCircle size={20} className="text-[#1E6B4A]" />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-[#0A1D35]">Google Calendar connecté</div>
+                    <div className="font-semibold text-sm text-[#0A1D35]">{t('agendaParam.googleConnecte')}</div>
                     {googleCalendarId && (
                       <div className="text-xs text-[#56627A] mt-0.5">{googleCalendarId}</div>
                     )}
@@ -112,7 +114,7 @@ export default function AdminAgenda() {
                   onClick={disconnectGoogle}
                   className="flex items-center gap-1.5 text-sm text-[#9B2C1F] border border-[#F7DDD8] bg-[#F7DDD8] px-3 py-2 rounded-[10px] hover:bg-[#f0ccc5] transition-colors"
                 >
-                  <Unlink size={14} /> Déconnecter
+                  <Unlink size={14} /> {t('agendaParam.deconnecter')}
                 </button>
               </div>
             ) : (
@@ -122,8 +124,8 @@ export default function AdminAgenda() {
                     <Calendar size={18} className="text-[#56627A]" />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-[#0A1D35]">Non connecté</div>
-                    <div className="text-xs text-[#56627A] mt-0.5">Les RDVs utiliseront Jitsi en fallback</div>
+                    <div className="font-semibold text-sm text-[#0A1D35]">{t('agendaParam.nonConnecte')}</div>
+                    <div className="text-xs text-[#56627A] mt-0.5">{t('agendaParam.fallbackJitsi')}</div>
                   </div>
                 </div>
                 <button
@@ -131,7 +133,7 @@ export default function AdminAgenda() {
                   disabled={connecting}
                   className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-[12px] hover:bg-[#1C3352] transition-colors disabled:opacity-50"
                 >
-                  {connecting ? 'Redirection…' : 'Connecter Google'}
+                  {connecting ? t('agendaParam.redirection') : t('agendaParam.connecter')}
                 </button>
               </div>
             )}
@@ -140,15 +142,15 @@ export default function AdminAgenda() {
 
         {/* Section Horaires */}
         <div>
-          <h2 className="text-base font-bold text-[#0A1D35] mb-1">Horaires d'ouverture</h2>
-          <p className="text-sm text-[#56627A] mb-4">Les jours non actifs ne proposent aucun créneau.</p>
+          <h2 className="text-base font-bold text-[#0A1D35] mb-1">{t('agendaParam.horaires')}</h2>
+          <p className="text-sm text-[#56627A] mb-4">{t('agendaParam.horairesDesc')}</p>
           <div className="bg-[#FFFDFA] border border-[#E7DCCD] rounded-[18px] divide-y divide-[#E7DCCD] mb-6">
             {horaires.sort((a, b) => a.jour - b.jour).map(h => (
               <div key={h.id} className="flex items-center gap-4 px-6 py-4">
                 <div className="w-28 font-semibold text-sm text-[#0A1D35]">{JOURS[h.jour]}</div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={h.actif} onChange={e => update(h.id, 'actif', e.target.checked)} className="w-4 h-4 accent-[#0A1D35]" />
-                  <span className="text-sm text-[#56627A]">Ouvert</span>
+                  <span className="text-sm text-[#56627A]">{t('agendaParam.ouvert')}</span>
                 </label>
                 {h.actif && (
                   <>
@@ -167,7 +169,7 @@ export default function AdminAgenda() {
                     />
                   </>
                 )}
-                {!h.actif && <span className="text-sm text-[#56627A] italic">Fermé</span>}
+                {!h.actif && <span className="text-sm text-[#56627A] italic">{t('agendaParam.ferme')}</span>}
               </div>
             ))}
           </div>
@@ -176,7 +178,7 @@ export default function AdminAgenda() {
             disabled={saving}
             className="bg-[#0A1D35] text-white font-bold px-8 py-3 rounded-[14px] hover:bg-[#1C3352] transition-colors disabled:opacity-50"
           >
-            {saving ? 'Sauvegarde…' : 'Enregistrer les horaires'}
+            {saving ? t('agendaParam.sauvegarde') : t('agendaParam.enregistrer')}
           </button>
         </div>
 

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
+import { localizePrestation } from '../lib/i18nUtils';
 import type { Prestation } from '@synego/shared';
 
 export default function Services() {
+  const { t, i18n } = useTranslation();
   const [prestations, setPrestations] = useState<Prestation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,22 +23,22 @@ export default function Services() {
       <section className="bg-[#F7F2EB] pt-14 pb-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold text-[#0A1D35] mb-3">Nos accompagnements</h1>
+            <h1 className="text-4xl font-extrabold text-[#0A1D35] mb-3">{t('services.titre')}</h1>
             <p className="text-[#56627A] text-base max-w-xl leading-relaxed">
-              Chaque séance est conduite en visioconférence, dans un cadre bienveillant et confidentiel. Réservez directement en ligne.
+              {t('services.description')}
             </p>
           </div>
 
           {loading && (
-            <div className="text-[#56627A] text-sm py-12">Chargement…</div>
+            <div className="text-[#56627A] text-sm py-12">{t('services.chargement')}</div>
           )}
 
           {!loading && prestations.length === 0 && (
-            <div className="text-[#56627A] text-sm py-12">Aucun service disponible pour le moment.</div>
+            <div className="text-[#56627A] text-sm py-12">{t('services.aucunService')}</div>
           )}
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prestations.map(p => (
+            {prestations.map(raw => { const p = localizePrestation(raw, i18n.language); return (
               <div key={p.id} className="bg-white border border-[#E7DCCD] rounded-[22px] p-7 flex flex-col gap-4 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between gap-3">
                   <div
@@ -54,10 +57,10 @@ export default function Services() {
                 <div className="flex items-center gap-4 text-sm text-[#56627A]">
                   <span className="flex items-center gap-1.5">
                     <Clock size={14} />
-                    {p.duree} min
+                    {p.duree} {t('common.min')}
                   </span>
                   <span className="text-xs bg-[#F7F2EB] text-[#56627A] px-2.5 py-1 rounded-full font-medium">
-                    Sur devis
+                    {t('services.surDevis')}
                   </span>
                 </div>
 
@@ -65,25 +68,26 @@ export default function Services() {
                   to={`/reservation?prestation=${p.id}`}
                   className="mt-auto flex items-center justify-center gap-2 bg-[#0A1D35] text-white font-semibold text-sm py-2.5 rounded-[12px] hover:bg-[#1C3352] transition-colors"
                 >
-                  Réserver <ArrowRight size={14} />
+                  {t('services.reserver')} <ArrowRight size={14} />
                 </Link>
               </div>
-            ))}
+            );})}
+
           </div>
         </div>
       </section>
 
       <section className="py-14 bg-white border-t border-[#E7DCCD]">
         <div className="max-w-xl mx-auto px-6 text-center">
-          <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-3">Première séance découverte offerte</h2>
+          <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-3">{t('services.decouverteTitre')}</h2>
           <p className="text-[#56627A] text-sm leading-relaxed mb-8">
-            Vous hésitez encore ? La première séance est gratuite et sans engagement, pour faire connaissance et voir si l'accompagnement vous convient.
+            {t('services.decouverteDesc')}
           </p>
           <Link
             to="/reservation"
             className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-8 py-3.5 rounded-[14px] hover:bg-[#1C3352] transition-colors"
           >
-            Réserver ma séance découverte
+            {t('services.decouverteCta')}
           </Link>
         </div>
       </section>
