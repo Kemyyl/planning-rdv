@@ -99,6 +99,18 @@ export default function AdminDashboard() {
 
   useEffect(() => { loadDashboard(); }, []);
 
+  useEffect(() => {
+    const pastWithoutResume = rdvs.filter(r => r.statut !== 'annule' && new Date(r.fin) < new Date() && !r.resume_url);
+    pastWithoutResume.forEach(r => {
+      fetch(`/api/admin/rdv/${r.id}/find-resume`, { headers })
+        .then(res => res.json())
+        .then(data => {
+          if (data.url) setRdvs(prev => prev.map(x => x.id === r.id ? { ...x, resume_url: data.url } : x));
+        })
+        .catch(() => {});
+    });
+  }, [rdvs.length]);
+
   const filtered = rdvs.filter(r => {
     if (period === 'annule') return r.statut === 'annule';
     if (r.statut === 'annule') return false;

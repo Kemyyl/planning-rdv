@@ -22,7 +22,7 @@ export async function findMeetNotes(refreshToken: string, finTime: string, rdvTi
     const docFilter = `mimeType='application/vnd.google-apps.document'`;
 
     // Mots-clés à chercher dans le nom du doc
-    const keywords = ['Notes', 'notes', 'Gemini'];
+    const keywords = ['Notes', 'notes', 'Gemini', 'Réunion', 'reunion'];
     if (rdvTitle) {
       // Ajouter chaque mot du titre (longueur > 3 pour éviter "de", "la", etc.)
       rdvTitle.split(/\s+/).filter(w => w.length > 3).forEach(w => keywords.push(w));
