@@ -31,7 +31,7 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
   const cancelUrl = rdv.jeton_annulation ? `${appUrl}/mes-rdv?jeton=${rdv.jeton_annulation}` : '';
 
   await makeTransport().sendMail({
-    from: process.env.EMAIL_FROM || 'noreply@synego.fr',
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to,
     subject: `Confirmation – ${rdv.prestation?.nom || rdv.titre || 'Séance'}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
@@ -63,7 +63,7 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
 export async function sendInviteEmail(to: string, prenom: string, inviteUrl: string) {
   if (!isConfigured()) return;
   await makeTransport().sendMail({
-    from: process.env.EMAIL_FROM || 'noreply@synego.fr',
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to,
     subject: 'Bienvenue sur Synégo – Activez votre compte',
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
@@ -92,7 +92,7 @@ export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });
 
   await makeTransport().sendMail({
-    from: process.env.EMAIL_FROM || 'noreply@synego.fr',
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to,
     subject: `Rappel – Votre séance demain à ${format(new Date(rdv.debut), 'HH:mm')}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
