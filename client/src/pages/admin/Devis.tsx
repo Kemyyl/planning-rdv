@@ -81,8 +81,8 @@ export default function Devis() {
   }, [token]);
 
   // ── Computed ─────────────────────────────────────────────
-  const selectedClient = clients.find(c => c.id === selectedClientId);
-  const selectedPrestation = prestations.find(p => p.id === selectedPrestationId);
+  const selectedClient = clients.find(c => String(c.id) === String(selectedClientId));
+  const selectedPrestation = prestations.find(p => String(p.id) === String(selectedPrestationId));
   const clientPrenom = clientMode === 'existing' ? (selectedClient?.prenom || '') : prenom;
   const clientNom = clientMode === 'existing' ? (selectedClient?.nom || '') : nom;
   const clientEmail = clientMode === 'existing' ? (selectedClient?.email || '') : email;
