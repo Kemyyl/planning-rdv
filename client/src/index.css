@@ -33,14 +33,16 @@ body {
 
 * { box-sizing: border-box; }
 
-/* ── Dark mode (CSS invert) ───────────────────────── */
+/* ── Dark mode ───────────────────────── */
 html.dark body {
   filter: invert(1) hue-rotate(180deg);
   background-color: #1a1a1a;
 }
 
+/* Ces éléments sont déjà sombres — on les double-inverse pour revenir à leurs couleurs d'origine */
 html.dark img,
 html.dark video,
-html.dark [style*="background-image"] {
+html.dark [style*="background-image"],
+html.dark aside {
   filter: invert(1) hue-rotate(180deg);
 }
