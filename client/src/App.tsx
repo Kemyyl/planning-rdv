@@ -5,6 +5,7 @@ import Reservation from './pages/Reservation';
 import Confirmation from './pages/Confirmation';
 import MesRdv from './pages/MesRdv';
 import DefinirMotDePasse from './pages/DefinirMotDePasse';
+import Profil from './pages/Profil';
 import AdminConnexion from './pages/admin/Connexion';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminPlanning from './pages/admin/Planning';
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/confirmation/:id" element={<Confirmation />} />
           <Route path="/mes-rdv" element={<MesRdv />} />
           <Route path="/definir-mot-de-passe" element={<DefinirMotDePasse />} />
+          <Route path="/profil" element={<Profil />} />
           <Route path="/login" element={<AdminConnexion />} />
 
           {/* Admin */}

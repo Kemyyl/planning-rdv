@@ -35,6 +35,7 @@ export default function MesRdv() {
   const [rdvs, setRdvs] = useState<RdvWithNotes[]>([]);
   const [rdvJeton, setRdvJeton] = useState<(RendezVous & { lien_meet?: string }) | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAllPast, setShowAllPast] = useState(false);
 
   const fullName = [prenom, nom].filter(Boolean).join(' ') || prenom || '';
   const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
@@ -180,7 +181,7 @@ export default function MesRdv() {
                           </span>
                           <span className="flex items-center gap-1">
                             <Video size={13} />
-                            Jitsi Meet
+                            Google Meet
                           </span>
                         </div>
                         <span className="inline-flex items-center gap-1 bg-[#DCEFE4] text-[#1E6B4A] text-xs font-semibold px-2.5 py-1 rounded-full">
@@ -198,9 +199,11 @@ export default function MesRdv() {
                             <Video size={12} /> {t('mesRdv.rejoindre')}
                           </button>
                         )}
-                        <button className="flex items-center gap-1.5 border border-[#E7DCCD] text-[#56627A] text-xs font-medium px-4 py-2 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
+                        <a href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('RDV Synégo — ' + (r.prestation?.nom || r.titre || 'Séance'))}&dates=${new Date(r.debut).toISOString().replace(/[-:]/g,'').replace('.000Z','Z')}/${new Date(r.fin).toISOString().replace(/[-:]/g,'').replace('.000Z','Z')}`}
+                          target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 border border-[#E7DCCD] text-[#56627A] text-xs font-medium px-4 py-2 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
                           <Calendar size={12} /> {t('mesRdv.ajouterCalendrier')}
-                        </button>
+                        </a>
                       </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-[#F7F2EB]">
@@ -218,13 +221,16 @@ export default function MesRdv() {
               <>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-base font-bold text-[#0A1D35]">{t('mesRdv.passees')}</h2>
-                  <button className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium">{t('mesRdv.voirTout')} →</button>
+                  <button onClick={() => setShowAllPast(v => !v)} className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium">
+                    {showAllPast ? '← Réduire' : `${t('mesRdv.voirTout')} →`}
+                  </button>
                 </div>
                 <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
-                  {sortedPast.slice(0, 5).map((r, idx) => {
+                  {(showAllPast ? sortedPast : sortedPast.slice(0, 5)).map((r, idx) => {
+                    const displayed = showAllPast ? sortedPast : sortedPast.slice(0, 5);
                     const n = sessionNum(r);
                     return (
-                      <div key={r.id} className={`flex items-center gap-6 px-6 py-4 text-sm ${idx < sortedPast.slice(0,5).length - 1 ? 'border-b border-[#F7F2EB]' : ''}`}>
+                      <div key={r.id} className={`flex items-center gap-6 px-6 py-4 text-sm ${idx < displayed.length - 1 ? 'border-b border-[#F7F2EB]' : ''}`}>
                         <span className="text-[#56627A] w-28 shrink-0 capitalize">
                           {format(new Date(r.debut), 'd MMM yyyy', { locale: dateLocale })}
                         </span>
@@ -273,6 +279,13 @@ export default function MesRdv() {
                   <span className="font-bold text-[#0A1D35]">Dr. Synégo</span>
                 </div>
               </div>
+              {clientToken && (
+                <div className="mt-4 pt-4 border-t border-[#F7F2EB]">
+                  <Link to="/profil" className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium hover:underline">
+                    Modifier mon profil →
+                  </Link>
+                </div>
+              )}
             </div>
 
           </div>

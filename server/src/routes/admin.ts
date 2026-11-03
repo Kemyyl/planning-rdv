@@ -194,6 +194,46 @@ adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
   res.json({ url });
 });
 
+// PATCH /api/admin/rdv/:id — modifier date/heure d'un RDV
+adminRouter.patch('/rdv/:id', async (req, res) => {
+  const { debut, duree } = req.body;
+  if (!debut) { res.status(400).json({ error: 'Date manquante' }); return; }
+  const dureeMin = duree && +duree > 0 ? +duree : 60;
+  const fin = new Date(debut);
+  fin.setMinutes(fin.getMinutes() + dureeMin);
+
+  const { data, error } = await supabase.from('rendez_vous')
+    .update({ debut, fin: fin.toISOString() })
+    .eq('id', req.params.id)
+    .select('*,client:clients(prenom,nom,email),prestation:prestations(nom,couleur,duree)')
+    .single();
+  if (error) { res.status(500).json({ error: error.message }); return; }
+
+  // Mettre à jour l'événement Google Calendar si existant
+  const d = data as Record<string, unknown> & { google_event_id?: string };
+  if (d.google_event_id) {
+    const { id: adminId } = (req as typeof req & { admin: { id: string } }).admin;
+    const { data: admin } = await supabase.from('admins').select('google_refresh_token,google_calendar_id').eq('id', adminId).single();
+    const a = admin as { google_refresh_token?: string; google_calendar_id?: string } | null;
+    if (a?.google_refresh_token) {
+      const { google } = await import('googleapis');
+      const oauth2 = new google.auth.OAuth2(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_REDIRECT_URI);
+      oauth2.setCredentials({ refresh_token: a.google_refresh_token });
+      const calendar = google.calendar({ version: 'v3', auth: oauth2 });
+      calendar.events.patch({
+        calendarId: a.google_calendar_id || 'primary',
+        eventId: d.google_event_id,
+        requestBody: {
+          start: { dateTime: debut, timeZone: 'Europe/Paris' },
+          end: { dateTime: fin.toISOString(), timeZone: 'Europe/Paris' },
+        },
+      }).catch(() => {});
+    }
+  }
+
+  res.json(data);
+});
+
 // DELETE /api/admin/rdv/:id — annule un RDV (soft delete + annulation Google Calendar)
 adminRouter.delete('/rdv/:id', async (req, res) => {
   const { data: rdv } = await supabase.from('rendez_vous')

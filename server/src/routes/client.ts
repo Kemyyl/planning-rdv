@@ -81,11 +81,31 @@ clientRouter.get('/me', requireClientAuth, async (req, res) => {
   res.json(data);
 });
 
-function generateMeetLink(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const seg = (n: number) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `https://meet.jit.si/synego-${seg(4)}-${seg(4)}-${seg(4)}`;
-}
+// PATCH /api/client/profil
+clientRouter.patch('/profil', requireClientAuth, async (req, res) => {
+  const parsed = z.object({
+    prenom: z.string().min(1).optional(),
+    nom: z.string().min(1).optional(),
+    telephone: z.string().optional().nullable(),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { data, error } = await supabase.from('clients').update(parsed.data).eq('id', (req as ClientReq).clientId).select('id,nom,prenom,email,telephone').single();
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
+
+// PATCH /api/client/profil/mot-de-passe
+clientRouter.patch('/profil/mot-de-passe', requireClientAuth, async (req, res) => {
+  const parsed = z.object({ ancien: z.string(), nouveau: z.string().min(8, 'Minimum 8 caractères') }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { data: client } = await supabase.from('clients').select('mot_de_passe').eq('id', (req as ClientReq).clientId).single();
+  if (!client || !(client as { mot_de_passe: string }).mot_de_passe) { res.status(400).json({ error: 'Compte sans mot de passe' }); return; }
+  const ok = await bcrypt.compare(parsed.data.ancien, (client as { mot_de_passe: string }).mot_de_passe);
+  if (!ok) { res.status(400).json({ error: 'Ancien mot de passe incorrect' }); return; }
+  const hash = await bcrypt.hash(parsed.data.nouveau, 12);
+  await supabase.from('clients').update({ mot_de_passe: hash }).eq('id', (req as ClientReq).clientId);
+  res.json({ ok: true });
+});
 
 // GET /api/client/rdv
 clientRouter.get('/rdv', requireClientAuth, async (req, res) => {
@@ -95,17 +115,6 @@ clientRouter.get('/rdv', requireClientAuth, async (req, res) => {
     .eq('client_id', (req as ClientReq).clientId)
     .order('debut', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
-
-  // Backfill lien_meet for confirmed RDVs that don't have one
-  const toFix = (data || []).filter((r: Record<string, unknown>) => r.statut === 'confirme' && !r.lien_meet);
-  if (toFix.length > 0) {
-    await Promise.all(toFix.map((r: Record<string, unknown>) => {
-      const link = generateMeetLink();
-      (r as Record<string, unknown>).lien_meet = link;
-      return supabase.from('rendez_vous').update({ lien_meet: link }).eq('id', r.id as string);
-    }));
-  }
-
   res.json(data);
 });
 

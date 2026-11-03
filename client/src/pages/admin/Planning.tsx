@@ -1,13 +1,14 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import { format, addDays, startOfWeek, differenceInMinutes } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2, Video } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2, Video, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import NoteSeancePanel from '../../components/NoteSeancePanel';
 import NouveauRdvPanel from '../../components/NouveauRdvPanel';
+import ModifierRdvPanel from '../../components/ModifierRdvPanel';
 import type { RendezVous } from '@synego/shared';
 
 type ViewMode = 'jour' | 'semaine';
@@ -19,6 +20,7 @@ export default function AdminPlanning() {
   const [lundi, setLundi] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
+  const [editRdv, setEditRdv] = useState<RendezVous | null>(null);
   const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [view, setView] = useState<ViewMode>('semaine');
   const [creneauxLibres, setCreneauxLibres] = useState(0);
@@ -30,7 +32,7 @@ export default function AdminPlanning() {
     if (!confirm('Annuler ce rendez-vous ?')) return;
     const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
     if (res.ok) {
-      setRdvs(prev => prev.filter(r => r.id !== id));
+      setRdvs(prev => prev.map(r => r.id === id ? { ...r, statut: 'annule', lien_meet: undefined } : r));
       toast.success('RDV annulé');
     } else {
       toast.error('Erreur lors de l\'annulation');
@@ -152,10 +154,16 @@ export default function AdminPlanning() {
                               <Video size={9} /> Meet
                             </a>
                           )}
-                          <button onClick={e => deleteRdv(r.id, e)}
-                            className="flex items-center gap-0.5 bg-[#F7DDD8] text-[#9B2C1F] text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] hover:bg-[#f0ccc5] transition-colors">
-                            <Trash2 size={9} /> Annuler
+                          <button onClick={e => { e.stopPropagation(); setEditRdv(r); }}
+                            className="flex items-center gap-0.5 bg-[#D0E7F5] text-[#0A1D35] text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] hover:bg-[#b8d9ee] transition-colors">
+                            <Pencil size={9} /> Modifier
                           </button>
+                          {r.statut !== 'annule' && (
+                            <button onClick={e => deleteRdv(r.id, e)}
+                              className="flex items-center gap-0.5 bg-[#F7DDD8] text-[#9B2C1F] text-[10px] font-bold px-1.5 py-0.5 rounded-[5px] hover:bg-[#f0ccc5] transition-colors">
+                              <Trash2 size={9} /> Annuler
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
@@ -168,6 +176,7 @@ export default function AdminPlanning() {
       </div>
 
       {noteRdv && <NoteSeancePanel rdv={noteRdv} onClose={() => setNoteRdv(null)} />}
+      {editRdv && <ModifierRdvPanel rdv={editRdv} onClose={() => setEditRdv(null)} onUpdated={updated => { setRdvs(prev => prev.map(r => r.id === updated.id ? updated : r)); setEditRdv(null); }} />}
       {showNouveauRdv && (
         <NouveauRdvPanel
           onClose={() => setShowNouveauRdv(false)}

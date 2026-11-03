@@ -12,7 +12,7 @@ import NouveauRdvPanel from '../../components/NouveauRdvPanel';
 import type { RendezVous } from '@synego/shared';
 
 interface Stats { today: number; week: number; total: number; clients: number }
-type Period = 'today' | 'week' | 'month';
+type Period = 'today' | 'week' | 'month' | 'annule';
 
 function Avatar({ name }: { name: string }) {
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -100,6 +100,8 @@ export default function AdminDashboard() {
   useEffect(() => { loadDashboard(); }, []);
 
   const filtered = rdvs.filter(r => {
+    if (period === 'annule') return r.statut === 'annule';
+    if (r.statut === 'annule') return false;
     const d = new Date(r.debut);
     if (period === 'today') return isToday(d);
     if (period === 'week') return isThisWeek(d, { weekStartsOn: 1 });
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
       <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#E7DCCD]">
           <div className="flex gap-1 bg-[#F7F2EB] rounded-xl p-1">
-            {([['today', t('dashboard.rdvAujourdHui')], ['week', t('dashboard.cetteSemaine')], ['month', t('dashboard.resume')]] as [Period, string][]).map(([p, label]) => (
+            {([['today', t('dashboard.rdvAujourdHui')], ['week', t('dashboard.cetteSemaine')], ['month', t('dashboard.resume')], ['annule', t('dashboard.annules')]] as [Period, string][]).map(([p, label]) => (
               <button key={p} onClick={() => setPeriod(p)}
                 className={`px-4 py-1.5 rounded-[10px] text-sm font-medium transition-colors ${
                   period === p ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'
