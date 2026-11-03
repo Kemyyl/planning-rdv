@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import NoteSeancePanel from '../../components/NoteSeancePanel';
+import NouveauRdvPanel from '../../components/NouveauRdvPanel';
 import type { RendezVous } from '@synego/shared';
 
 interface Stats { today: number; week: number; total: number; clients: number }
@@ -47,6 +48,7 @@ export default function AdminDashboard() {
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, total: 0, clients: 0 });
   const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
+  const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [period, setPeriod] = useState<Period>('today');
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -64,13 +66,15 @@ export default function AdminDashboard() {
     }
   }
 
-  useEffect(() => {
+  function loadDashboard() {
     fetch('/api/admin/dashboard', { headers }).then(r => r.json()).then(data => {
       setRdvs(data.prochains || []);
       setStats(data.stats || {});
       setPendingCount(data.pendingCount || 0);
     });
-  }, []);
+  }
+
+  useEffect(() => { loadDashboard(); }, []);
 
   const filtered = rdvs.filter(r => {
     const d = new Date(r.debut);
@@ -129,7 +133,7 @@ export default function AdminDashboard() {
               </button>
             ))}
           </div>
-          <button className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-xs font-semibold px-3 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors">
+          <button onClick={() => setShowNouveauRdv(true)} className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-xs font-semibold px-3 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors">
             <Plus size={13} /> {t('dashboard.nouveauRdv')}
           </button>
         </div>
@@ -185,6 +189,12 @@ export default function AdminDashboard() {
         )}
       </div>
       {noteRdv && <NoteSeancePanel rdv={noteRdv} onClose={() => setNoteRdv(null)} />}
+      {showNouveauRdv && (
+        <NouveauRdvPanel
+          onClose={() => setShowNouveauRdv(false)}
+          onCreated={() => { setShowNouveauRdv(false); loadDashboard(); }}
+        />
+      )}
     </AdminLayout>
   );
 }
