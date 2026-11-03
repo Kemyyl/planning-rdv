@@ -110,6 +110,7 @@
     "rejoindre": "Rejoindre",
     "ajouterCalendrier": "Ajouter au calendrier",
     "annuler": "Annuler (gratuit avant 24h)",
+    "annulationBloquee": "Annulation impossible (moins de 24h avant la séance)",
     "passees": "Séances passées",
     "voirTout": "Voir tout →",
     "effectuee": "Effectuée",
@@ -256,6 +257,25 @@
     "ajouter": "Ajouter au planning",
     "ajout": "Ajout…",
     "champsObligatoires": "Remplissez tous les champs obligatoires"
+  },
+  "devis": {
+    "titre": "Demande de devis",
+    "description": "Après un premier échange, nous vous proposerons un accompagnement adapté à vos besoins.",
+    "ctaTitre": "Besoin d'un accompagnement sur mesure ?",
+    "ctaDesc": "Remplissez notre formulaire et recevez une proposition personnalisée sous 24h.",
+    "cta": "Demander un devis",
+    "prenom": "Prénom",
+    "nom": "Nom",
+    "email": "E-mail",
+    "telephone": "Téléphone (facultatif)",
+    "typeAccompagnement": "Type d'accompagnement souhaité",
+    "message": "Décrivez votre demande",
+    "messagePlaceholder": "Décrivez brièvement votre situation et ce que vous recherchez…",
+    "envoyer": "Envoyer ma demande",
+    "envoi": "Envoi en cours…",
+    "succes": "Demande envoyée ! Nous vous contacterons sous 24h.",
+    "erreur": "Erreur lors de l'envoi. Veuillez réessayer.",
+    "typeOptions": ["Gestion du stress et anxiété", "Développement personnel", "Accompagnement émotionnel", "Burn-out et épuisement", "Transitions de vie", "Autre"]
   },
   "common": {
     "chargement": "Chargement…",

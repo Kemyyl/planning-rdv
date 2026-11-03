@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import { User, Lock, Save } from 'lucide-react';
+import { User, Lock, Save, BarChart2, CalendarCheck } from 'lucide-react';
+import { format, isPast } from 'date-fns';
+import { useDateLocale } from '../hooks/useDateLocale';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 export default function Profil() {
   const { t } = useTranslation();
+  const dateLocale = useDateLocale();
   const { token: clientToken } = useClientAuth();
 
   const [prenom, setPrenom] = useState('');
@@ -20,6 +23,8 @@ export default function Profil() {
   const [nouveauMdp, setNouveauMdp] = useState('');
   const [savingMdp, setSavingMdp] = useState(false);
 
+  const [rdvs, setRdvs] = useState<{ debut: string; statut: string; prestation?: { nom: string } }[]>([]);
+
   useEffect(() => {
     if (!clientToken) return;
     fetch('/api/client/me', { headers: { Authorization: `Bearer ${clientToken}` } })
@@ -30,7 +35,16 @@ export default function Profil() {
         setEmail(data.email || '');
         setTelephone(data.telephone || '');
       });
+    fetch('/api/client/rdv', { headers: { Authorization: `Bearer ${clientToken}` } })
+      .then(r => r.json())
+      .then(data => setRdvs(Array.isArray(data) ? data : []));
   }, [clientToken]);
+
+  const totalSeances = rdvs.filter(r => r.statut !== 'annule').length;
+  const upcoming = rdvs
+    .filter(r => r.statut !== 'annule' && !isPast(new Date(r.debut)))
+    .sort((a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime());
+  const prochainRdv = upcoming[0] || null;
 
   if (!clientToken) return <Navigate to="/mes-rdv" replace />;
 
@@ -132,6 +146,37 @@ export default function Profil() {
               <Save size={14} />{savingMdp ? 'Enregistrement…' : 'Mettre à jour'}
             </button>
           </div>
+        </div>
+
+        {/* Mon suivi */}
+        <div className="bg-white border border-[#E7DCCD] rounded-[20px] p-6 mt-6">
+          <div className="flex items-center gap-2 mb-5">
+            <BarChart2 size={16} className="text-[#56627A]" />
+            <p className="text-sm font-bold text-[#0A1D35]">Mon suivi</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-[#F7F2EB] rounded-[14px] p-4">
+              <div className="text-xs text-[#56627A] mb-1">{t('mesRdv.seancesTotales')}</div>
+              <div className="text-2xl font-extrabold text-[#0A1D35]">{totalSeances}</div>
+            </div>
+            <div className="bg-[#F7F2EB] rounded-[14px] p-4">
+              <div className="text-xs text-[#56627A] mb-1">{t('mesRdv.prochainRdv')}</div>
+              <div className="text-sm font-bold text-[#0A1D35]">
+                {prochainRdv ? format(new Date(prochainRdv.debut), 'd MMM', { locale: dateLocale }) : '—'}
+              </div>
+            </div>
+          </div>
+          {prochainRdv && (
+            <div className="flex items-center gap-3 p-3 bg-[#DCEFE4] rounded-[12px] mb-4">
+              <CalendarCheck size={16} className="text-[#1E6B4A] shrink-0" />
+              <div className="text-xs font-semibold text-[#1E6B4A]">
+                {prochainRdv.prestation?.nom} · {format(new Date(prochainRdv.debut), 'd MMMM à HH:mm', { locale: dateLocale })}
+              </div>
+            </div>
+          )}
+          <Link to="/mes-rdv" className="text-xs font-semibold text-[#56627A] hover:text-[#0A1D35] transition-colors">
+            Voir tous mes rendez-vous →
+          </Link>
         </div>
       </div>
     </PublicLayout>

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { supabase } from '../lib/supabase';
 import { getCreneauxDisponibles } from '../services/creneaux';
-import { sendConfirmationEmail, sendInviteEmail } from '../lib/email';
+import { sendConfirmationEmail, sendInviteEmail, sendDevisEmail, sendDevisConfirmEmail } from '../lib/email';
 import { createMeetEvent } from '../lib/google-meet';
 
 function fallbackMeetLink(): string {
@@ -177,10 +177,34 @@ publicRouter.post('/definir-mot-de-passe', async (req, res) => {
 publicRouter.patch('/rdv/:id/annuler', async (req, res) => {
   const { jeton } = req.body;
   if (!jeton) { res.status(400).json({ error: 'Jeton manquant' }); return; }
-  const { data, error } = await supabase
-    .from('rendez_vous').update({ statut: 'annule' })
-    .eq('id', req.params.id).eq('jeton_annulation', jeton).eq('statut', 'confirme')
-    .select('id').single();
-  if (error || !data) { res.status(400).json({ error: 'Impossible d\'annuler ce rendez-vous' }); return; }
+
+  const { data: rdv } = await supabase
+    .from('rendez_vous').select('id,debut,statut').eq('id', req.params.id).eq('jeton_annulation', jeton).single();
+  if (!rdv || (rdv as { statut: string }).statut !== 'confirme') {
+    res.status(400).json({ error: 'Impossible d\'annuler ce rendez-vous' }); return;
+  }
+  const heuresRestantes = (new Date((rdv as { debut: string }).debut).getTime() - Date.now()) / 3_600_000;
+  if (heuresRestantes < 24) {
+    res.status(400).json({ error: 'Annulation impossible : le délai de 24h avant la séance est dépassé.' }); return;
+  }
+
+  await supabase.from('rendez_vous').update({ statut: 'annule' }).eq('id', req.params.id);
+  res.json({ ok: true });
+});
+
+// POST /api/public/devis
+publicRouter.post('/devis', async (req, res) => {
+  const parsed = z.object({
+    prenom: z.string().min(1),
+    nom: z.string().min(1),
+    email: z.string().email(),
+    telephone: z.string().optional(),
+    type_accompagnement: z.string().optional(),
+    message: z.string().min(10, 'Minimum 10 caractères'),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+
+  sendDevisEmail(parsed.data).catch(e => console.error('Devis email failed:', e));
+  sendDevisConfirmEmail(parsed.data.email, parsed.data.prenom).catch(e => console.error('Devis confirm email failed:', e));
   res.json({ ok: true });
 });

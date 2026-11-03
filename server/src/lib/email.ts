@@ -88,6 +88,58 @@ export async function sendInviteEmail(to: string, prenom: string, inviteUrl: str
   });
 }
 
+export async function sendDevisEmail(data: {
+  prenom: string; nom: string; email: string; telephone?: string;
+  type_accompagnement?: string; message: string;
+}) {
+  if (!isConfigured()) return;
+  const to = process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || 'noreply@synego.fr';
+  await makeTransport().sendMail({
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
+    to,
+    replyTo: data.email,
+    subject: `Nouvelle demande de devis — ${data.prenom} ${data.nom}`,
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
+      <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
+        <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
+        <p style="color:#6CAED6;margin:4px 0 0">Nouvelle demande de devis</p>
+      </div>
+      <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
+        <h2 style="margin-top:0">Demande de devis reçue</h2>
+        <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:16px 0">
+          <p style="margin:0 0 8px"><strong>Nom :</strong> ${data.prenom} ${data.nom}</p>
+          <p style="margin:0 0 8px"><strong>Email :</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+          ${data.telephone ? `<p style="margin:0 0 8px"><strong>Téléphone :</strong> ${data.telephone}</p>` : ''}
+          ${data.type_accompagnement ? `<p style="margin:0"><strong>Type :</strong> ${data.type_accompagnement}</p>` : ''}
+        </div>
+        <h3 style="color:#56627A;font-size:14px;text-transform:uppercase;letter-spacing:0.05em">Message</h3>
+        <p style="background:#F7F2EB;border-radius:12px;padding:16px 20px;white-space:pre-wrap">${data.message}</p>
+        <p style="color:#56627A;font-size:13px;margin-top:24px">Répondez directement à cet email pour contacter ${data.prenom}.</p>
+      </div>
+    </div>`,
+  });
+}
+
+export async function sendDevisConfirmEmail(to: string, prenom: string) {
+  if (!isConfigured()) return;
+  await makeTransport().sendMail({
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
+    to,
+    subject: 'Votre demande a bien été reçue — Synégo',
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
+      <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
+        <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
+        <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
+      </div>
+      <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
+        <h2 style="margin-top:0">Demande reçue, ${prenom} ✓</h2>
+        <p>Merci pour votre demande. Nous l'avons bien reçue et vous contacterons dans les 24h.</p>
+        <p style="margin-top:24px;color:#56627A">À très bientôt,<br><strong>L'équipe Synégo</strong></p>
+      </div>
+    </div>`,
+  });
+}
+
 export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo) {
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });

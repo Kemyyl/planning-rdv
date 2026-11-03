@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { format, isPast } from 'date-fns';
+import { format, isPast, addHours } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { Video, Calendar, AlertCircle, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -67,6 +67,10 @@ export default function MesRdv() {
     URL.revokeObjectURL(url);
   }
 
+  function canCancel(debut: string): boolean {
+    return new Date(debut) > addHours(new Date(), 24);
+  }
+
   async function annuler(rdv: RendezVous) {
     if (!confirm('Confirmer l\'annulation ?')) return;
     const res = await fetch(`/api/public/rdv/${rdv.id}/annuler`, {
@@ -113,9 +117,15 @@ export default function MesRdv() {
               </span>
             </div>
             {rdvJeton.statut === 'confirme' && !isPast(new Date(rdvJeton.debut)) && (
-              <button onClick={() => annuler(rdvJeton)} className="text-sm border border-[#F7DDD8] text-[#9B2C1F] px-4 py-2 rounded-[10px] hover:bg-[#F7DDD8] transition-colors">
-                {t('mesRdv.annuler')}
-              </button>
+              canCancel(rdvJeton.debut) ? (
+                <button onClick={() => annuler(rdvJeton)} className="text-sm border border-[#F7DDD8] text-[#9B2C1F] px-4 py-2 rounded-[10px] hover:bg-[#F7DDD8] transition-colors">
+                  {t('mesRdv.annuler')}
+                </button>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs text-[#56627A]">
+                  <AlertCircle size={12} /> {t('mesRdv.annulationBloquee')}
+                </span>
+              )
             )}
           </div>
         </div>
@@ -207,9 +217,15 @@ export default function MesRdv() {
                       </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-[#F7F2EB]">
-                      <button onClick={() => annuler(r)} className="text-xs text-[#9B2C1F] hover:underline flex items-center gap-1">
-                        <span className="text-[#9B2C1F]">⊗</span> {t('mesRdv.annuler')}
-                      </button>
+                      {canCancel(r.debut) ? (
+                        <button onClick={() => annuler(r)} className="text-xs text-[#9B2C1F] hover:underline flex items-center gap-1">
+                          <span>⊗</span> {t('mesRdv.annuler')}
+                        </button>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-xs text-[#56627A]">
+                          <AlertCircle size={12} /> {t('mesRdv.annulationBloquee')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

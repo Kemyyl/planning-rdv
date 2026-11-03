@@ -152,7 +152,6 @@ clientRouter.get('/rdv/:id/pdf', requireClientAuth, async (req, res) => {
     ['Date', format(debut, "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr })],
     ['Prestation', prestation?.nom || '—'],
     ['Durée', prestation?.duree ? `${prestation.duree} min` : '—'],
-    ['Prix', prestation?.prix ? `${prestation.prix} €` : '—'],
     ['Client', client ? `${client.prenom} ${client.nom}` : '—'],
     ['Statut', rdv.statut === 'confirme' ? 'Effectuée' : rdv.statut],
   ];

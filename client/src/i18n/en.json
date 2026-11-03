@@ -110,6 +110,7 @@
     "rejoindre": "Join",
     "ajouterCalendrier": "Add to calendar",
     "annuler": "Cancel (free up to 24h before)",
+    "annulationBloquee": "Cancellation unavailable (less than 24h before session)",
     "passees": "Past sessions",
     "voirTout": "See all →",
     "effectuee": "Completed",
@@ -256,6 +257,25 @@
     "ajouter": "Add to calendar",
     "ajout": "Adding…",
     "champsObligatoires": "Please fill in all required fields"
+  },
+  "devis": {
+    "titre": "Request a quote",
+    "description": "After an initial conversation, we'll send you a personalised proposal.",
+    "ctaTitre": "Need tailored support?",
+    "ctaDesc": "Fill in our form and receive a personalised proposal within 24 hours.",
+    "cta": "Request a quote",
+    "prenom": "First name",
+    "nom": "Last name",
+    "email": "Email",
+    "telephone": "Phone (optional)",
+    "typeAccompagnement": "Type of support you're looking for",
+    "message": "Describe your request",
+    "messagePlaceholder": "Briefly describe your situation and what you're looking for…",
+    "envoyer": "Send my request",
+    "envoi": "Sending…",
+    "succes": "Request sent! We'll contact you within 24 hours.",
+    "erreur": "Error sending. Please try again.",
+    "typeOptions": ["Stress & anxiety management", "Personal development", "Emotional support", "Burnout & exhaustion", "Life transitions", "Other"]
   },
   "common": {
     "chargement": "Loading…",
