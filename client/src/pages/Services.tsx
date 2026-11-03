@@ -23,7 +23,7 @@ export default function Services() {
       <section className="bg-[#F7F2EB] pt-14 pb-10">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold text-[#0A1D35] mb-3">{t('services.titre')}</h1>
+            <h1 className="text-4xl font-display text-[#0A1D35] mb-3">{t('services.titre')}</h1>
             <p className="text-[#56627A] text-base max-w-xl leading-relaxed">
               {t('services.description')}
             </p>

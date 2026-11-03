@@ -38,7 +38,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="/logo.png" alt="Synégo" className="h-8 w-8 object-contain" />
-            <span className="text-xl font-bold text-[#0A1D35] tracking-tight">Synégo</span>
+            <span className="text-xl font-display text-[#0A1D35] tracking-tight">Synégo</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
@@ -134,7 +134,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
         <div className="px-6 py-5 border-b border-[#1C3352]">
           <div className="flex items-center gap-2.5 mb-0.5">
             <img src="/logo.png" alt="Synégo" className="h-7 w-7 object-contain brightness-0 invert" />
-            <div className="text-lg font-bold tracking-tight">Synégo</div>
+            <div className="text-lg font-display tracking-tight">Synégo</div>
           </div>
           <div className="text-xs text-[#6CAED6] mt-0.5">{t('admin.espacePraticien')}</div>
         </div>

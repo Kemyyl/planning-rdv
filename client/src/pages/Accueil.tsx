@@ -33,7 +33,7 @@ export default function Accueil() {
       <section className="bg-[#F7F2EB] pt-14 pb-16">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row gap-12 items-center">
           <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-[#0A1D35] leading-tight mb-5">
+            <h1 className="text-4xl md:text-5xl font-display text-[#0A1D35] mb-5">
               {t('accueil.titre1')}<br />
               {t('accueil.titre2')}
             </h1>
