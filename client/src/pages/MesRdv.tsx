@@ -15,6 +15,7 @@ interface RdvWithNotes extends RendezVous {
 }
 
 function DateBox({ date }: { date: Date }) {
+  const dateLocale = useDateLocale();
   return (
     <div className="w-14 h-14 bg-[#0A1D35] rounded-[14px] flex flex-col items-center justify-center shrink-0">
       <span className="text-white font-bold text-xl leading-none">{format(date, 'd')}</span>
