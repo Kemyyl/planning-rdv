@@ -578,7 +578,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
     prenom: z.string().min(1),
     nom: z.string().min(1),
     email: z.string().email(),
-    client_id: z.string().uuid().optional().nullable(),
+    client_id: z.number().int().optional().nullable(),
     prestation_nom: z.string().min(1),
     duree: z.number().int().min(1),
     nb_seances: z.number().int().min(1).max(100),

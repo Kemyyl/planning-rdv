@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS devis (
   client_prenom   TEXT NOT NULL,
   client_nom      TEXT NOT NULL,
   client_email    TEXT NOT NULL,
-  client_id       UUID REFERENCES clients(id) ON DELETE SET NULL,
+  client_id       INTEGER REFERENCES clients(id) ON DELETE SET NULL,
   prestation_nom  TEXT NOT NULL,
   duree           INTEGER NOT NULL,
   nb_seances      INTEGER NOT NULL,

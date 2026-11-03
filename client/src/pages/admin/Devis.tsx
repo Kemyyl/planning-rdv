@@ -102,7 +102,7 @@ export default function Devis() {
         headers: { ...headers, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prenom: clientPrenom, nom: clientNom, email: clientEmail,
-          client_id: clientMode === 'existing' && selectedClientId ? selectedClientId : null,
+          client_id: clientMode === 'existing' && selectedClientId ? Number(selectedClientId) : null,
           prestation_nom: selectedPrestation.nom,
           duree: selectedPrestation.duree,
           nb_seances: nbSeances,
