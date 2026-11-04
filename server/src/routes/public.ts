@@ -233,6 +233,17 @@ publicRouter.post('/devis', async (req, res) => {
   }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
 
+  // Save to DB
+  supabase.from('demandes_contact').insert({
+    prenom: parsed.data.prenom,
+    nom: parsed.data.nom,
+    email: parsed.data.email,
+    telephone: parsed.data.telephone ?? null,
+    type_accompagnement: parsed.data.type_accompagnement ?? null,
+    message: parsed.data.message,
+    statut: 'nouveau',
+  }).then(({ error }) => { if (error) console.error('demandes_contact insert error:', error.message); });
+
   sendDevisEmail(parsed.data).catch(e => console.error('Devis email failed:', e));
   sendDevisConfirmEmail(parsed.data.email, parsed.data.prenom).catch(e => console.error('Devis confirm email failed:', e));
   res.json({ ok: true });

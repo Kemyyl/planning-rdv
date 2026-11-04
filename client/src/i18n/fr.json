@@ -25,7 +25,24 @@
     "parametres": "Paramètres",
     "devis": "Devis",
     "prestations": "Prestations",
-    "espacePraticien": "Espace praticien"
+    "espacePraticien": "Espace praticien",
+    "demandes": "Demandes"
+  },
+  "demandes": {
+    "titre": "Demandes de contact",
+    "nouveau": "Nouveau",
+    "vu": "Vu",
+    "traite": "Traité",
+    "marquerVu": "Marquer comme vu",
+    "marquerTraite": "Marquer comme traité",
+    "creerDevis": "Créer un devis",
+    "repondre": "Répondre",
+    "aucune": "Aucune demande pour le moment.",
+    "type": "Type",
+    "message": "Message",
+    "telephone": "Téléphone",
+    "recu": "Reçu",
+    "nonRenseigne": "Non renseigné"
   },
   "accueil": {
     "badge": "Première séance découverte offerte",

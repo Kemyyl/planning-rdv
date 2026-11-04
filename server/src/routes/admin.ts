@@ -753,3 +753,25 @@ adminRouter.post('/devis/:id/renvoyer', requireAuth, async (req, res) => {
     res.status(500).json({ error: e instanceof Error ? e.message : 'Erreur' });
   }
 });
+
+// GET /api/admin/demandes
+adminRouter.get('/demandes', requireAuth, async (_req, res) => {
+  const { data, error } = await supabase
+    .from('demandes_contact')
+    .select('id,prenom,nom,email,telephone,type_accompagnement,message,statut,created_at')
+    .order('created_at', { ascending: false });
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data || []);
+});
+
+// PATCH /api/admin/demandes/:id/statut
+adminRouter.patch('/demandes/:id/statut', requireAuth, async (req, res) => {
+  const { statut } = req.body;
+  if (!['nouveau', 'vu', 'traite'].includes(statut)) {
+    res.status(400).json({ error: 'Statut invalide' }); return;
+  }
+  const { error } = await supabase.from('demandes_contact').update({ statut }).eq('id', req.params.id);
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json({ ok: true });
+});
+

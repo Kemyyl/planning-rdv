@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
@@ -206,20 +206,32 @@ export function PatientLayout({ children, title }: { children: React.ReactNode; 
   );
 }
 
-export function AdminLayout({ children, title }: { children: React.ReactNode; title: string }) {
+export function AdminLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { nom, logout } = useAuth();
+  const { nom, token, logout } = useAuth();
   const { dark, toggle: toggleTheme } = useTheme();
+  const [nbNouvelles, setNbNouvelles] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch('/api/admin/demandes', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then((d: { statut: string }[]) => {
+        if (Array.isArray(d)) setNbNouvelles(d.filter(x => x.statut === 'nouveau').length);
+      })
+      .catch(() => {});
+  }, [token, location.pathname]);
 
   const NAV = [
-    { href: '/admin/dashboard', label: t('admin.tableauDeBord'), icon: LayoutDashboard },
-    { href: '/admin/planning', label: t('admin.agenda'), icon: Calendar },
-    { href: '/admin/clients', label: t('admin.clients'), icon: Users },
-    { href: '/admin/devis', label: t('admin.devis'), icon: FileText },
-    { href: '/admin/prestations', label: t('admin.prestations'), icon: Layers },
-    { href: '/admin/agenda', label: t('admin.parametres'), icon: Settings },
+    { href: '/admin/dashboard', label: t('admin.tableauDeBord'), icon: LayoutDashboard, badge: 0 },
+    { href: '/admin/planning', label: t('admin.agenda'), icon: Calendar, badge: 0 },
+    { href: '/admin/clients', label: t('admin.clients'), icon: Users, badge: 0 },
+    { href: '/admin/devis', label: t('admin.devis'), icon: FileText, badge: 0 },
+    { href: '/admin/demandes', label: t('admin.demandes'), icon: Inbox, badge: nbNouvelles },
+    { href: '/admin/prestations', label: t('admin.prestations'), icon: Layers, badge: 0 },
+    { href: '/admin/agenda', label: t('admin.parametres'), icon: Settings, badge: 0 },
   ];
 
   const initiales = nom
@@ -243,7 +255,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
         </div>
 
         <nav className="flex-1 py-3">
-          {NAV.map(({ href, label, icon: Icon }) => {
+          {NAV.map(({ href, label, icon: Icon, badge }) => {
             const active = location.pathname === href;
             return (
               <Link key={href} to={href}
@@ -253,7 +265,12 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
                     : 'text-[#A8B8C8] hover:bg-[#1C3352] hover:text-white'
                 }`}>
                 <Icon size={16} />
-                {label}
+                <span className="flex-1">{label}</span>
+                {badge > 0 && (
+                  <span className="bg-[#6CAED6] text-[#0A1D35] text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}

@@ -25,7 +25,24 @@
     "parametres": "Settings",
     "devis": "Quotes",
     "prestations": "Services",
-    "espacePraticien": "Practitioner space"
+    "espacePraticien": "Practitioner space",
+    "demandes": "Requests"
+  },
+  "demandes": {
+    "titre": "Contact requests",
+    "nouveau": "New",
+    "vu": "Seen",
+    "traite": "Processed",
+    "marquerVu": "Mark as seen",
+    "marquerTraite": "Mark as processed",
+    "creerDevis": "Create quote",
+    "repondre": "Reply",
+    "aucune": "No requests yet.",
+    "type": "Type",
+    "message": "Message",
+    "telephone": "Phone",
+    "recu": "Received",
+    "nonRenseigne": "Not provided"
   },
   "accueil": {
     "badge": "First discovery session free",

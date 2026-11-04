@@ -13,6 +13,7 @@ import AdminClients from './pages/admin/Clients';
 import AdminAgenda from './pages/admin/Agenda';
 import AdminPrestations from './pages/admin/Prestations';
 import AdminDevis from './pages/admin/Devis';
+import AdminDemandes from './pages/admin/Demandes';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ClientAuthProvider } from './contexts/ClientAuthContext';
 
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/admin/agenda" element={<AdminRoute><AdminAgenda /></AdminRoute>} />
           <Route path="/admin/prestations" element={<AdminRoute><AdminPrestations /></AdminRoute>} />
           <Route path="/admin/devis" element={<AdminRoute><AdminDevis /></AdminRoute>} />
+          <Route path="/admin/demandes" element={<AdminRoute><AdminDemandes /></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

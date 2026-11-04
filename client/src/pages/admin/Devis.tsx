@@ -4,6 +4,7 @@ import { format, addDays, isPast } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -43,7 +44,8 @@ export default function Devis() {
   const { token } = useAuth();
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === 'fr' ? fr : enUS;
-  const [view, setView] = useState<'list' | 'create'>('list');
+  const [searchParams] = useSearchParams();
+  const [view, setView] = useState<'list' | 'create'>(() => searchParams.has('prenom') ? 'create' : 'list');
 
   // ── List state ───────────────────────────────────────────
   const [devisList, setDevisList] = useState<DevisItem[]>([]);
@@ -57,11 +59,11 @@ export default function Devis() {
   // ── Form state ───────────────────────────────────────────
   const [clients, setClients] = useState<Client[]>([]);
   const [prestations, setPrestations] = useState<Prestation[]>([]);
-  const [clientMode, setClientMode] = useState<'existing' | 'new'>('existing');
+  const [clientMode, setClientMode] = useState<'existing' | 'new'>(() => searchParams.has('prenom') ? 'new' : 'existing');
   const [selectedClientId, setSelectedClientId] = useState('');
-  const [prenom, setPrenom] = useState('');
-  const [nom, setNom] = useState('');
-  const [email, setEmail] = useState('');
+  const [prenom, setPrenom] = useState(() => searchParams.get('prenom') || '');
+  const [nom, setNom] = useState(() => searchParams.get('nom') || '');
+  const [email, setEmail] = useState(() => searchParams.get('email') || '');
   const [selectedPrestationId, setSelectedPrestationId] = useState('');
   const [nbSeances, setNbSeances] = useState(1);
   const [prixParSeance, setPrixParSeance] = useState<number | ''>('');
