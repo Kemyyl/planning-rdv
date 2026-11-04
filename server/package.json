@@ -6,7 +6,9 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "seed:formations": "tsx scripts/seed-formations.ts"
+    "seed:formations": "tsx scripts/seed-formations.ts",
+    "seed:formations-images": "tsx scripts/update-formations-images.ts",
+    "seed:seminaires": "tsx scripts/seed-seminaires.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
