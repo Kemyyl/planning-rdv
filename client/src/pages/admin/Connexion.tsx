@@ -11,7 +11,7 @@ export default function Connexion() {
   const navigate = useNavigate();
   const { login: adminLogin } = useAuth();
   const { login: clientLogin } = useClientAuth();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [mdp, setMdp] = useState('');
   const [prenom, setPrenom] = useState('');
@@ -19,6 +19,24 @@ export default function Connexion() {
   const [telephone, setTelephone] = useState('');
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+
+  async function submitForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fetch('/api/public/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setResetSent(true);
+    } catch {
+      toast.error('Erreur');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,7 +156,7 @@ export default function Connexion() {
           <div className="w-full max-w-sm">
 
             {/* Mode toggle */}
-            <div className="flex bg-white border border-[#E7DCCD] rounded-xl p-1 mb-8 shadow-sm">
+            <div className={`flex bg-white border border-[#E7DCCD] rounded-xl p-1 mb-8 shadow-sm ${mode === 'forgot' ? 'invisible' : ''}`}>
               <button type="button" onClick={() => setMode('login')}
                 className={`flex-1 py-2.5 text-sm font-semibold rounded-[9px] transition-all ${mode === 'login' ? 'bg-[#0A1D35] text-white shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'}`}>
                 {t('connexion.ongletConnexion')}
@@ -152,15 +170,43 @@ export default function Connexion() {
             {/* Title */}
             <div className="mb-7">
               <h1 className="text-2xl font-bold text-[#0A1D35] mb-1">
-                {mode === 'login' ? t('connexion.sousTitreConnexion') : t('connexion.sousTitreCreer')}
+                {mode === 'forgot' ? t('authModal.motDePasseOublie') : mode === 'login' ? t('connexion.sousTitreConnexion') : t('connexion.sousTitreCreer')}
               </h1>
               <p className="text-sm text-[#56627A]">
-                {mode === 'login' ? t('connexion.desc') : t('connexion.sousTitreCreer')}
+                {mode === 'forgot' ? t('authModal.sousTitreForgot') : mode === 'login' ? t('connexion.desc') : t('connexion.sousTitreCreer')}
               </p>
             </div>
 
             {/* Form card */}
             <div className="bg-white border border-[#E7DCCD] rounded-[22px] p-7 shadow-sm">
+              {mode === 'forgot' ? (
+                resetSent ? (
+                  <div className="text-center py-4">
+                    <p className="font-semibold text-[#0A1D35] mb-2">{t('authModal.resetEnvoye')}</p>
+                    <p className="text-sm text-[#56627A] mb-6">{t('authModal.resetEnvoyeDesc')}</p>
+                    <button onClick={() => { setMode('login'); setResetSent(false); }}
+                      className="text-sm text-[#0A1D35] font-bold hover:underline">
+                      {t('authModal.retourConnexion')}
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={submitForgot} className="space-y-4">
+                    <div>
+                      <label className={labelClass}>{t('connexion.email')} *</label>
+                      <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                        placeholder={t('connexion.emailPlaceholder')} autoFocus className={inputClass} />
+                    </div>
+                    <button type="submit" disabled={loading}
+                      className="w-full bg-[#0A1D35] text-white font-bold py-3.5 rounded-xl hover:bg-[#1C3352] transition-colors disabled:opacity-50 mt-2">
+                      {loading ? '…' : t('authModal.envoyerLien')}
+                    </button>
+                    <button type="button" onClick={() => setMode('login')}
+                      className="w-full text-sm text-[#56627A] hover:text-[#0A1D35] text-center mt-1 hover:underline">
+                      {t('authModal.retourConnexion')}
+                    </button>
+                  </form>
+                )
+              ) : (
               <form onSubmit={submit} className="space-y-4">
 
                 {mode === 'register' && (
@@ -209,6 +255,15 @@ export default function Connexion() {
                   </div>
                 </div>
 
+                {mode === 'login' && (
+                  <div className="text-right -mt-1">
+                    <button type="button" onClick={() => setMode('forgot')}
+                      className="text-xs text-[#56627A] hover:text-[#0A1D35] hover:underline">
+                      {t('authModal.motDePasseOublie')} ?
+                    </button>
+                  </div>
+                )}
+
                 <button type="submit" disabled={loading}
                   className="w-full bg-[#0A1D35] text-white font-bold py-3.5 rounded-xl hover:bg-[#1C3352] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 mt-2">
                   {loading ? (
@@ -220,6 +275,7 @@ export default function Connexion() {
                   ) : mode === 'login' ? t('connexion.btnConnexion') : t('connexion.btnCreer')}
                 </button>
               </form>
+              )}
             </div>
 
             {/* RGPD note for register */}
