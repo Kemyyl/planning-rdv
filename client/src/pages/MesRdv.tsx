@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams, Navigate } from 'react-router-dom';
+import { Link, useSearchParams, Navigate, useLocation } from 'react-router-dom';
 import { format, isPast, addHours } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { Video, Calendar, AlertCircle, Download, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -64,6 +64,7 @@ export default function MesRdv() {
   const { timeFormat } = useTimeFormat();
   const [params] = useSearchParams();
   const jeton = params.get('jeton');
+  const location = useLocation();
   const { token: clientToken, prenom, nom, clientId } = useClientAuth();
 
   const [rdvs, setRdvs] = useState<RdvWithNotes[]>([]);
@@ -97,7 +98,7 @@ export default function MesRdv() {
     } else {
       setLoading(false);
     }
-  }, [clientToken, jeton]);
+  }, [clientToken, jeton, location.pathname]);
 
   async function downloadPdf(rdvId: number) {
     if (!clientToken) return;
