@@ -42,7 +42,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
-            {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/formations', t('nav.formations')], ['/#contact', t('nav.contact')]] as [string, string][]).map(([href, label]) => (
+            {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/formations', t('nav.formations')]] as [string, string][]).map(([href, label]) => (
               <Link key={href} to={href} className="text-sm text-[#56627A] hover:text-[#0A1D35] font-medium transition-colors">{label}</Link>
             ))}
           </nav>

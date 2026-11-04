@@ -90,7 +90,11 @@
     "etape3Desc": "Recevez votre lien Meet par email et connectez-vous à l'heure.",
     "temoignage1": "Un accompagnement vraiment bienveillant. Je me suis sentie écoutée dès la première séance.",
     "temoignage2": "La flexibilité des horaires et la qualité de l'écoute m'ont beaucoup aidé dans cette période.",
-    "temoignage3": "Simple à réserver, professionnel et efficace. Je recommande vivement !"
+    "temoignage3": "Simple à réserver, professionnel et efficace. Je recommande vivement !",
+    "praticienBadge": "Votre praticien",
+    "praticienRole": "Formateur · Coach · Thérapeute",
+    "praticienBio": "Spécialisé dans l'accompagnement individuel et collectif, j'aide chaque personne à mieux se connaître, dépasser ses blocages et construire son équilibre. Formateur en développement personnel et coach certifié, je m'appuie sur une approche à la fois humaine, pragmatique et structurée.",
+    "praticienLinkedin": "Voir mon profil LinkedIn"
   },
   "services": {
     "titre": "Nos accompagnements",

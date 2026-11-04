@@ -155,6 +155,55 @@ export default function Accueil() {
         </div>
       </section>
 
+      {/* Votre praticien */}
+      <section className="bg-[#F7F2EB] border-y border-[#E7DCCD] py-16">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+          {/* Photo */}
+          <div className="shrink-0">
+            <div className="relative">
+              <div className="absolute -inset-3 bg-[#D0E7F5] rounded-[28px] -z-10 translate-x-3 translate-y-3" />
+              <img
+                src="/melik.jpg"
+                alt="Melik Youcef Tahri"
+                className="w-64 h-64 md:w-72 md:h-72 object-cover rounded-[24px] border-4 border-white shadow-md"
+              />
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 bg-white border border-[#E7DCCD] text-[#56627A] text-xs font-bold px-3 py-1.5 rounded-full mb-5">
+              {t('accueil.praticienBadge')}
+            </div>
+            <h2 className="text-3xl md:text-4xl font-display text-[#0A1D35] mb-2 leading-tight">
+              Melik Youcef Tahri
+            </h2>
+            <p className="text-sm font-semibold text-[#6CAED6] uppercase tracking-widest mb-5">
+              {t('accueil.praticienRole')}
+            </p>
+            <p className="text-[#56627A] text-base leading-relaxed mb-6 max-w-xl">
+              {t('accueil.praticienBio')}
+            </p>
+            <div className="flex gap-3 flex-wrap justify-center md:justify-start">
+              <Link
+                to="/reservation"
+                className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-6 py-3 rounded-[12px] hover:bg-[#1C3352] transition-colors text-sm"
+              >
+                {t('accueil.cta')} <ArrowRight size={14} />
+              </Link>
+              <a
+                href="https://www.linkedin.com/in/melik-youcef-tahri-609b60201/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 border border-[#D9C9B4] text-[#0A1D35] font-semibold px-6 py-3 rounded-[12px] hover:bg-white transition-colors text-sm"
+              >
+                {t('accueil.praticienLinkedin')}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features strip */}
       <section id="services" className="bg-[#F7F2EB] py-14">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6">
