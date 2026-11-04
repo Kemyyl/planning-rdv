@@ -895,6 +895,7 @@ adminRouter.post('/devis/:id/marquer-paye', requireAuth, async (req, res) => {
 });
 
 // GET /api/admin/revenue — statistiques mensuelles (6 derniers mois)
+// CA = uniquement les devis réellement payés (statut='paye'), pas les simples acceptations.
 adminRouter.get('/revenue', requireAuth, async (_req, res) => {
   const months: { month: string; label: string; rdvs: number; revenue: number; revenuePaye: number }[] = [];
   const now = new Date();
@@ -908,17 +909,14 @@ adminRouter.get('/revenue', requireAuth, async (_req, res) => {
     const [rdvsResult, devisResult] = await Promise.all([
       supabase.from('rendez_vous').select('id', { count: 'exact', head: true })
         .eq('statut', 'confirme').gte('debut', start.toISOString()).lt('debut', end.toISOString()),
-      supabase.from('devis').select('total,statut')
-        .in('statut', ['accepte', 'paye']).gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
+      supabase.from('devis').select('total')
+        .eq('statut', 'paye').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
     ]);
 
-    const devisRows = (devisResult.data || []) as { total: number; statut: string }[];
+    const devisRows = (devisResult.data || []) as { total: number }[];
     const revenue = devisRows.reduce((sum, d) => sum + Number(d.total), 0);
-    const revenuePaye = devisRows
-      .filter(d => d.statut === 'paye')
-      .reduce((sum, d) => sum + Number(d.total), 0);
 
-    months.push({ month: monthKey, label: monthLabel, rdvs: rdvsResult.count || 0, revenue, revenuePaye });
+    months.push({ month: monthKey, label: monthLabel, rdvs: rdvsResult.count || 0, revenue, revenuePaye: revenue });
   }
 
   res.json(months);

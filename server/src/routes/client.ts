@@ -121,6 +121,7 @@ clientRouter.get('/factures', requireClientAuth, async (req, res) => {
     .from('devis')
     .select('id,numero,facture_numero,facture_date,prestation_nom,nb_seances,prix_par_seance,total,statut,paid_at,created_at')
     .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
+    .eq('statut', 'paye')
     .not('facture_numero', 'is', null)
     .order('facture_date', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }

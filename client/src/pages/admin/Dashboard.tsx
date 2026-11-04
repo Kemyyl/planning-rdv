@@ -184,7 +184,6 @@ export default function AdminDashboard() {
   }
 
   const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
-  const totalRevenuePaye = revenueData.reduce((sum, d) => sum + (d.revenuePaye ?? 0), 0);
 
   const PERIODS: [Period, string][] = [
     ['today', t('dashboard.periodeAujourdhui')],
@@ -265,9 +264,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-sm font-bold text-[#0A1D35] mb-1">Activité &amp; revenus — 6 derniers mois</p>
             <p className="text-xs text-[#56627A]">
-              CA total : <span className="font-bold text-[#0A1D35]">{totalRevenue} €</span>
-              <span className="mx-2 text-[#E7DCCD]">·</span>
-              Encaissé : <span className="font-bold text-[#1E6B4A]">{totalRevenuePaye} €</span>
+              CA encaissé : <span className="font-bold text-[#1E6B4A]">{totalRevenue} €</span>
             </p>
           </div>
         </div>
@@ -279,10 +276,6 @@ export default function AdminDashboard() {
                 <stop offset="95%" stopColor="#0A1D35" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6CAED6" stopOpacity={0.22} />
-                <stop offset="95%" stopColor="#6CAED6" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradRevenuePaye" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#1E6B4A" stopOpacity={0.22} />
                 <stop offset="95%" stopColor="#1E6B4A" stopOpacity={0} />
               </linearGradient>
@@ -293,15 +286,10 @@ export default function AdminDashboard() {
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#A8B8C8' }} axisLine={false} tickLine={false} width={40} tickFormatter={v => `${v}€`} />
             <Tooltip
               contentStyle={{ borderRadius: 10, border: '1px solid #E7DCCD', fontSize: 12 }}
-              formatter={(value, name) => {
-                if (name === 'revenue') return [`${Number(value)} €`, 'CA total'];
-                if (name === 'revenuePaye') return [`${Number(value)} €`, 'Encaissé'];
-                return [Number(value), 'Séances'];
-              }}
+              formatter={(value, name) => name === 'revenue' ? [`${Number(value)} €`, 'CA encaissé'] : [Number(value), 'Séances']}
             />
             <Area yAxisId="left" type="monotone" dataKey="rdvs" stroke="#0A1D35" strokeWidth={2} fill="url(#gradRdvs)" dot={false} />
-            <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="#6CAED6" strokeWidth={2} fill="url(#gradRevenue)" dot={false} />
-            <Area yAxisId="right" type="monotone" dataKey="revenuePaye" stroke="#1E6B4A" strokeWidth={2} fill="url(#gradRevenuePaye)" dot={false} />
+            <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="#1E6B4A" strokeWidth={2} fill="url(#gradRevenue)" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
