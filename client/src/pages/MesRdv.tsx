@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, Navigate } from 'react-router-dom';
 import { format, isPast, addHours } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { Video, Calendar, AlertCircle, Download, Plus, Clock, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { PublicLayout } from '../components/Layout';
+import { PublicLayout, PatientLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import type { RendezVous } from '@synego/shared';
 
@@ -174,25 +174,7 @@ export default function MesRdv() {
 
   // Not connected, no token
   if (!clientToken && !jeton && !loading) {
-    return (
-      <PublicLayout>
-        <div className="max-w-lg mx-auto px-6 py-20 text-center">
-          <div className="bg-white border border-[#E7DCCD] rounded-[22px] p-10 flex flex-col items-center gap-5 shadow-sm">
-            <div className="w-14 h-14 bg-[#F6E7C8] rounded-full flex items-center justify-center">
-              <AlertCircle size={24} className="text-[#8A5A12]" />
-            </div>
-            <div>
-              <p className="font-bold text-[#0A1D35] mb-1">{t('mesRdv.connexionRequise')}</p>
-              <p className="text-sm text-[#56627A]">{t('mesRdv.ouLienEmail')}</p>
-            </div>
-            <Link to="/connexion"
-              className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-6 py-3 rounded-[12px] hover:bg-[#1C3352] transition-colors text-sm">
-              {t('mesRdv.seConnecter')}
-            </Link>
-          </div>
-        </div>
-      </PublicLayout>
-    );
+    return <Navigate to="/login" replace />;
   }
 
   // Jeton mode (no account)
@@ -251,24 +233,8 @@ export default function MesRdv() {
   const prochainRdv = upcoming[0];
 
   return (
-    <PublicLayout>
-      {/* Page header */}
-      <div className="bg-[#F7F2EB] border-b border-[#E7DCCD]">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1">{t('mesRdv.monCompte')}</p>
-            <h1 className="text-2xl font-extrabold text-[#0A1D35]">
-              {prenom ? t('mesRdv.bonjour', { prenom }) : t('mesRdv.titre')}
-            </h1>
-          </div>
-          <Link to="/reservation"
-            className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] hover:bg-[#1C3352] transition-colors text-sm shrink-0">
-            <Plus size={15} /> {t('mesRdv.reserver')}
-          </Link>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <PatientLayout title={prenom ? t('mesRdv.bonjour', { prenom }) : t('mesRdv.titre')}>
+      <div className="max-w-5xl mx-auto">
         <div className="flex gap-8 items-start">
 
           {/* Main column */}
@@ -578,6 +544,6 @@ export default function MesRdv() {
           </div>
         </div>
       </div>
-    </PublicLayout>
+    </PatientLayout>
   );
 }

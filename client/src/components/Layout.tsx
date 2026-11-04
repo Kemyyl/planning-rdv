@@ -122,6 +122,90 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function PatientLayout({ children, title }: { children: React.ReactNode; title?: string }) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { prenom, nom, logout } = useClientAuth();
+  const { dark, toggle: toggleTheme } = useTheme();
+
+  const fullName = [prenom, nom].filter(Boolean).join(' ') || prenom || '';
+  const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
+
+  const NAV = [
+    { href: '/mes-rdv', label: t('mesRdv.titre'), icon: Calendar },
+    { href: '/profil', label: t('profil.monProfil'), icon: User },
+  ];
+
+  function handleLogout() {
+    logout();
+    navigate('/login');
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F7F2EB] flex">
+      <aside className="w-56 bg-[#0A1D35] text-white flex flex-col shrink-0">
+        <div className="px-6 py-5 border-b border-[#1C3352]">
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <img src="/logo.png" alt="Synégo" className="h-7 w-7 object-contain brightness-0 invert" />
+            <div className="text-lg font-display tracking-tight">Synégo</div>
+          </div>
+          <div className="text-xs text-[#6CAED6] mt-0.5">{t('patient.espacePatient')}</div>
+        </div>
+
+        <nav className="flex-1 py-3">
+          {NAV.map(({ href, label, icon: Icon }) => {
+            const active = location.pathname === href;
+            return (
+              <Link key={href} to={href}
+                className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${
+                  active ? 'bg-[#1C3352] text-white' : 'text-[#A8B8C8] hover:bg-[#1C3352] hover:text-white'
+                }`}>
+                <Icon size={16} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="px-4 py-4 border-t border-[#1C3352]">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-full bg-[#D0E7F5] flex items-center justify-center text-xs font-bold text-[#0A1D35] shrink-0">
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-semibold text-white truncate">{fullName}</div>
+              <button onClick={handleLogout} className="flex items-center gap-1 text-xs text-[#56627A] hover:text-[#D9C9B4] transition-colors mt-0.5">
+                <LogOut size={11} />
+                {t('nav.deconnexion')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-[#E7DCCD] px-8 py-4 flex items-center justify-between">
+          <h1 className="text-xl font-bold text-[#0A1D35]">{title || ''}</h1>
+          <div className="flex items-center gap-2">
+            <LangToggle />
+            <button onClick={toggleTheme}
+              className="p-2 rounded-xl border border-[#E7DCCD] bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
+              title={dark ? t('nav.modeClair') : t('nav.modeSombre')}>
+              {dark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <Link to="/reservation"
+              className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#1C3352] transition-colors">
+              <Plus size={14} /> {t('nav.nouveauRdv')}
+            </Link>
+          </div>
+        </header>
+        <main className="flex-1 p-8 overflow-auto">{children}</main>
+      </div>
+    </div>
+  );
+}
+
 export function AdminLayout({ children, title }: { children: React.ReactNode; title: string }) {
   const { t } = useTranslation();
   const location = useLocation();

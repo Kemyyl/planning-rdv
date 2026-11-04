@@ -472,6 +472,9 @@
     "resetEnvoyeDesc": "Si un compte existe avec cet e-mail, vous recevrez un lien de réinitialisation dans quelques instants.",
     "retourConnexion": "Retour à la connexion"
   },
+  "patient": {
+    "espacePatient": "Espace patient"
+  },
   "profil": {
     "monProfil": "Mon profil",
     "seanceCount": "séance(s)",

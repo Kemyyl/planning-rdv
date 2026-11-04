@@ -4,7 +4,7 @@ import { format, isPast } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { PublicLayout } from '../components/Layout';
+import { PatientLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { Navigate, Link } from 'react-router-dom';
 
@@ -55,7 +55,7 @@ export default function Profil() {
   const paletteFg = ['#0A5A8A', '#1E6B4A', '#8A5A12', '#5A2C8A', '#9B2C1F', '#1E5C4A'];
   const avatarIdx = ((prenom.charCodeAt(0) || 0) + (nom.charCodeAt(0) || 0)) % 6;
 
-  if (!clientToken) return <Navigate to="/mes-rdv" replace />;
+  if (!clientToken) return <Navigate to="/login" replace />;
 
   async function saveProfil() {
     setSaving(true);
@@ -99,42 +99,33 @@ export default function Profil() {
   const labelClass = 'block text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1.5';
 
   return (
-    <PublicLayout>
+    <PatientLayout title={t('profil.monProfil')}>
 
-      {/* Header */}
-      <div className="bg-[#F7F2EB] border-b border-[#E7DCCD]">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="flex items-center gap-5">
-            {/* Avatar */}
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold shrink-0 shadow-sm"
-              style={{ background: paletteBg[avatarIdx], color: paletteFg[avatarIdx] }}>
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-extrabold text-[#0A1D35] leading-tight">{fullName || t('profil.monProfil')}</h1>
-              <p className="text-sm text-[#56627A] mt-0.5">{email}</p>
-              <div className="flex items-center gap-4 mt-2">
-                <span className="text-xs font-semibold text-[#0A1D35] bg-white border border-[#E7DCCD] px-3 py-1 rounded-full">
-                  {totalSeances} {t('profil.seanceCount', { count: totalSeances })}
-                </span>
-                {prochainRdv && (
-                  <span className="text-xs text-[#1E6B4A] font-semibold bg-[#DCEFE4] px-3 py-1 rounded-full flex items-center gap-1">
-                    <CalendarCheck size={11} />
-                    {t('profil.prochain')} {format(new Date(prochainRdv.debut), 'd MMM', { locale: dateLocale })}
-                  </span>
-                )}
-              </div>
-            </div>
-            <Link to="/mes-rdv"
-              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-[#56627A] hover:text-[#0A1D35] transition-colors border border-[#E7DCCD] bg-white px-4 py-2 rounded-xl shrink-0">
-              {t('profil.mesRendezVous')} <ArrowRight size={13} />
-            </Link>
+      {/* Profile header card */}
+      <div className="max-w-4xl mx-auto mb-6 bg-white border border-[#E7DCCD] rounded-[20px] p-6 flex items-center gap-5 shadow-sm">
+        <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm"
+          style={{ background: paletteBg[avatarIdx], color: paletteFg[avatarIdx] }}>
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-xl font-extrabold text-[#0A1D35] leading-tight">{fullName || t('profil.monProfil')}</h2>
+          <p className="text-sm text-[#56627A] mt-0.5">{email}</p>
+          <div className="flex items-center gap-3 mt-2">
+            <span className="text-xs font-semibold text-[#0A1D35] bg-[#F7F2EB] border border-[#E7DCCD] px-3 py-1 rounded-full">
+              {totalSeances} {t('profil.seanceCount', { count: totalSeances })}
+            </span>
+            {prochainRdv && (
+              <span className="text-xs text-[#1E6B4A] font-semibold bg-[#DCEFE4] px-3 py-1 rounded-full flex items-center gap-1">
+                <CalendarCheck size={11} />
+                {t('profil.prochain')} {format(new Date(prochainRdv.debut), 'd MMM', { locale: dateLocale })}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-[260px_1fr] gap-6 items-start">
 
           {/* Sidebar */}
@@ -275,6 +266,6 @@ export default function Profil() {
 
         </div>
       </div>
-    </PublicLayout>
+    </PatientLayout>
   );
 }

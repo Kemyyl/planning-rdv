@@ -472,6 +472,9 @@
     "resetEnvoyeDesc": "If an account exists with this email, you'll receive a reset link shortly.",
     "retourConnexion": "Back to login"
   },
+  "patient": {
+    "espacePatient": "Patient space"
+  },
   "profil": {
     "monProfil": "My profile",
     "seanceCount": "session(s)",
