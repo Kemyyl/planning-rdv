@@ -172,6 +172,7 @@
     "annules": "Séances annulées",
     "annulee": "Annulée",
     "devisFactures": "Mes devis & factures",
+    "aucunDevis": "Aucun devis pour le moment — votre praticien peut vous en envoyer un depuis l'espace admin.",
     "devisEnvoye": "Devis envoyé",
     "factureDisponible": "Facture disponible",
     "devisAccepte": "Accepté",

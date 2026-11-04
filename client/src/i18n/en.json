@@ -172,6 +172,7 @@
     "annules": "Cancelled sessions",
     "annulee": "Cancelled",
     "devisFactures": "My quotes & invoices",
+    "aucunDevis": "No quotes yet — your practitioner can send one from the admin space.",
     "devisEnvoye": "Quote sent",
     "factureDisponible": "Invoice available",
     "devisAccepte": "Accepted",

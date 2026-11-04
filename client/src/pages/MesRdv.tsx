@@ -411,9 +411,21 @@ export default function MesRdv() {
             )}
 
             {/* Devis & Factures */}
-            {clientToken && !devisLoading && devisList.length > 0 && (
+            {clientToken && (
               <div className="mt-8">
                 <h2 className="text-base font-extrabold text-[#0A1D35] mb-4">{t('mesRdv.devisFactures')}</h2>
+                {devisLoading && (
+                  <div className="space-y-3">
+                    <div className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 animate-pulse h-20" />
+                    <div className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 animate-pulse h-20" />
+                  </div>
+                )}
+                {!devisLoading && devisList.length === 0 && (
+                  <div className="bg-white border border-dashed border-[#D9C9B4] rounded-[16px] p-8 text-center text-sm text-[#A8B8C8]">
+                    {t('mesRdv.aucunDevis')}
+                  </div>
+                )}
+                {!devisLoading && devisList.length > 0 && (
                 <div className="space-y-3">
                   {devisList.map(item => {
                     const statutConfig: Record<DevisClientItem['statut'], { bg: string; text: string; label: string }> = {
@@ -475,6 +487,7 @@ export default function MesRdv() {
                     );
                   })}
                 </div>
+                )}
               </div>
             )}
           </div>
