@@ -265,7 +265,7 @@ export default function AdminDashboard() {
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#A8B8C8' }} axisLine={false} tickLine={false} width={40} tickFormatter={v => `${v}€`} />
             <Tooltip
               contentStyle={{ borderRadius: 10, border: '1px solid #E7DCCD', fontSize: 12 }}
-              formatter={(value: number, name: string) => name === 'revenue' ? [`${value} €`, 'Revenus'] : [value, 'Séances']}
+              formatter={(value, name) => name === 'revenue' ? [`${Number(value)} €`, 'Revenus'] : [Number(value), 'Séances']}
             />
             <Area yAxisId="left" type="monotone" dataKey="rdvs" stroke="#0A1D35" strokeWidth={2} fill="url(#gradRdvs)" dot={false} />
             <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="#6CAED6" strokeWidth={2} fill="url(#gradRevenue)" dot={false} />
