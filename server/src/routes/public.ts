@@ -5,7 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { supabase } from '../lib/supabase';
 import { getCreneauxDisponibles } from '../services/creneaux';
-import { sendConfirmationEmail, sendInviteEmail, sendDevisEmail, sendDevisConfirmEmail } from '../lib/email';
+import { sendConfirmationEmail, sendInviteEmail, sendDevisEmail, sendDevisConfirmEmail, sendResetPasswordEmail } from '../lib/email';
 import { createMeetEvent } from '../lib/google-meet';
 
 function fallbackMeetLink(): string {
@@ -171,6 +171,35 @@ publicRouter.post('/definir-mot-de-passe', async (req, res) => {
     { id: c.id, email: c.email, role: 'client' }, process.env.JWT_SECRET!, { expiresIn: '30d' }
   );
   res.json({ token: jwtToken, id: c.id, prenom: c.prenom });
+});
+
+// POST /api/public/reset-password
+publicRouter.post('/reset-password', async (req, res) => {
+  const parsed = z.object({ email: z.string().email() }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Email invalide' }); return; }
+
+  const { data: client } = await supabase
+    .from('clients').select('id,prenom,email,compte_actif').eq('email', parsed.data.email).single();
+
+  // Always return 200 to avoid email enumeration
+  if (!client || !(client as { compte_actif: boolean }).compte_actif) {
+    res.json({ ok: true }); return;
+  }
+
+  const c = client as { id: number; prenom: string; email: string };
+  const token = randomUUID();
+  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await supabase.from('clients').update({
+    token_reinitialisation: token,
+    token_expire_le: expiry.toISOString(),
+  }).eq('id', c.id);
+
+  const appUrl = process.env.APP_URL || 'http://localhost:5173';
+  sendResetPasswordEmail(c.email, c.prenom, `${appUrl}/definir-mot-de-passe?token=${token}`)
+    .catch(e => console.error('Reset password email failed:', e));
+
+  res.json({ ok: true });
 });
 
 // PATCH /api/public/rdv/:id/annuler

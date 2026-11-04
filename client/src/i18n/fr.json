@@ -445,7 +445,13 @@
     "bienvenue": "Bienvenue {{nom}} !",
     "bonjour": "Bonjour {{prenom}} !",
     "compteCreé": "Compte créé avec succès !",
-    "erreur": "Erreur"
+    "erreur": "Erreur",
+    "motDePasseOublie": "Mot de passe oublié",
+    "sousTitreForgot": "Entrez votre e-mail pour recevoir un lien de réinitialisation.",
+    "envoyerLien": "Envoyer le lien",
+    "resetEnvoye": "E-mail envoyé !",
+    "resetEnvoyeDesc": "Si un compte existe avec cet e-mail, vous recevrez un lien de réinitialisation dans quelques instants.",
+    "retourConnexion": "Retour à la connexion"
   },
   "profil": {
     "monProfil": "Mon profil",

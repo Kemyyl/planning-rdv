@@ -13,12 +13,31 @@ export default function AuthModal({ onClose }: Props) {
   const { login: clientLogin } = useClientAuth();
   const { login: adminLogin } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ prenom: '', nom: '', email: '', mot_de_passe: '', telephone: '' });
+  const [resetSent, setResetSent] = useState(false);
 
   function set(k: string, v: string) { setForm(f => ({ ...f, [k]: v })); }
+
+  async function submitForgot(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch('/api/public/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: form.email }),
+      });
+      if (!res.ok) throw new Error(t('authModal.erreur'));
+      setResetSent(true);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('authModal.erreur'));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,15 +91,48 @@ export default function AuthModal({ onClose }: Props) {
         </button>
 
         <h2 className="text-xl font-extrabold text-[#0A1D35] mb-1">
-          {mode === 'login' ? t('authModal.connexion') : t('authModal.creerCompte')}
+          {mode === 'forgot' ? t('authModal.motDePasseOublie') : mode === 'login' ? t('authModal.connexion') : t('authModal.creerCompte')}
         </h2>
         <p className="text-sm text-[#56627A] mb-6">
-          {mode === 'login'
+          {mode === 'forgot'
+            ? t('authModal.sousTitreForgot')
+            : mode === 'login'
             ? t('authModal.sousTitreConnexion')
             : t('authModal.sousTitreCreer')}
         </p>
 
-        <form onSubmit={submit} className="space-y-3">
+        {mode === 'forgot' && (
+          resetSent ? (
+            <div className="text-center py-4">
+              <p className="text-[#0A1D35] font-semibold mb-2">{t('authModal.resetEnvoye')}</p>
+              <p className="text-sm text-[#56627A] mb-6">{t('authModal.resetEnvoyeDesc')}</p>
+              <button onClick={() => { setMode('login'); setResetSent(false); }}
+                className="text-sm text-[#0A1D35] font-bold hover:underline">
+                {t('authModal.retourConnexion')}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={submitForgot} className="space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-[#0A1D35] mb-1 block">{t('authModal.email')}</label>
+                <input type="email" required value={form.email} onChange={e => set('email', e.target.value)}
+                  className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]" />
+              </div>
+              <button type="submit" disabled={loading}
+                className="w-full bg-[#0A1D35] text-white font-bold py-3 rounded-[14px] hover:bg-[#1C3352] transition-colors disabled:opacity-50 mt-2">
+                {loading ? '…' : t('authModal.envoyerLien')}
+              </button>
+              <div className="mt-4 text-center">
+                <button type="button" onClick={() => setMode('login')}
+                  className="text-sm text-[#56627A] hover:text-[#0A1D35] hover:underline">
+                  {t('authModal.retourConnexion')}
+                </button>
+              </div>
+            </form>
+          )
+        )}
+
+        <form onSubmit={submit} className={`space-y-3 ${mode === 'forgot' ? 'hidden' : ''}`}>
           {mode === 'register' && (
             <div className="grid grid-cols-2 gap-3">
               {[{ k: 'prenom', l: t('authModal.prenom') }, { k: 'nom', l: t('authModal.nom') }].map(({ k, l }) => (
@@ -117,23 +169,33 @@ export default function AuthModal({ onClose }: Props) {
               </button>
             </div>
           </div>
+          {mode === 'login' && (
+            <div className="text-right -mt-1">
+              <button type="button" onClick={() => setMode('forgot')}
+                className="text-xs text-[#56627A] hover:text-[#0A1D35] hover:underline">
+                {t('authModal.motDePasseOublie')} ?
+              </button>
+            </div>
+          )}
           <button type="submit" disabled={loading}
             className="w-full bg-[#0A1D35] text-white font-bold py-3 rounded-[14px] hover:bg-[#1C3352] transition-colors disabled:opacity-50 mt-2">
             {loading ? '…' : mode === 'login' ? t('authModal.seConnecter') : t('authModal.creerMonCompte')}
           </button>
         </form>
 
-        <div className="mt-5 text-center text-sm">
-          {mode === 'login' ? (
-            <p className="text-[#56627A]">{t('authModal.pasDeCompte')}{' '}
-              <button onClick={() => setMode('register')} className="text-[#0A1D35] font-bold hover:underline">{t('authModal.sInscrire')}</button>
-            </p>
-          ) : (
-            <p className="text-[#56627A]">{t('authModal.dejaUnCompte')}{' '}
-              <button onClick={() => setMode('login')} className="text-[#0A1D35] font-bold hover:underline">{t('authModal.seConnecter')}</button>
-            </p>
-          )}
-        </div>
+        {mode !== 'forgot' && (
+          <div className="mt-5 text-center text-sm">
+            {mode === 'login' ? (
+              <p className="text-[#56627A]">{t('authModal.pasDeCompte')}{' '}
+                <button onClick={() => setMode('register')} className="text-[#0A1D35] font-bold hover:underline">{t('authModal.sInscrire')}</button>
+              </p>
+            ) : (
+              <p className="text-[#56627A]">{t('authModal.dejaUnCompte')}{' '}
+                <button onClick={() => setMode('login')} className="text-[#0A1D35] font-bold hover:underline">{t('authModal.seConnecter')}</button>
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

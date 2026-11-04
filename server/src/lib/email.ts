@@ -186,6 +186,33 @@ export async function sendDevisPdfEmail(data: {
   });
 }
 
+export async function sendResetPasswordEmail(to: string, prenom: string, resetUrl: string) {
+  if (!isConfigured()) return;
+  await makeTransport().sendMail({
+    from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
+    to,
+    subject: 'Réinitialisation de votre mot de passe — Synégo',
+    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
+      <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
+        <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
+        <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
+      </div>
+      <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
+        <h2 style="margin-top:0">Réinitialisation de mot de passe</h2>
+        <p>Bonjour <strong>${prenom}</strong>,</p>
+        <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
+        <div style="margin:24px 0">
+          <a href="${resetUrl}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
+            Réinitialiser mon mot de passe
+          </a>
+        </div>
+        <p style="font-size:13px;color:#56627A">Ce lien est valable 1 heure. Si vous n'avez pas fait cette demande, ignorez cet e-mail.</p>
+        <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
+      </div>
+    </div>`,
+  });
+}
+
 export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo) {
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });

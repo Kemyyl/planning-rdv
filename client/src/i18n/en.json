@@ -445,7 +445,13 @@
     "bienvenue": "Welcome {{nom}}!",
     "bonjour": "Hello {{prenom}}!",
     "compteCreé": "Account created successfully!",
-    "erreur": "Error"
+    "erreur": "Error",
+    "motDePasseOublie": "Forgot password",
+    "sousTitreForgot": "Enter your email to receive a reset link.",
+    "envoyerLien": "Send link",
+    "resetEnvoye": "Email sent!",
+    "resetEnvoyeDesc": "If an account exists with this email, you'll receive a reset link shortly.",
+    "retourConnexion": "Back to login"
   },
   "profil": {
     "monProfil": "My profile",
