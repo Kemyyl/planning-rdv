@@ -15,6 +15,7 @@
     "i18next": "^26.7.1",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
+    "react-calendly": "^4.4.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-i18next": "^17.1.11",

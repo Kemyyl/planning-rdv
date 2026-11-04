@@ -120,7 +120,7 @@ clientRouter.get('/devis', requireClientAuth, async (req, res) => {
   // Match by client_id OR by email (case-insensitive) to handle both linked and unlinked devis
   const { data, error } = await supabase
     .from('devis')
-    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance,paid_at')
+    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance')
     .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
@@ -178,7 +178,7 @@ clientRouter.get('/devis/:id/facture', requireClientAuth, async (req, res) => {
   const email = (client as { email: string }).email;
   const owned = d.client_id === clientId || d.client_email.toLowerCase() === email.toLowerCase();
   if (!owned) { res.status(403).json({ error: 'Accès refusé' }); return; }
-  if (d.statut !== 'accepte' || !d.facture_numero) {
+  if ((d.statut !== 'accepte' && d.statut !== 'paye') || !d.facture_numero) {
     res.status(400).json({ error: 'Facture non disponible' }); return;
   }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox, GraduationCap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
@@ -42,7 +42,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
-            {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/#contact', t('nav.contact')]] as [string, string][]).map(([href, label]) => (
+            {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/formations', t('nav.formations')], ['/#contact', t('nav.contact')]] as [string, string][]).map(([href, label]) => (
               <Link key={href} to={href} className="text-sm text-[#56627A] hover:text-[#0A1D35] font-medium transition-colors">{label}</Link>
             ))}
           </nav>
@@ -133,7 +133,9 @@ export function PatientLayout({ children, title }: { children: React.ReactNode; 
   const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
   const NAV = [
-    { href: '/mes-rdv', label: t('mesRdv.titre'), icon: Calendar },
+    { href: '/mes-rdv', label: t('nav.mesRdv'), icon: Calendar },
+    { href: '/mes-devis', label: t('nav.mesDevis'), icon: FileText },
+    { href: '/mes-formations', label: t('nav.mesFormations'), icon: GraduationCap },
     { href: '/profil', label: t('profil.monProfil'), icon: User },
   ];
 
@@ -231,6 +233,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
     { href: '/admin/devis', label: t('admin.devis'), icon: FileText, badge: 0 },
     { href: '/admin/demandes', label: t('admin.demandes'), icon: Inbox, badge: nbNouvelles },
     { href: '/admin/prestations', label: t('admin.prestations'), icon: Layers, badge: 0 },
+    { href: '/admin/formations', label: t('admin.formations'), icon: GraduationCap, badge: 0 },
     { href: '/admin/agenda', label: t('admin.parametres'), icon: Settings, badge: 0 },
   ];
 

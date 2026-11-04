@@ -14,22 +14,6 @@ interface RdvWithNotes extends RendezVous {
   lien_meet?: string;
 }
 
-interface DevisClientItem {
-  id: string;
-  numero: string;
-  prestation_nom: string;
-  nb_seances: number;
-  total: number;
-  statut: 'envoye' | 'accepte' | 'refuse' | 'expire' | 'paye';
-  email_envoye: boolean;
-  validite_date: string;
-  created_at: string;
-  facture_numero?: string;
-  facture_date?: string;
-  prix_par_seance: number;
-  paid_at?: string | null;
-}
-
 function DateBox({ date }: { date: Date }) {
   const dateLocale = useDateLocale();
   return (
@@ -66,25 +50,12 @@ export default function MesRdv() {
   const [params] = useSearchParams();
   const jeton = params.get('jeton');
   const location = useLocation();
-
-  // Handle Stripe Checkout return
-  useEffect(() => {
-    const payment = params.get('payment');
-    if (payment === 'success') toast.success(t('mesRdv.paiementOk'));
-    else if (payment === 'cancel') toast(t('mesRdv.paiementAnnule'));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const { token: clientToken, prenom, nom, clientId } = useClientAuth();
+  const { token: clientToken, prenom, nom } = useClientAuth();
 
   const [rdvs, setRdvs] = useState<RdvWithNotes[]>([]);
   const [rdvJeton, setRdvJeton] = useState<(RendezVous & { lien_meet?: string }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAllPast, setShowAllPast] = useState(false);
-  const [devisList, setDevisList] = useState<DevisClientItem[]>([]);
-  const [devisLoading, setDevisLoading] = useState(false);
-  const [acceptingDevisId, setAcceptingDevisId] = useState<string | null>(null);
-  const [downloadingFactureId, setDownloadingFactureId] = useState<string | null>(null);
-  const [payingDevisId, setPayingDevisId] = useState<string | null>(null);
-  const [downloadingDevisId, setDownloadingDevisId] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
@@ -95,19 +66,13 @@ export default function MesRdv() {
     if (clientToken) {
       setSyncing(true);
       try {
-        const [rdvRes, devisRes] = await Promise.all([
-          fetch('/api/client/rdv', { headers: { Authorization: `Bearer ${clientToken}` } }),
-          fetch('/api/client/devis', { headers: { Authorization: `Bearer ${clientToken}` } }),
-        ]);
-        const rdvData = await rdvRes.json();
-        const devisData = await devisRes.json();
-        setRdvs(Array.isArray(rdvData) ? rdvData : []);
-        setDevisList(Array.isArray(devisData) ? devisData : []);
+        const res = await fetch('/api/client/rdv', { headers: { Authorization: `Bearer ${clientToken}` } });
+        const data = await res.json();
+        setRdvs(Array.isArray(data) ? data : []);
         setLastSync(new Date());
       } finally {
         setSyncing(false);
         setLoading(false);
-        setDevisLoading(false);
       }
     } else if (jeton) {
       const r = await fetch(`/api/public/rdv/jeton/${jeton}`);
@@ -136,15 +101,6 @@ export default function MesRdv() {
     return new Date(debut) > addHours(new Date(), 24);
   }
 
-  function loadDevis() {
-    if (!clientToken) return;
-    setDevisLoading(true);
-    fetch('/api/client/devis', { headers: { Authorization: `Bearer ${clientToken}` } })
-      .then(r => r.json())
-      .then(d => setDevisList(Array.isArray(d) ? d : []))
-      .finally(() => setDevisLoading(false));
-  }
-
   async function annuler(rdv: RendezVous) {
     if (!confirm('Confirmer l\'annulation ?')) return;
     const res = await fetch(`/api/public/rdv/${rdv.id}/annuler`, {
@@ -158,81 +114,6 @@ export default function MesRdv() {
     } else { toast.error(t('mesRdv.erreurAnnulation')); }
   }
 
-  async function accepterDevis(id: string) {
-    if (!clientToken) return;
-    setAcceptingDevisId(id);
-    try {
-      const res = await fetch(`/api/client/devis/${id}/accepter`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${clientToken}` },
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
-      toast.success(t('mesRdv.devisAccepteOk'));
-      loadDevis();
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : t('mesRdv.erreurAcceptDevis'));
-    } finally {
-      setAcceptingDevisId(null);
-    }
-  }
-
-  async function downloadFactureClient(item: DevisClientItem) {
-    if (!clientToken) return;
-    setDownloadingFactureId(item.id);
-    try {
-      const res = await fetch(`/api/client/devis/${item.id}/facture`, { headers: { Authorization: `Bearer ${clientToken}` } });
-      if (!res.ok) throw new Error('Erreur');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `${item.facture_numero ?? item.numero}-facture.pdf`; a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast.error(t('mesRdv.erreurPdf'));
-    } finally {
-      setDownloadingFactureId(null);
-    }
-  }
-
-  async function payDevis(id: string) {
-    if (!clientToken) return;
-    setPayingDevisId(id);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${clientToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ devis_id: id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      window.location.href = data.url;
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : t('mesRdv.erreurPaiement'));
-      setPayingDevisId(null);
-    }
-  }
-
-  async function downloadDevisPdf(item: DevisClientItem) {
-    if (!clientToken) return;
-    setDownloadingDevisId(item.id);
-    try {
-      const res = await fetch(`/api/client/devis/${item.id}/devis-pdf`, {
-        headers: { Authorization: `Bearer ${clientToken}` },
-      });
-      if (!res.ok) throw new Error('Erreur');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `${item.numero}-devis.pdf`; a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      toast.error(t('mesRdv.erreurPdf'));
-    } finally {
-      setDownloadingDevisId(null);
-    }
-  }
-
-  // Not connected, no token
   if (!clientToken && !jeton && !loading) {
     return <Navigate to="/login" replace />;
   }
@@ -300,9 +181,8 @@ export default function MesRdv() {
           {/* Main column */}
           <div className="flex-1 min-w-0">
 
-            {/* Upcoming */}
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-extrabold text-[#0A1D35]">{t('mesRdv.titre')}</h2>
+              <h2 className="text-base font-extrabold text-[#0A1D35]">{t('nav.mesRdv')}</h2>
               <div className="flex items-center gap-2">
                 {upcoming.length > 0 && (
                   <span className="bg-[#D0E7F5] text-[#0A5A8A] text-xs font-bold px-3 py-1 rounded-full">
@@ -354,7 +234,6 @@ export default function MesRdv() {
                 const color = r.prestation?.couleur || '#6CAED6';
                 return (
                   <div key={r.id} className="bg-white border border-[#E7DCCD] rounded-[20px] overflow-hidden shadow-sm">
-                    {/* Color top bar */}
                     <div className="h-1" style={{ background: color }} />
                     <div className="p-6">
                       <div className="flex items-start gap-4">
@@ -381,7 +260,6 @@ export default function MesRdv() {
                         </div>
                       </div>
 
-                      {/* Actions */}
                       <div className="mt-5 flex flex-wrap items-center gap-2 pt-4 border-t border-[#F7F2EB]">
                         {r.lien_meet ? (
                           <a href={r.lien_meet} target="_blank" rel="noopener noreferrer"
@@ -459,7 +337,7 @@ export default function MesRdv() {
               </>
             )}
 
-            {/* Cancelled sessions */}
+            {/* Cancelled */}
             {cancelled.length > 0 && (
               <div className="mt-8">
                 <h2 className="text-base font-extrabold text-[#0A1D35] mb-4">{t('mesRdv.annules')}</h2>
@@ -484,120 +362,10 @@ export default function MesRdv() {
                 </div>
               </div>
             )}
-
-            {/* Devis & Factures */}
-            {clientToken && (
-              <div className="mt-8">
-                <h2 className="text-base font-extrabold text-[#0A1D35] mb-4">{t('mesRdv.devisFactures')}</h2>
-                {devisLoading && (
-                  <div className="space-y-3">
-                    <div className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 animate-pulse h-20" />
-                    <div className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 animate-pulse h-20" />
-                  </div>
-                )}
-                {!devisLoading && devisList.length === 0 && (
-                  <div className="bg-white border border-dashed border-[#D9C9B4] rounded-[16px] p-8 text-center text-sm text-[#A8B8C8]">
-                    {t('mesRdv.aucunDevis')}
-                  </div>
-                )}
-                {!devisLoading && devisList.length > 0 && (
-                <div className="space-y-3">
-                  {devisList.map(item => {
-                    const statutConfig: Record<DevisClientItem['statut'], { bg: string; text: string; label: string }> = {
-                      envoye:  { bg: 'bg-[#E8F0FB]', text: 'text-[#1A56A4]', label: t('mesRdv.devisEnvoye') },
-                      accepte: { bg: 'bg-[#DCEFE4]', text: 'text-[#1E6B4A]', label: item.facture_numero ? t('mesRdv.factureDisponible') : t('mesRdv.devisAccepte') },
-                      refuse:  { bg: 'bg-[#F7DDD8]', text: 'text-[#9B2C1F]', label: t('mesRdv.devisRefuse') },
-                      expire:  { bg: 'bg-[#F7F2EB]', text: 'text-[#56627A]',  label: t('mesRdv.devisExpire') },
-                      paye:    { bg: 'bg-[#DCEFE4]', text: 'text-[#1E6B4A]', label: t('mesRdv.devisPaye') },
-                    };
-                    const { bg, text, label } = statutConfig[item.statut];
-                    return (
-                      <div key={item.id} className="bg-white border border-[#E7DCCD] rounded-[16px] p-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                              <span className="text-xs font-bold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full font-mono">
-                                {item.facture_numero ?? item.numero}
-                              </span>
-                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${bg} ${text}`}>
-                                {label}
-                              </span>
-                            </div>
-                            <div className="font-semibold text-[#0A1D35] text-sm leading-snug mb-1">
-                              {item.prestation_nom}
-                            </div>
-                            <div className="text-xs text-[#56627A] space-y-0.5">
-                              <div>
-                                {item.nb_seances} {item.nb_seances > 1 ? t('mesRdv.seancePluriels') : t('mesRdv.seance').toLowerCase()} &middot; {Number(item.prix_par_seance).toFixed(2)} € {t('mesRdv.parSeance')}
-                              </div>
-                              <div className="font-bold text-[#0A1D35]">
-                                {t('mesRdv.total')} {Number(item.total).toFixed(2)} €
-                              </div>
-                              <div>
-                                {item.facture_date
-                                  ? `${t('mesRdv.factureDate')} ${format(new Date(item.facture_date), 'd MMM yyyy', { locale: dateLocale })}`
-                                  : `${t('mesRdv.creeLe')} ${format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}`}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col gap-2 shrink-0">
-                            {/* Accept button */}
-                            {item.statut === 'envoye' && (
-                              <button
-                                onClick={() => accepterDevis(item.id)}
-                                disabled={acceptingDevisId === item.id}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B4A] border border-[#DCEFE4] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#DCEFE4] transition-colors disabled:opacity-40">
-                                <CheckCircle size={12} /> {acceptingDevisId === item.id ? '…' : t('mesRdv.accepterDevis')}
-                              </button>
-                            )}
-                            {/* Pay button */}
-                            {item.statut === 'accepte' && (
-                              <button
-                                onClick={() => payDevis(item.id)}
-                                disabled={payingDevisId === item.id}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1E6B4A] border border-[#1E6B4A] px-3 py-1.5 rounded-[8px] hover:bg-[#17563C] transition-colors disabled:opacity-40">
-                                <CheckCircle size={12} /> {payingDevisId === item.id ? '…' : t('mesRdv.payerDevis')}
-                              </button>
-                            )}
-                            {/* Paid badge */}
-                            {item.statut === 'paye' && (
-                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B4A] bg-[#DCEFE4] px-3 py-1.5 rounded-[8px]">
-                                <CheckCircle size={12} /> {t('mesRdv.devisPaye')}
-                              </span>
-                            )}
-                            {/* Download facture */}
-                            {(item.statut === 'accepte' || item.statut === 'paye') && item.facture_numero && (
-                              <button
-                                onClick={() => downloadFactureClient(item)}
-                                disabled={downloadingFactureId === item.id}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
-                                <Download size={12} /> {downloadingFactureId === item.id ? '…' : t('mesRdv.telechargerFacture')}
-                              </button>
-                            )}
-                            {/* Download devis PDF */}
-                            {(item.statut === 'envoye' || item.statut === 'accepte' || item.statut === 'paye') && (
-                              <button
-                                onClick={() => downloadDevisPdf(item)}
-                                disabled={downloadingDevisId === item.id}
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-40">
-                                <Download size={12} /> {downloadingDevisId === item.id ? '…' : t('mesRdv.telechargerDevis')}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Sidebar */}
           <div className="w-72 shrink-0 space-y-4">
-
-            {/* Account card */}
             <div className="bg-white border border-[#E7DCCD] rounded-[20px] p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-11 h-11 rounded-full bg-[#D0E7F5] flex items-center justify-center text-sm font-bold text-[#0A5A8A] shrink-0">
@@ -608,7 +376,6 @@ export default function MesRdv() {
                   <div className="text-xs text-[#56627A]">{t('mesRdv.clientSynego')}</div>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3 mb-5">
                 <div className="bg-[#F7F2EB] rounded-[12px] p-3 text-center">
                   <div className="text-xl font-extrabold text-[#0A1D35]">{allConfirmed.length}</div>
@@ -619,7 +386,6 @@ export default function MesRdv() {
                   <div className="text-[11px] text-[#56627A] mt-0.5">{t('mesRdv.aVenir')}</div>
                 </div>
               </div>
-
               {clientToken && (
                 <Link to="/profil"
                   className="flex items-center justify-center gap-1.5 w-full border border-[#E7DCCD] text-[#56627A] text-xs font-semibold py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
@@ -628,7 +394,6 @@ export default function MesRdv() {
               )}
             </div>
 
-            {/* Next appointment highlight */}
             {prochainRdv && (
               <div className="bg-[#0A1D35] rounded-[20px] p-5 shadow-sm">
                 <p className="text-[#6CAED6] text-[11px] font-bold uppercase tracking-wide mb-3">{t('mesRdv.prochainRdv')}</p>
@@ -651,7 +416,6 @@ export default function MesRdv() {
               </div>
             )}
 
-            {/* Book CTA */}
             <Link to="/reservation"
               className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-[#D9C9B4] text-[#56627A] text-sm font-semibold py-4 rounded-[18px] hover:border-[#0A1D35] hover:text-[#0A1D35] transition-colors">
               <Plus size={15} /> {t('mesRdv.reserverSeance')}

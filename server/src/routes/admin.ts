@@ -480,6 +480,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
     prix_par_seance: z.number().min(0),
     notes: z.string().optional(),
     validite_jours: z.number().int().min(1).default(30),
+    nb_echeances: z.number().int().min(1).max(12).optional(),
   });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
@@ -507,6 +508,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
     notes: d.notes ?? null,
     validite_jours: d.validite_jours,
     validite_date: validiteDateISO,
+    nb_echeances: d.nb_echeances ?? null,
     statut: 'envoye',
     email_envoye: false,
   }).select('id').single();
@@ -543,7 +545,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
 adminRouter.get('/devis', requireAuth, async (_req, res) => {
   const { data, error } = await supabase
     .from('devis')
-    .select('id,numero,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,validite_date,email_envoye,statut,created_at,facture_numero,facture_date')
+    .select('id,numero,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,validite_date,email_envoye,statut,created_at,facture_numero,facture_date,nb_echeances')
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data);
@@ -750,7 +752,7 @@ adminRouter.post('/devis/:id/marquer-paye', requireAuth, async (req, res) => {
 
 // GET /api/admin/revenue — statistiques mensuelles (6 derniers mois)
 adminRouter.get('/revenue', requireAuth, async (_req, res) => {
-  const months: { month: string; label: string; rdvs: number; revenue: number }[] = [];
+  const months: { month: string; label: string; rdvs: number; revenue: number; revenuePaye: number }[] = [];
   const now = new Date();
 
   for (let i = 5; i >= 0; i--) {
@@ -762,14 +764,17 @@ adminRouter.get('/revenue', requireAuth, async (_req, res) => {
     const [rdvsResult, devisResult] = await Promise.all([
       supabase.from('rendez_vous').select('id', { count: 'exact', head: true })
         .eq('statut', 'confirme').gte('debut', start.toISOString()).lt('debut', end.toISOString()),
-      supabase.from('devis').select('total')
-        .eq('statut', 'accepte').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
+      supabase.from('devis').select('total,statut')
+        .in('statut', ['accepte', 'paye']).gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
     ]);
 
-    const revenue = ((devisResult.data || []) as { total: number }[])
+    const devisRows = (devisResult.data || []) as { total: number; statut: string }[];
+    const revenue = devisRows.reduce((sum, d) => sum + Number(d.total), 0);
+    const revenuePaye = devisRows
+      .filter(d => d.statut === 'paye')
       .reduce((sum, d) => sum + Number(d.total), 0);
 
-    months.push({ month: monthKey, label: monthLabel, rdvs: rdvsResult.count || 0, revenue });
+    months.push({ month: monthKey, label: monthLabel, rdvs: rdvsResult.count || 0, revenue, revenuePaye });
   }
 
   res.json(months);

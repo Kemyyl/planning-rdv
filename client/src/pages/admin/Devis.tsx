@@ -32,6 +32,7 @@ interface DevisItem {
   prestation_nom: string;
   nb_seances: number;
   total: number;
+  nb_echeances?: number;
   validite_date: string;
   email_envoye: boolean;
   statut: 'envoye' | 'accepte' | 'refuse' | 'expire' | 'paye';
@@ -72,6 +73,7 @@ export default function Devis() {
   const [prixParSeance, setPrixParSeance] = useState<number | ''>('');
   const [notes, setNotes] = useState('');
   const [validiteJours, setValiditeJours] = useState(30);
+  const [nbEcheances, setNbEcheances] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<{ devisNum: string; email: string; emailEnvoye: boolean } | null>(null);
 
@@ -109,6 +111,10 @@ export default function Devis() {
   const clientEmail = clientMode === 'existing' ? (selectedClient?.email || '') : email;
   const total = nbSeances * (Number(prixParSeance) || 0);
   const totalStr = total % 1 === 0 ? `${total} €` : `${total.toFixed(2)} €`;
+  const montantEcheance = nbEcheances > 1 && total > 0 ? total / nbEcheances : null;
+  const montantEcheanceStr = montantEcheance !== null
+    ? (montantEcheance % 1 === 0 ? `${montantEcheance} €` : `${montantEcheance.toFixed(2)} €`)
+    : null;
   const validiteDate = format(addDays(new Date(), validiteJours), 'd MMMM yyyy', { locale: dateLocale });
   const canSubmit = !!(clientPrenom && clientNom && clientEmail && selectedPrestation && prixParSeance !== '' && Number(prixParSeance) >= 0 && nbSeances >= 1);
   const seanceLabel = nbSeances > 1 ? t('adminDevis.seances') : t('adminDevis.seance');
@@ -131,6 +137,7 @@ export default function Devis() {
           prix_par_seance: Number(prixParSeance),
           notes: notes.trim() || undefined,
           validite_jours: validiteJours,
+          nb_echeances: nbEcheances,
         }),
       });
       const data = await res.json();
@@ -153,6 +160,7 @@ export default function Devis() {
     setPrixParSeance('');
     setNotes('');
     setValiditeJours(30);
+    setNbEcheances(1);
     setClientMode('existing');
   }
 
@@ -430,6 +438,23 @@ export default function Devis() {
                     </div>
                   </div>
                   <div>
+                    <label className={labelClass}>Paiement en</label>
+                    <div className="relative">
+                      <select value={nbEcheances} onChange={e => setNbEcheances(Number(e.target.value) as 1 | 2 | 3)}
+                        className={inputClass + ' appearance-none pr-10'}>
+                        <option value={1}>1 fois (comptant)</option>
+                        <option value={2}>2 fois</option>
+                        <option value={3}>3 fois</option>
+                      </select>
+                      <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8B8C8] pointer-events-none" />
+                    </div>
+                    {montantEcheanceStr && (
+                      <p className="text-xs text-[#56627A] mt-1.5">
+                        Soit <span className="font-bold text-[#0A1D35]">{montantEcheanceStr}</span> par échéance
+                      </p>
+                    )}
+                  </div>
+                  <div>
                     <label className={labelClass}>{t('adminDevis.notes')} <span className="font-normal normal-case text-[#A8B8C8]">{t('adminDevis.notesOpt')}</span></label>
                     <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4}
                       placeholder={t('adminDevis.notesPlaceholder')}
@@ -616,6 +641,11 @@ export default function Devis() {
                         <span className="font-bold text-[#0A1D35]">
                           {Number(item.total) % 1 === 0 ? item.total : Number(item.total).toFixed(2)} €
                         </span>
+                        {item.nb_echeances && item.nb_echeances > 1 && (
+                          <span className="ml-1.5 inline-flex items-center text-[11px] font-semibold text-[#1A56A4] bg-[#E8F0FB] px-2 py-0.5 rounded-full">
+                            x{item.nb_echeances} fois
+                          </span>
+                        )}
                       </p>
                     </div>
                     <div className="text-right shrink-0">

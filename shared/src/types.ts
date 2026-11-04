@@ -11,6 +11,8 @@ export interface Client {
   created_at?: string;
 }
 
+export type PrestationType = 'coaching' | 'seminaire' | 'autre';
+
 export interface Prestation {
   id: number;
   nom: string;
@@ -23,6 +25,7 @@ export interface Prestation {
   actif: boolean;
   visible_client: boolean;
   ordre: number;
+  type?: PrestationType;
 }
 
 export interface Horaire {

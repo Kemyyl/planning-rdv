@@ -2,13 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format, addDays, startOfDay, isBefore } from 'date-fns';
 import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
-import { Check, ChevronLeft, ChevronRight, Clock, User, Video, Shield, ArrowRight } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Clock, User, Video, Shield, ArrowRight, Calendar, LayoutGrid } from 'lucide-react';
+import { InlineWidget } from 'react-calendly';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { localizePrestation } from '../lib/i18nUtils';
 import type { Prestation, Creneau } from '@synego/shared';
+
+const CALENDLY_URL = 'https://calendly.com/sandidkemyl2003/30min';
 
 export default function Reservation() {
   const { t, i18n } = useTranslation();
@@ -18,6 +21,8 @@ export default function Reservation() {
   const [searchParams] = useSearchParams();
   const { token: clientToken, prenom: authPrenom, nom: authNom } = useClientAuth();
   const autoAdvanced = useRef(false);
+  const [mode, setMode] = useState<'direct' | 'calendly'>('direct');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'coaching' | 'seminaire' | 'autre'>('all');
 
   const JOURS = t('agendaParam.jours', { returnObjects: true }) as string[];
 
@@ -154,8 +159,46 @@ export default function Reservation() {
 
   return (
     <PublicLayout>
-      {/* Sticky step header */}
-      <div className="bg-white border-b border-[#E7DCCD] sticky top-0 z-20">
+      {/* Mode switcher */}
+      <div className="bg-white border-b border-[#E7DCCD]">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
+          <button
+            onClick={() => setMode('direct')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              mode === 'direct'
+                ? 'bg-[#0A1D35] text-white'
+                : 'border border-[#E7DCCD] text-[#56627A] hover:bg-[#F7F2EB]'
+            }`}
+          >
+            <LayoutGrid size={15} /> {t('reservationType.reservationDirecte')}
+          </button>
+          <button
+            onClick={() => setMode('calendly')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+              mode === 'calendly'
+                ? 'bg-[#0A1D35] text-white'
+                : 'border border-[#E7DCCD] text-[#56627A] hover:bg-[#F7F2EB]'
+            }`}
+          >
+            <Calendar size={15} /> {t('reservationType.calendly')}
+          </button>
+        </div>
+      </div>
+
+      {/* Calendly inline widget */}
+      {mode === 'calendly' && (
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="bg-white border border-[#E7DCCD] rounded-[22px] overflow-hidden shadow-sm">
+            <InlineWidget
+              url={CALENDLY_URL}
+              styles={{ height: '700px', minWidth: '320px' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Direct booking */}
+      {mode === 'direct' && (<><div className="bg-white border-b border-[#E7DCCD] sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center gap-1">
             {stepLabels.map((label, i) => (
@@ -178,12 +221,43 @@ export default function Reservation() {
         {/* ── Étape 1 : Prestation ── */}
         {step === 1 && (
           <div>
-            <div className="mb-8">
+            <div className="mb-6">
               <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-1">{t('reservation.titreEtape1')}</h2>
               <p className="text-sm text-[#56627A]">{t('reservation.selectionnerType')}</p>
             </div>
+
+            {/* Type filter tabs */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {([
+                ['all', t('reservationType.tous')],
+                ['coaching', t('reservationType.coaching')],
+                ['seminaire', t('reservationType.seminaire')],
+                ['autre', t('reservationType.autre')],
+              ] as [typeof typeFilter, string][]).map(([key, label]) => {
+                const active = typeFilter === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setTypeFilter(key)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                      active
+                        ? 'bg-[#0A1D35] text-white'
+                        : 'bg-white border border-[#E7DCCD] text-[#56627A] hover:bg-[#F7F2EB]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              {prestations.map(raw => {
+              {prestations.filter(p => {
+                if (typeFilter === 'all') return true;
+                const pt = (p as Prestation & { type?: string }).type;
+                if (typeFilter === 'autre') return !pt || pt === 'autre';
+                return pt === typeFilter;
+              }).map(raw => {
                 const p = localizePrestation(raw, i18n.language);
                 const selected = prestationId === p.id;
                 return (
@@ -442,7 +516,7 @@ export default function Reservation() {
             </div>
           </div>
         )}
-      </div>
+      </div></>)}
     </PublicLayout>
   );
 }

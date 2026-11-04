@@ -6,14 +6,38 @@ import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Prestation } from '@synego/shared';
 
+type PrestationType = 'coaching' | 'seminaire' | 'autre';
+
+function TypeBadge({ type }: { type?: PrestationType | null }) {
+  if (!type || type === 'autre') {
+    return (
+      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#F7F2EB] text-[#56627A]">
+        Autre
+      </span>
+    );
+  }
+  if (type === 'coaching') {
+    return (
+      <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#E8F0FB] text-[#1A56A4]">
+        Coaching
+      </span>
+    );
+  }
+  return (
+    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#EDE8F7] text-[#5B3FA6]">
+      Séminaire
+    </span>
+  );
+}
+
 export default function AdminPrestations() {
   const { t } = useTranslation();
   const { token } = useAuth();
   const [prestations, setPrestations] = useState<Prestation[]>([]);
   const [editId, setEditId] = useState<number | null>(null);
-  const [editData, setEditData] = useState<Partial<Prestation>>({});
+  const [editData, setEditData] = useState<Partial<Prestation> & { type?: PrestationType }>({});
   const [showCreate, setShowCreate] = useState(false);
-  const [createData, setCreateData] = useState<Partial<Prestation>>({ nom: '', duree: 60, couleur: '#6CAED6' });
+  const [createData, setCreateData] = useState<Partial<Prestation> & { type?: PrestationType }>({ nom: '', duree: 60, couleur: '#6CAED6', type: 'coaching' });
   const [creating, setCreating] = useState(false);
 
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
@@ -60,13 +84,13 @@ export default function AdminPrestations() {
     try {
       const res = await fetch('/api/admin/prestations', {
         method: 'POST', headers,
-        body: JSON.stringify({ ...createData, duree: Number(createData.duree) }),
+        body: JSON.stringify({ ...createData, duree: Number(createData.duree), type: createData.type || 'coaching' }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setPrestations(prev => [...prev, data]);
       setShowCreate(false);
-      setCreateData({ nom: '', duree: 60, couleur: '#6CAED6' });
+      setCreateData({ nom: '', duree: 60, couleur: '#6CAED6', type: 'coaching' });
       toast.success('Prestation créée');
     } catch (e: unknown) { toast.error(e instanceof Error ? e.message : 'Erreur'); }
     finally { setCreating(false); }
@@ -74,7 +98,7 @@ export default function AdminPrestations() {
 
   function startEdit(p: Prestation) {
     setEditId(p.id);
-    setEditData({ nom: p.nom, nom_en: p.nom_en, description: p.description, description_en: p.description_en, duree: p.duree, prix: p.prix, couleur: p.couleur });
+    setEditData({ nom: p.nom, nom_en: p.nom_en, description: p.description, description_en: p.description_en, duree: p.duree, prix: p.prix, couleur: p.couleur, type: (p as Prestation & { type?: PrestationType }).type });
   }
 
   return (
@@ -122,6 +146,15 @@ export default function AdminPrestations() {
                   <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('prestations.couleur')}</label>
                   <input type="color" value={createData.couleur || '#6CAED6'} onChange={e => setCreateData(d => ({ ...d, couleur: e.target.value }))}
                     className="w-full h-[38px] border border-[#E7DCCD] rounded-[10px] px-1 cursor-pointer" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('adminPrestations.type')}</label>
+                  <select value={createData.type || 'coaching'} onChange={e => setCreateData(d => ({ ...d, type: e.target.value as PrestationType }))}
+                    className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]">
+                    <option value="coaching">{t('adminPrestations.typeCoaching')}</option>
+                    <option value="seminaire">{t('adminPrestations.typeSeminaire')}</option>
+                    <option value="autre">{t('adminPrestations.typeAutre')}</option>
+                  </select>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -177,6 +210,15 @@ export default function AdminPrestations() {
                     <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('prestations.couleur')}</label>
                     <input type="color" value={editData.couleur || '#6CAED6'} onChange={e => setEditData(d => ({ ...d, couleur: e.target.value }))}
                       className="w-full h-[38px] border border-[#E7DCCD] rounded-[10px] px-1 cursor-pointer" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-[#56627A] mb-1 block">{t('adminPrestations.type')}</label>
+                    <select value={editData.type || 'coaching'} onChange={e => setEditData(d => ({ ...d, type: e.target.value as PrestationType }))}
+                      className="w-full border border-[#E7DCCD] rounded-[10px] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6]">
+                      <option value="coaching">{t('adminPrestations.typeCoaching')}</option>
+                      <option value="seminaire">{t('adminPrestations.typeSeminaire')}</option>
+                      <option value="autre">{t('adminPrestations.typeAutre')}</option>
+                    </select>
                   </div>
                 </div>
                 <div className="flex gap-2">

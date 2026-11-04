@@ -4,8 +4,13 @@ import Services from './pages/Services';
 import Reservation from './pages/Reservation';
 import Confirmation from './pages/Confirmation';
 import MesRdv from './pages/MesRdv';
+import MesDevis from './pages/MesDevis';
 import DefinirMotDePasse from './pages/DefinirMotDePasse';
 import Profil from './pages/Profil';
+import Formations from './pages/Formations';
+import FormationDetail from './pages/FormationDetail';
+import MesFormations from './pages/MesFormations';
+import Apprendre from './pages/Apprendre';
 import AdminConnexion from './pages/admin/Connexion';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminPlanning from './pages/admin/Planning';
@@ -14,6 +19,7 @@ import AdminAgenda from './pages/admin/Agenda';
 import AdminPrestations from './pages/admin/Prestations';
 import AdminDevis from './pages/admin/Devis';
 import AdminDemandes from './pages/admin/Demandes';
+import AdminFormations from './pages/admin/Formations';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ClientAuthProvider } from './contexts/ClientAuthContext';
 
@@ -34,9 +40,16 @@ export default function App() {
           <Route path="/reservation" element={<Reservation />} />
           <Route path="/confirmation/:id" element={<Confirmation />} />
           <Route path="/mes-rdv" element={<MesRdv />} />
+          <Route path="/mes-devis" element={<MesDevis />} />
           <Route path="/definir-mot-de-passe" element={<DefinirMotDePasse />} />
           <Route path="/profil" element={<Profil />} />
+          <Route path="/formations" element={<Formations />} />
+          <Route path="/formations/:slug" element={<FormationDetail />} />
           <Route path="/login" element={<AdminConnexion />} />
+
+          {/* Client */}
+          <Route path="/mes-formations" element={<MesFormations />} />
+          <Route path="/mes-formations/:formationId/apprendre" element={<Apprendre />} />
 
           {/* Admin */}
           <Route path="/admin" element={<AdminConnexion />} />
@@ -47,6 +60,7 @@ export default function App() {
           <Route path="/admin/prestations" element={<AdminRoute><AdminPrestations /></AdminRoute>} />
           <Route path="/admin/devis" element={<AdminRoute><AdminDevis /></AdminRoute>} />
           <Route path="/admin/demandes" element={<AdminRoute><AdminDemandes /></AdminRoute>} />
+          <Route path="/admin/formations" element={<AdminRoute><AdminFormations /></AdminRoute>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

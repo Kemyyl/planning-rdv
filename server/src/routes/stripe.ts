@@ -80,8 +80,8 @@ stripeRouter.post('/checkout', requireClientAuth, async (req, res) => {
         quantity: 1,
       }],
       customer_email: c.email,
-      success_url: `${appUrl}/mes-rdv?payment=success&devis_id=${d.id}`,
-      cancel_url: `${appUrl}/mes-rdv?payment=cancel&devis_id=${d.id}`,
+      success_url: `${appUrl}/mes-devis?payment=success&devis_id=${d.id}`,
+      cancel_url: `${appUrl}/mes-devis?payment=cancel&devis_id=${d.id}`,
       metadata: {
         devis_id: d.id,
         client_id: String(clientId),
@@ -134,6 +134,19 @@ stripeWebhookRouter.post(
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // ── Formations ───────────────────────────────────────────────────────
+      if (session.metadata?.type === 'formation' && session.metadata?.formation_id) {
+
+        await supabase.from('formation_achats').update({
+          paid_at: new Date().toISOString(),
+          stripe_payment_intent: session.payment_intent as string,
+        }).eq('stripe_session_id', session.id);
+
+        res.json({ received: true }); return;
+      }
+
+      // ── Devis ────────────────────────────────────────────────────────────
       const devisId = session.metadata?.devis_id;
       if (!devisId) { res.json({ received: true }); return; }
 
