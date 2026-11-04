@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -19,8 +19,8 @@
   --color-err: #9B2C1F;
   --color-err-bg: #F7DDD8;
 
-  --font-family-sans: "DM Sans", sans-serif;
-  --font-family-display: "DM Serif Display", Georgia, serif;
+  --font-family-sans: "Inter", sans-serif;
+  --font-family-display: "Playfair Display", Georgia, serif;
   --radius-card: 22px;
   --radius-btn: 14px;
 }

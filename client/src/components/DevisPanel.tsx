@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Modal from './Modal';
 
 interface Props {
   open: boolean;
@@ -12,8 +13,6 @@ export default function DevisPanel({ open, onClose }: Props) {
   const { t } = useTranslation();
   const [form, setForm] = useState({ prenom: '', nom: '', email: '', telephone: '', type: '', message: '' });
   const [sending, setSending] = useState(false);
-
-  if (!open) return null;
 
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }));
@@ -49,14 +48,8 @@ export default function DevisPanel({ open, onClose }: Props) {
   const typeOptions = t('devis.typeOptions', { returnObjects: true }) as string[];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white w-full max-w-lg rounded-t-[28px] md:rounded-[24px] p-7 max-h-[90vh] overflow-y-auto shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
+    <Modal open={open} onClose={onClose} align="bottom-sheet">
+      <div className="bg-white w-full max-w-lg rounded-t-[28px] md:rounded-[24px] p-7 max-h-[90vh] overflow-y-auto shadow-2xl m-0 md:m-4">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h2 className="text-xl font-extrabold text-[#0A1D35]">{t('devis.titre')}</h2>
@@ -112,6 +105,6 @@ export default function DevisPanel({ open, onClose }: Props) {
           </button>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }

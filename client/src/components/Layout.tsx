@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox, GraduationCap, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
@@ -34,38 +34,39 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[#F7F2EB] flex flex-col">
-      <header className="bg-white border-b border-[#E7DCCD] px-6 py-3.5">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Synégo" className="h-8 w-8 object-contain" />
-            <span className="text-xl font-display text-[#0A1D35] tracking-tight">Synégo</span>
+      {/* Floating pill nav */}
+      <header className="sticky top-4 z-40 px-4 pt-2">
+        <div className="max-w-6xl mx-auto bg-white/80 backdrop-blur-xl border border-[#E7DCCD] rounded-full px-5 py-2.5 flex items-center justify-between shadow-sm">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src="/logo.png" alt="Synégo" className="h-7 w-7 object-contain" />
+            <span className="text-lg font-display text-[#0A1D35] tracking-tight leading-none">Synégo</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7">
+          <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
             {([['/', t('nav.accueil')], ['/services', t('nav.services')], ['/formations', t('nav.formations')]] as [string, string][]).map(([href, label]) => (
-              <Link key={href} to={href} className="text-sm text-[#56627A] hover:text-[#0A1D35] font-medium transition-colors">{label}</Link>
+              <Link key={href} to={href}
+                className="text-xs text-[#56627A] hover:text-[#0A1D35] hover:bg-[#F7F2EB] font-medium transition-colors px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                {label}
+              </Link>
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <LangToggle />
             <button onClick={toggle}
-              className="p-2 rounded-xl border border-[#E7DCCD] bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
+              className="p-2 rounded-full hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
               title={dark ? t('nav.modeClair') : t('nav.modeSombre')}>
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
+              {dark ? <Sun size={14} /> : <Moon size={14} />}
             </button>
-            <Link to="/reservation" className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#1C3352] transition-colors">
-              <Plus size={14} /> {t('nav.nouveauRdv')}
-            </Link>
             {token ? (
               <div className="relative">
                 <button onClick={() => setShowDropdown(d => !d)}
-                  className="flex items-center gap-2 bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl px-3 py-2 hover:bg-[#E7DCCD] transition-colors">
-                  <div className="w-7 h-7 rounded-full bg-[#D0E7F5] flex items-center justify-center text-xs font-bold text-[#0A1D35]">
+                  className="flex items-center gap-2 hover:bg-[#F7F2EB] rounded-full px-2 py-1 transition-colors">
+                  <div className="w-7 h-7 rounded-full bg-[#0A1D35] text-white flex items-center justify-center text-[10px] font-bold">
                     {initials}
                   </div>
-                  <span className="text-sm font-medium text-[#0A1D35]">{fullName}</span>
-                  <ChevronDown size={13} className="text-[#56627A]" />
+                  <span className="hidden lg:inline text-xs font-semibold text-[#0A1D35]">{fullName}</span>
+                  <ChevronDown size={12} className="text-[#56627A]" />
                 </button>
                 {showDropdown && (
                   <div className="absolute right-0 top-full mt-2 bg-white border border-[#E7DCCD] rounded-[14px] shadow-lg w-44 py-1 z-50">
@@ -82,10 +83,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               </div>
             ) : (
               <Link to="/login"
-                className="flex items-center gap-1.5 text-sm text-[#56627A] hover:text-[#0A1D35] font-medium border border-[#E7DCCD] px-3 py-2 rounded-xl bg-white transition-colors">
-                <User size={14} /> {t('nav.seConnecter')}
+                className="hidden sm:flex items-center gap-1.5 text-xs text-[#56627A] hover:text-[#0A1D35] font-medium px-3 py-1.5 rounded-full hover:bg-[#F7F2EB] transition-colors uppercase tracking-wider">
+                {t('nav.seConnecter')}
               </Link>
             )}
+            <Link to="/reservation"
+              className="flex items-center gap-1 bg-[#0A1D35] text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-[#1C3352] transition-colors uppercase tracking-wider">
+              {t('nav.nouveauRdv')} <ArrowRight size={12} />
+            </Link>
           </div>
         </div>
       </header>

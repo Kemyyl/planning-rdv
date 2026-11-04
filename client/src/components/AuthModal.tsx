@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { useAuth } from '../contexts/AuthContext';
+import Modal from './Modal';
 
 interface Props { onClose: () => void }
 
@@ -84,8 +85,8 @@ export default function AuthModal({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-[#FFFDFA] rounded-[22px] w-full max-w-md p-8 shadow-xl relative" onClick={e => e.stopPropagation()}>
+    <Modal open={true} onClose={onClose}>
+      <div className="bg-[#FFFDFA] rounded-[22px] w-full max-w-md p-8 shadow-xl relative m-4 max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-5 right-5 text-[#56627A] hover:text-[#0A1D35]">
           <X size={20} />
         </button>
@@ -197,6 +198,6 @@ export default function AuthModal({ onClose }: Props) {
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }
