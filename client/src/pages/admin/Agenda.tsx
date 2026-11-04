@@ -39,7 +39,7 @@ export default function AdminAgenda() {
         .then(r => r.json()).then(data => setGoogleCalendarId(data.google_calendar_id || ''));
       setSearchParams({});
     } else if (googleStatus === 'error') {
-      toast.error('Erreur de connexion Google. Réessaie.');
+      toast.error(t('agendaParam.erreurConnexionGoogle'));
       setSearchParams({});
     }
   }, [searchParams]);
@@ -48,11 +48,11 @@ export default function AdminAgenda() {
     setConnecting(true);
     try {
       const res = await fetch('/api/admin/google-auth', { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) { toast.error('OAuth non configuré sur le serveur'); return; }
+      if (!res.ok) { toast.error(t('agendaParam.oauthNonConfigure')); return; }
       const { url } = await res.json();
       window.location.href = url;
     } catch {
-      toast.error('Erreur lors de la connexion Google');
+      toast.error(t('agendaParam.erreurConnexionGoogle'));
     } finally {
       setConnecting(false);
     }
@@ -76,7 +76,7 @@ export default function AdminAgenda() {
       if (!res.ok) throw new Error();
       toast.success(t('agendaParam.sauvegarde'));
     } catch {
-      toast.error('Erreur lors de la sauvegarde');
+      toast.error(t('agendaParam.erreurSauvegarde'));
     } finally {
       setSaving(false);
     }

@@ -78,7 +78,7 @@ export default function MesRdv() {
   async function downloadPdf(rdvId: number) {
     if (!clientToken) return;
     const res = await fetch(`/api/client/rdv/${rdvId}/pdf`, { headers: { Authorization: `Bearer ${clientToken}` } });
-    if (!res.ok) { toast.error('Impossible de télécharger le PDF'); return; }
+    if (!res.ok) { toast.error(t('mesRdv.erreurPdf')); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -98,9 +98,9 @@ export default function MesRdv() {
       body: JSON.stringify({ jeton: rdv.jeton_annulation }),
     });
     if (res.ok) {
-      toast.success('Rendez-vous annulé');
+      toast.success(t('mesRdv.rdvAnnule'));
       setRdvs(prev => prev.map(r => r.id === rdv.id ? { ...r, statut: 'annule' } : r));
-    } else { toast.error('Impossible d\'annuler'); }
+    } else { toast.error(t('mesRdv.erreurAnnulation')); }
   }
 
   // Not connected, no token
@@ -118,7 +118,7 @@ export default function MesRdv() {
             </div>
             <Link to="/connexion"
               className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-6 py-3 rounded-[12px] hover:bg-[#1C3352] transition-colors text-sm">
-              Se connecter
+              {t('mesRdv.seConnecter')}
             </Link>
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function MesRdv() {
             <div className="flex items-start gap-4 mb-5">
               <DateBox date={new Date(rdvJeton.debut)} />
               <div className="flex-1">
-                <div className="font-bold text-[#0A1D35] text-base mb-1">{rdvJeton.prestation?.nom || 'Séance'}</div>
+                <div className="font-bold text-[#0A1D35] text-base mb-1">{rdvJeton.prestation?.nom || t('mesRdv.seance')}</div>
                 <div className="flex items-center gap-1.5 text-sm text-[#56627A]" translate="no">
                   <Clock size={13} />
                   {format(new Date(rdvJeton.debut), timeFormat)}
@@ -188,7 +188,7 @@ export default function MesRdv() {
           <div>
             <p className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1">{t('mesRdv.monCompte')}</p>
             <h1 className="text-2xl font-extrabold text-[#0A1D35]">
-              {prenom ? `Bonjour, ${prenom} 👋` : t('mesRdv.titre')}
+              {prenom ? t('mesRdv.bonjour', { prenom }) : t('mesRdv.titre')}
             </h1>
           </div>
           <Link to="/reservation"
@@ -227,7 +227,7 @@ export default function MesRdv() {
                   <Calendar size={20} className="text-[#A8B8C8]" />
                 </div>
                 <p className="font-semibold text-[#0A1D35] mb-1">{t('mesRdv.aucunRdv')}</p>
-                <p className="text-sm text-[#56627A] mb-5">Réservez votre prochaine séance en quelques clics.</p>
+                <p className="text-sm text-[#56627A] mb-5">{t('mesRdv.reserverProchaine')}</p>
                 <Link to="/reservation"
                   className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] hover:bg-[#1C3352] transition-colors text-sm">
                   <Plus size={14} /> {t('mesRdv.reserver')}
@@ -250,7 +250,7 @@ export default function MesRdv() {
                         <DateBox date={debut} />
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-[#0A1D35] text-base leading-snug mb-0.5">
-                            {r.prestation?.nom || r.titre || 'Séance'}
+                            {r.prestation?.nom || r.titre || t('mesRdv.seance')}
                           </div>
                           <div className="text-xs text-[#56627A] mb-3">
                             {t('mesRdv.seanceNo')}{n}
@@ -315,7 +315,7 @@ export default function MesRdv() {
                   {sortedPast.length > 5 && (
                     <button onClick={() => setShowAllPast(v => !v)}
                       className="text-xs text-[#56627A] hover:text-[#0A1D35] font-medium transition-colors">
-                      {showAllPast ? '← Réduire' : `${t('mesRdv.voirTout')}`}
+                      {showAllPast ? t('mesRdv.reduire') : `${t('mesRdv.voirTout')}`}
                     </button>
                   )}
                 </div>
@@ -360,7 +360,7 @@ export default function MesRdv() {
                 </div>
                 <div>
                   <div className="font-bold text-[#0A1D35] text-sm leading-snug">{fullName}</div>
-                  <div className="text-xs text-[#56627A]">Client Synégo</div>
+                  <div className="text-xs text-[#56627A]">{t('mesRdv.clientSynego')}</div>
                 </div>
               </div>
 
@@ -378,7 +378,7 @@ export default function MesRdv() {
               {clientToken && (
                 <Link to="/profil"
                   className="flex items-center justify-center gap-1.5 w-full border border-[#E7DCCD] text-[#56627A] text-xs font-semibold py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
-                  Voir mon profil →
+                  {t('mesRdv.voirProfil')}
                 </Link>
               )}
             </div>
@@ -409,7 +409,7 @@ export default function MesRdv() {
             {/* Book CTA */}
             <Link to="/reservation"
               className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-[#D9C9B4] text-[#56627A] text-sm font-semibold py-4 rounded-[18px] hover:border-[#0A1D35] hover:text-[#0A1D35] transition-colors">
-              <Plus size={15} /> Réserver une séance
+              <Plus size={15} /> {t('mesRdv.reserverSeance')}
             </Link>
           </div>
         </div>

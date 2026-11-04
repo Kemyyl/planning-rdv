@@ -52,8 +52,8 @@ export default function Services() {
               {t('services.titre')}
             </div>
             <h1 className="text-4xl font-display text-[#0A1D35] mb-4 leading-tight">
-              Un accompagnement<br />
-              <span className="text-[#6CAED6]">adapté à vos besoins</span>
+              {t('services.titreHero1')}<br />
+              <span className="text-[#6CAED6]">{t('services.titreHero2')}</span>
             </h1>
             <p className="text-[#56627A] text-base leading-relaxed mb-6">
               {t('services.description')}
@@ -61,9 +61,9 @@ export default function Services() {
             {/* Reassurance chips */}
             <div className="flex flex-wrap gap-2">
               {[
-                { icon: Video, label: 'Séances en visioconférence' },
-                { icon: Shield, label: 'Données RGPD protégées' },
-                { icon: CheckCircle, label: 'Praticien certifié' },
+                { icon: Video, label: t('services.chip1') },
+                { icon: Shield, label: t('services.chip2') },
+                { icon: CheckCircle, label: t('services.chip3') },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-1.5 bg-white border border-[#E7DCCD] text-[#56627A] text-xs font-medium px-3 py-1.5 rounded-full">
                   <Icon size={12} className="text-[#6CAED6]" />
@@ -107,7 +107,7 @@ export default function Services() {
                         <Clock size={11} /> {p.duree} {t('common.min')}
                       </span>
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
-                        <Video size={11} /> Visio
+                        <Video size={11} /> {t('services.visio')}
                       </span>
                     </div>
 
@@ -130,7 +130,7 @@ export default function Services() {
       <section className="bg-[#0A1D35] py-14">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
-            <div className="text-[#6CAED6] text-xs font-bold uppercase tracking-widest mb-3">Besoin d'un accompagnement sur mesure ?</div>
+            <div className="text-[#6CAED6] text-xs font-bold uppercase tracking-widest mb-3">{t('services.ctaBadge')}</div>
             <h2 className="text-2xl font-extrabold text-white mb-2">{t('devis.ctaTitre')}</h2>
             <p className="text-[#8FA3B8] text-sm max-w-md leading-relaxed">{t('devis.ctaDesc')}</p>
           </div>

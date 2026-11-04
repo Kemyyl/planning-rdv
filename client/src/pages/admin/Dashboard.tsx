@@ -1,7 +1,6 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, isToday, isThisWeek, isThisMonth, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { useDateLocale, useTimeFormat } from '../../hooks/useDateLocale';
 import {
   Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video,
@@ -64,9 +63,9 @@ export default function AdminDashboard() {
 
   const headers = { Authorization: `Bearer ${token}` };
   const now = new Date();
-  const dateLabel = format(now, 'EEEE d MMMM yyyy', { locale: fr });
+  const dateLabel = format(now, 'EEEE d MMMM yyyy', { locale: dateLocale });
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  const greeting = hour < 12 ? t('dashboard.bonjour') : hour < 18 ? t('dashboard.bonApresMidi') : t('dashboard.bonsoir');
   const firstName = nom?.split(' ')[0] || 'Admin';
 
   async function fetchResume(rdv: RendezVous) {
@@ -79,10 +78,10 @@ export default function AdminDashboard() {
         setRdvs(prev => prev.map(r => r.id === rdv.id ? { ...r, resume_url: data.url } : r));
         window.open(data.url, '_blank');
       } else {
-        toast.error('Résumé non trouvé dans Drive');
+        toast.error(t('dashboard.resumeNonTrouve'));
       }
     } catch {
-      toast.error('Erreur lors de la recherche');
+      toast.error(t('dashboard.erreurRecherche'));
     } finally {
       setResumeLoading(prev => { const s = new Set(prev); s.delete(rdv.id); return s; });
     }
@@ -94,9 +93,9 @@ export default function AdminDashboard() {
     const res = await fetch(`/api/admin/rdv/${id}`, { method: 'DELETE', headers });
     if (res.ok) {
       setRdvs(prev => prev.map(r => r.id === id ? { ...r, statut: 'annule', lien_meet: undefined } : r));
-      toast.success('RDV annulé');
+      toast.success(t('dashboard.rdvAnnule'));
     } else {
-      toast.error("Erreur lors de l'annulation");
+      toast.error(t('dashboard.erreurAnnulation'));
     }
   }
 
@@ -135,17 +134,17 @@ export default function AdminDashboard() {
   const todayRdvs = rdvs.filter(r => r.statut !== 'annule' && isToday(new Date(r.debut)));
 
   const STATS = [
-    { label: "Aujourd'hui", value: stats.today, icon: Clock, bg: '#D0E7F5', fg: '#0A5A8A', accent: '#6CAED6' },
-    { label: 'Cette semaine', value: stats.week, icon: Calendar, bg: '#F6E7C8', fg: '#8A5A12', accent: '#D9A842' },
-    { label: 'Ce mois', value: stats.month, icon: TrendingUp, bg: '#DCEFE4', fg: '#1E6B4A', accent: '#3DAA72' },
-    { label: 'Clients actifs', value: stats.clients, icon: Users, bg: '#E9D8F5', fg: '#5A2C8A', accent: '#9B6DDA' },
+    { label: t('dashboard.statAujourdhui'), value: stats.today, icon: Clock, bg: '#D0E7F5', fg: '#0A5A8A', accent: '#6CAED6' },
+    { label: t('dashboard.statSemaine'), value: stats.week, icon: Calendar, bg: '#F6E7C8', fg: '#8A5A12', accent: '#D9A842' },
+    { label: t('dashboard.statMois'), value: stats.month, icon: TrendingUp, bg: '#DCEFE4', fg: '#1E6B4A', accent: '#3DAA72' },
+    { label: t('dashboard.statClients'), value: stats.clients, icon: Users, bg: '#E9D8F5', fg: '#5A2C8A', accent: '#9B6DDA' },
   ];
 
   const PERIODS: [Period, string][] = [
-    ['today', "Aujourd'hui"],
-    ['week', 'Semaine'],
-    ['month', 'Mois'],
-    ['annule', 'Annulés'],
+    ['today', t('dashboard.periodeAujourdhui')],
+    ['week', t('dashboard.periodeSemaine')],
+    ['month', t('dashboard.periodeMois')],
+    ['annule', t('dashboard.periodeAnnules')],
   ];
 
   return (
@@ -160,11 +159,11 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2">
           <button onClick={() => navigate('/admin/devis')}
             className="flex items-center gap-1.5 border border-[#E7DCCD] bg-white text-[#56627A] text-xs font-semibold px-4 py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
-            <FileText size={13} /> Créer un devis
+            <FileText size={13} /> {t('dashboard.creerDevis')}
           </button>
           <button onClick={() => setShowNouveauRdv(true)}
             className="flex items-center gap-1.5 bg-[#0A1D35] text-white text-xs font-semibold px-4 py-2.5 rounded-[10px] hover:bg-[#1C3352] transition-colors">
-            <Plus size={13} /> Nouveau RDV
+            <Plus size={13} /> {t('dashboard.nouveauRdv')}
           </button>
         </div>
       </div>
@@ -228,7 +227,7 @@ export default function AdminDashboard() {
                 <Zap size={20} className="opacity-40" />
               </div>
               <p className="text-sm font-medium text-[#0A1D35]">{t('dashboard.aucunRdv')}</p>
-              <p className="text-xs text-[#A8B8C8] mt-1">Aucun rendez-vous pour cette période</p>
+              <p className="text-xs text-[#A8B8C8] mt-1">{t('dashboard.aucunRdvPeriode')}</p>
             </div>
           ) : (
             <table className="w-full text-sm">
@@ -317,7 +316,7 @@ export default function AdminDashboard() {
 
           {/* Prochaine séance */}
           <div className="bg-[#0A1D35] rounded-[18px] p-5 text-white">
-            <p className="text-[#6CAED6] text-[11px] font-bold uppercase tracking-wide mb-4">Prochaine séance</p>
+            <p className="text-[#6CAED6] text-[11px] font-bold uppercase tracking-wide mb-4">{t('dashboard.prochaineSeance')}</p>
             {prochainRdv ? (
               <>
                 <div className="flex items-center gap-3 mb-4">
@@ -338,7 +337,7 @@ export default function AdminDashboard() {
                     {prochainRdv.fin ? ` – ${format(new Date(prochainRdv.fin), timeFormat)}` : ''}
                   </div>
                   <div className="text-xs text-[#6CAED6] font-semibold mt-1.5">
-                    {formatDistanceToNow(new Date(prochainRdv.debut), { locale: fr, addSuffix: true })}
+                    {formatDistanceToNow(new Date(prochainRdv.debut), { locale: dateLocale, addSuffix: true })}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -357,7 +356,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="text-center py-4">
                 <Calendar size={24} className="mx-auto mb-2 text-[#56627A]" />
-                <p className="text-sm text-[#56627A]">Aucun RDV à venir</p>
+                <p className="text-sm text-[#56627A]">{t('dashboard.aucunRdvAVenir')}</p>
               </div>
             )}
           </div>
@@ -365,7 +364,7 @@ export default function AdminDashboard() {
           {/* Agenda du jour */}
           <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[#E7DCCD] flex items-center justify-between">
-              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wider">Agenda du jour</p>
+              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wider">{t('dashboard.agendaDuJour')}</p>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${todayRdvs.length > 0 ? 'bg-[#D0E7F5] text-[#0A5A8A]' : 'bg-[#F7F2EB] text-[#A8B8C8]'}`}>
                 {todayRdvs.length}
               </span>
@@ -375,8 +374,8 @@ export default function AdminDashboard() {
                 <div className="w-10 h-10 rounded-full bg-[#F7F2EB] flex items-center justify-center mx-auto mb-2">
                   <Zap size={16} className="text-[#A8B8C8]" />
                 </div>
-                <p className="text-xs font-medium text-[#0A1D35]">Journée libre</p>
-                <p className="text-xs text-[#A8B8C8] mt-0.5">Aucune séance aujourd'hui</p>
+                <p className="text-xs font-medium text-[#0A1D35]">{t('dashboard.journeeLibre')}</p>
+                <p className="text-xs text-[#A8B8C8] mt-0.5">{t('dashboard.aucuneSeanceAujourdhui')}</p>
               </div>
             ) : (
               <div className="divide-y divide-[#F7F2EB]">
@@ -399,7 +398,7 @@ export default function AdminDashboard() {
                         <div className="text-[10px] text-[#56627A] truncate">{r.prestation?.nom}</div>
                       </div>
                       {isNow && (
-                        <span className="text-[10px] font-bold text-[#1E6B4A] bg-[#DCEFE4] px-1.5 py-0.5 rounded-full shrink-0">En cours</span>
+                        <span className="text-[10px] font-bold text-[#1E6B4A] bg-[#DCEFE4] px-1.5 py-0.5 rounded-full shrink-0">{t('dashboard.enCours')}</span>
                       )}
                     </div>
                   );
@@ -411,13 +410,13 @@ export default function AdminDashboard() {
           {/* Quick links */}
           <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden">
             <div className="px-5 py-3.5 border-b border-[#E7DCCD]">
-              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wider">Accès rapide</p>
+              <p className="text-xs font-bold text-[#56627A] uppercase tracking-wider">{t('dashboard.acceRapide')}</p>
             </div>
             <div className="divide-y divide-[#F7F2EB]">
               {[
-                { label: 'Clients', sub: `${stats.clients} actifs`, icon: Users, path: '/admin/clients', color: '#D0E7F5', fg: '#0A5A8A' },
-                { label: 'Devis', sub: 'Créer ou consulter', icon: FileText, path: '/admin/devis', color: '#DCEFE4', fg: '#1E6B4A' },
-                { label: 'Agenda complet', sub: 'Voir tous les RDV', icon: Calendar, path: '/admin/planning', color: '#F6E7C8', fg: '#8A5A12' },
+                { label: t('dashboard.quickClients'), sub: t('dashboard.quickClientsSub', { count: stats.clients }), icon: Users, path: '/admin/clients', color: '#D0E7F5', fg: '#0A5A8A' },
+                { label: t('dashboard.quickDevis'), sub: t('dashboard.quickDevisSub'), icon: FileText, path: '/admin/devis', color: '#DCEFE4', fg: '#1E6B4A' },
+                { label: t('dashboard.quickAgenda'), sub: t('dashboard.quickAgendaSub'), icon: Calendar, path: '/admin/planning', color: '#F6E7C8', fg: '#8A5A12' },
               ].map(({ label, sub, icon: Icon, path, color, fg }) => (
                 <button key={path} onClick={() => navigate(path)}
                   className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-[#FAFAFA] transition-colors text-left group">
@@ -439,9 +438,9 @@ export default function AdminDashboard() {
           <div className="bg-[#F7F2EB] border border-[#E7DCCD] rounded-[18px] p-5">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1">Total séances</div>
+                <div className="text-xs font-bold text-[#56627A] uppercase tracking-wide mb-1">{t('dashboard.totalSeances')}</div>
                 <div className="text-4xl font-extrabold text-[#0A1D35] leading-none">{stats.total}</div>
-                <div className="text-xs text-[#A8B8C8] mt-1">depuis le début</div>
+                <div className="text-xs text-[#A8B8C8] mt-1">{t('dashboard.depuisLeDebut')}</div>
               </div>
               <div className="w-14 h-14 rounded-full bg-[#0A1D35] flex items-center justify-center">
                 <TrendingUp size={22} className="text-[#6CAED6]" />

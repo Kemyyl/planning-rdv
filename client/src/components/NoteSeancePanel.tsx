@@ -59,15 +59,15 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
       if (!res.ok) throw new Error(data.error);
       setNotes(prev => prev.map(n => n.id === id ? data : n));
       setEditId(null);
-      toast.success('Modifié');
-    } catch { toast.error('Erreur'); }
+      toast.success(t('noteSeance.modifie'));
+    } catch { toast.error(t('common.erreur')); }
   }
 
   async function supprimer(id: number) {
     if (!confirm(t('noteSeance.supprimer'))) return;
     await fetch(`/api/admin/notes/${id}`, { method: 'DELETE', headers });
     setNotes(prev => prev.filter(n => n.id !== id));
-    toast.success('Supprimé');
+    toast.success(t('noteSeance.supprime'));
   }
 
   return (

@@ -67,16 +67,16 @@ export default function Profil() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Profil mis à jour');
+      toast.success(t('profil.profilMisAJour'));
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Erreur');
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
     } finally {
       setSaving(false);
     }
   }
 
   async function saveMdp() {
-    if (!nouveauMdp || nouveauMdp.length < 8) { toast.error('Minimum 8 caractères'); return; }
+    if (!nouveauMdp || nouveauMdp.length < 8) { toast.error(t('profil.min8Chars')); return; }
     setSavingMdp(true);
     try {
       const res = await fetch('/api/client/profil/mot-de-passe', {
@@ -86,10 +86,10 @@ export default function Profil() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Mot de passe modifié');
+      toast.success(t('profil.mdpModifie'));
       setAncienMdp(''); setNouveauMdp('');
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Erreur');
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
     } finally {
       setSavingMdp(false);
     }
@@ -111,23 +111,23 @@ export default function Profil() {
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-extrabold text-[#0A1D35] leading-tight">{fullName || 'Mon profil'}</h1>
+              <h1 className="text-2xl font-extrabold text-[#0A1D35] leading-tight">{fullName || t('profil.monProfil')}</h1>
               <p className="text-sm text-[#56627A] mt-0.5">{email}</p>
               <div className="flex items-center gap-4 mt-2">
                 <span className="text-xs font-semibold text-[#0A1D35] bg-white border border-[#E7DCCD] px-3 py-1 rounded-full">
-                  {totalSeances} séance{totalSeances > 1 ? 's' : ''}
+                  {totalSeances} {t('profil.seanceCount', { count: totalSeances })}
                 </span>
                 {prochainRdv && (
                   <span className="text-xs text-[#1E6B4A] font-semibold bg-[#DCEFE4] px-3 py-1 rounded-full flex items-center gap-1">
                     <CalendarCheck size={11} />
-                    Prochain : {format(new Date(prochainRdv.debut), 'd MMM', { locale: dateLocale })}
+                    {t('profil.prochain')} {format(new Date(prochainRdv.debut), 'd MMM', { locale: dateLocale })}
                   </span>
                 )}
               </div>
             </div>
             <Link to="/mes-rdv"
               className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-[#56627A] hover:text-[#0A1D35] transition-colors border border-[#E7DCCD] bg-white px-4 py-2 rounded-xl shrink-0">
-              Mes rendez-vous <ArrowRight size={13} />
+              {t('profil.mesRendezVous')} <ArrowRight size={13} />
             </Link>
           </div>
         </div>
@@ -146,7 +146,7 @@ export default function Profil() {
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-[#F7F2EB] rounded-[12px] p-3 text-center">
                   <div className="text-2xl font-extrabold text-[#0A1D35]">{totalSeances}</div>
-                  <div className="text-[11px] text-[#56627A] mt-0.5">séances</div>
+                  <div className="text-[11px] text-[#56627A] mt-0.5">{t('mesRdv.seancesTotales')}</div>
                 </div>
                 <div className="bg-[#F7F2EB] rounded-[12px] p-3 text-center">
                   <div className="text-2xl font-extrabold text-[#0A1D35]">{upcoming.length}</div>
@@ -155,7 +155,7 @@ export default function Profil() {
               </div>
               <Link to="/mes-rdv"
                 className="flex items-center justify-center gap-1.5 w-full border border-[#E7DCCD] text-[#56627A] text-xs font-semibold py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
-                Voir mes RDV <ArrowRight size={12} />
+                {t('profil.voirMesRdv')} <ArrowRight size={12} />
               </Link>
             </div>
 
@@ -187,7 +187,7 @@ export default function Profil() {
             {/* Book CTA */}
             <Link to="/reservation"
               className="flex items-center justify-center gap-2 w-full border-2 border-dashed border-[#D9C9B4] text-[#56627A] text-xs font-semibold py-4 rounded-[18px] hover:border-[#0A1D35] hover:text-[#0A1D35] transition-colors">
-              + Réserver une séance
+              {t('profil.reserverSeance')}
             </Link>
           </div>
 
@@ -200,33 +200,33 @@ export default function Profil() {
                 <div className="w-8 h-8 rounded-lg bg-[#F7F2EB] flex items-center justify-center">
                   <User size={15} className="text-[#56627A]" />
                 </div>
-                <p className="font-bold text-[#0A1D35]">Informations personnelles</p>
+                <p className="font-bold text-[#0A1D35]">{t('profil.infosPersonnelles')}</p>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelClass}>Prénom</label>
+                    <label className={labelClass}>{t('profil.prenom')}</label>
                     <input value={prenom} onChange={e => setPrenom(e.target.value)} className={inputClass} />
                   </div>
                   <div>
-                    <label className={labelClass}>Nom</label>
+                    <label className={labelClass}>{t('profil.nom')}</label>
                     <input value={nom} onChange={e => setNom(e.target.value)} className={inputClass} />
                   </div>
                 </div>
                 <div>
-                  <label className={labelClass}>Email</label>
+                  <label className={labelClass}>{t('profil.email')}</label>
                   <input value={email} readOnly
                     className="w-full bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl px-4 py-3 text-sm text-[#56627A] cursor-default" />
-                  <p className="text-[11px] text-[#A8B8C8] mt-1">L'email ne peut pas être modifié.</p>
+                  <p className="text-[11px] text-[#A8B8C8] mt-1">{t('profil.emailReadOnly')}</p>
                 </div>
                 <div>
-                  <label className={labelClass}>Téléphone</label>
+                  <label className={labelClass}>{t('profil.telephone')}</label>
                   <input type="tel" value={telephone} onChange={e => setTelephone(e.target.value)}
                     placeholder="+33 6 …" className={inputClass} />
                 </div>
                 <button onClick={saveProfil} disabled={saving}
                   className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
-                  <Save size={14} />{saving ? 'Enregistrement…' : 'Enregistrer les modifications'}
+                  <Save size={14} />{saving ? t('profil.enregistrement') : t('profil.enregistrerModifs')}
                 </button>
               </div>
             </div>
@@ -237,11 +237,11 @@ export default function Profil() {
                 <div className="w-8 h-8 rounded-lg bg-[#F7F2EB] flex items-center justify-center">
                   <Lock size={15} className="text-[#56627A]" />
                 </div>
-                <p className="font-bold text-[#0A1D35]">Changer le mot de passe</p>
+                <p className="font-bold text-[#0A1D35]">{t('profil.changerMdp')}</p>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className={labelClass}>Mot de passe actuel</label>
+                  <label className={labelClass}>{t('profil.mdpActuel')}</label>
                   <div className="relative">
                     <input type={showAncien ? 'text' : 'password'} value={ancienMdp}
                       onChange={e => setAncienMdp(e.target.value)}
@@ -253,11 +253,11 @@ export default function Profil() {
                   </div>
                 </div>
                 <div>
-                  <label className={labelClass}>Nouveau mot de passe</label>
+                  <label className={labelClass}>{t('profil.nouveauMdp')}</label>
                   <div className="relative">
                     <input type={showNouveau ? 'text' : 'password'} value={nouveauMdp}
                       onChange={e => setNouveauMdp(e.target.value)}
-                      placeholder="8 caractères minimum"
+                      placeholder={t('profil.min8Chars')}
                       className={inputClass + ' pr-11'} />
                     <button type="button" onClick={() => setShowNouveau(s => !s)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8B8C8] hover:text-[#56627A] transition-colors">
@@ -267,7 +267,7 @@ export default function Profil() {
                 </div>
                 <button onClick={saveMdp} disabled={savingMdp || !ancienMdp || !nouveauMdp}
                   className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40">
-                  <Save size={14} />{savingMdp ? 'Enregistrement…' : 'Mettre à jour le mot de passe'}
+                  <Save size={14} />{savingMdp ? t('profil.enregistrement') : t('profil.mettreAJourMdp')}
                 </button>
               </div>
             </div>

@@ -51,7 +51,7 @@ export default function Reservation() {
       .then(data => {
         setPrestations(Array.isArray(data) ? data : []);
       })
-      .catch(() => toast.error('Erreur lors du chargement des prestations'));
+      .catch(() => toast.error(t('reservation.erreurPrestations')));
   }, []);
 
   // Auto-advance to step 2 when prestation pre-selected via URL
@@ -78,7 +78,7 @@ export default function Reservation() {
         });
         setCreneaux(grouped);
       })
-      .catch(() => toast.error('Erreur lors du chargement des créneaux'))
+      .catch(() => toast.error(t('reservation.erreurCreneaux')))
       .finally(() => setLoadingCreneaux(false));
   }, [prestationId, semaine]);
 
@@ -87,7 +87,7 @@ export default function Reservation() {
   const jours = Array.from({ length: 7 }, (_, i) => addDays(addDays(startOfDay(new Date()), semaine * 7), i));
 
   async function reserver() {
-    if (!form.consentement) { toast.error('Vous devez accepter la politique de confidentialité'); return; }
+    if (!form.consentement) { toast.error(t('reservation.accepterRgpd')); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/public/rdv', {
@@ -118,7 +118,7 @@ export default function Reservation() {
         <p className="text-xs font-bold tracking-widest uppercase text-[#56627A] mb-5">{t('reservation.recap')}</p>
         <div className="space-y-3 text-sm">
           <div className="flex items-start justify-between gap-3">
-            <span className="text-[#56627A] shrink-0">Prestation</span>
+            <span className="text-[#56627A] shrink-0">{t('reservation.prestation')}</span>
             <span className="font-semibold text-[#0A1D35] text-right">{prestationLocalized?.nom || '—'}</span>
           </div>
           <div className="flex justify-between">
@@ -141,12 +141,12 @@ export default function Reservation() {
         {creneau && (
           <div className="mt-4 flex items-center gap-2 bg-[#D0E7F5] rounded-[10px] px-3 py-2.5">
             <Video size={13} className="text-[#0A5A8A] shrink-0" />
-            <span className="text-xs font-medium text-[#0A5A8A]">Lien Meet généré automatiquement</span>
+            <span className="text-xs font-medium text-[#0A5A8A]">{t('reservation.lienMeetAuto')}</span>
           </div>
         )}
         <div className="mt-3 flex items-center gap-2 bg-[#F7F2EB] rounded-[10px] px-3 py-2.5">
           <Shield size={13} className="text-[#56627A] shrink-0" />
-          <span className="text-xs text-[#56627A]">Données protégées · RGPD</span>
+          <span className="text-xs text-[#56627A]">{t('reservation.donneesProtegees')}</span>
         </div>
       </div>
     </div>
@@ -180,7 +180,7 @@ export default function Reservation() {
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-1">{t('reservation.titreEtape1')}</h2>
-              <p className="text-sm text-[#56627A]">Sélectionnez le type d'accompagnement qui vous convient.</p>
+              <p className="text-sm text-[#56627A]">{t('reservation.selectionnerType')}</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {prestations.map(raw => {
@@ -330,7 +330,7 @@ export default function Reservation() {
                   <p className="text-xs text-[#56627A]">{form.email}</p>
                 </div>
                 <div className="flex items-center gap-1.5 bg-[#DCEFE4] text-[#1E6B4A] text-[11px] font-bold px-3 py-1.5 rounded-full">
-                  <Check size={11} /> Connecté
+                  <Check size={11} /> {t('reservation.connecte')}
                 </div>
               </div>
 
@@ -374,7 +374,7 @@ export default function Reservation() {
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-1">{t('reservation.titreCoordonnees')}</h2>
-                <p className="text-sm text-[#56627A]">Vos informations sont uniquement utilisées pour votre rendez-vous.</p>
+                <p className="text-sm text-[#56627A]">{t('reservation.infoUtilisees')}</p>
               </div>
 
               <div className="bg-white border border-[#E7DCCD] rounded-[20px] p-6 shadow-sm space-y-4">
