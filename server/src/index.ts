@@ -6,6 +6,7 @@ import { publicRouter } from './routes/public';
 import { adminRouter } from './routes/admin';
 import { clientRouter } from './routes/client';
 import { authRouter } from './routes/auth';
+import { stripeRouter, stripeWebhookRouter } from './routes/stripe';
 import { startCron } from './lib/cron';
 
 const app = express();
@@ -17,6 +18,10 @@ const allowedOrigins = isProd
   : ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use(cors({ origin: allowedOrigins }));
+
+// Stripe webhook must receive raw body — mounted before express.json()
+app.use('/api/stripe/webhook', stripeWebhookRouter);
+
 app.use(express.json());
 
 if (isProd) {
@@ -33,6 +38,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/client', clientRouter);
+app.use('/api/stripe', stripeRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 

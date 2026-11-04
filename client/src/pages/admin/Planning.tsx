@@ -1,7 +1,7 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import { format, addDays, startOfWeek, differenceInMinutes } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2, Video, Pencil } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, RefreshCw, Trash2, Video, Pencil, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -20,6 +20,8 @@ export default function AdminPlanning() {
   const [lundi, setLundi] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
   const [editRdv, setEditRdv] = useState<RendezVous | null>(null);
   const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [view, setView] = useState<ViewMode>('semaine');
@@ -39,18 +41,23 @@ export default function AdminPlanning() {
     }
   }
 
-  function loadRdvs() {
-    const fin = addDays(lundi, 6);
-    fetch(`/api/admin/rdv?debut=${lundi.toISOString()}&fin=${fin.toISOString()}`, { headers })
-      .then(r => r.json()).then(data => {
-        const arr = Array.isArray(data) ? data : [];
-        setRdvs(arr);
-        const totalSlots = 7 * 9;
-        setCreneauxLibres(Math.max(0, totalSlots - arr.length));
-      });
+  async function loadRdvs() {
+    setSyncing(true);
+    try {
+      const fin = addDays(lundi, 6);
+      const r = await fetch(`/api/admin/rdv?debut=${lundi.toISOString()}&fin=${fin.toISOString()}`, { headers });
+      const data = await r.json();
+      const arr = Array.isArray(data) ? data : [];
+      setRdvs(arr);
+      const totalSlots = 7 * 9;
+      setCreneauxLibres(Math.max(0, totalSlots - arr.length));
+      setLastSync(new Date());
+    } finally {
+      setSyncing(false);
+    }
   }
 
-  useEffect(() => { loadRdvs(); }, [lundi]);
+  useEffect(() => { loadRdvs(); }, [lundi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const jours = view === 'semaine'
     ? Array.from({ length: 7 }, (_, i) => addDays(lundi, i))
@@ -104,10 +111,17 @@ export default function AdminPlanning() {
               </button>
             ))}
           </div>
+          {lastSync && (
+            <span className="text-[10px] text-[#A0A9B8]">
+              {lastSync.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
           <button onClick={loadRdvs}
-            className="p-2 border border-[#E7DCCD] rounded-xl bg-white hover:bg-[#F7F2EB] transition-colors text-[#56627A]"
-            title="Actualiser">
-            <RefreshCw size={15} />
+            disabled={syncing}
+            className="flex items-center gap-1.5 text-xs font-semibold border border-[#E7DCCD] text-[#56627A] px-3 py-1.5 rounded-xl bg-white hover:bg-[#F7F2EB] transition-colors disabled:opacity-50"
+            title="Synchroniser">
+            <RotateCw size={13} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Sync...' : 'Synchroniser'}
           </button>
           <button onClick={() => setShowNouveauRdv(true)}
             className="flex items-center gap-1.5 bg-[#0A1D35] text-white font-semibold px-4 py-2 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">

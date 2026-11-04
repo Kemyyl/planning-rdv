@@ -4,7 +4,7 @@ import { format, isToday, isThisWeek, isThisMonth, formatDistanceToNow } from 'd
 import { useDateLocale, useTimeFormat } from '../../hooks/useDateLocale';
 import {
   Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video,
-  FileText, TrendingUp, ArrowRight, Zap, ChevronRight, Download,
+  FileText, TrendingUp, ArrowRight, Zap, ChevronRight, Download, RotateCw,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import toast from 'react-hot-toast';
@@ -62,6 +62,8 @@ export default function AdminDashboard() {
   const [period, setPeriod] = useState<Period>('today');
   const [pendingCount, setPendingCount] = useState(0);
   const [resumeLoading, setResumeLoading] = useState<Set<number>>(new Set());
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
 
   const headers = { Authorization: `Bearer ${token}` };
   const now = new Date();
@@ -101,12 +103,18 @@ export default function AdminDashboard() {
     }
   }
 
-  function loadDashboard() {
-    fetch('/api/admin/dashboard', { headers }).then(r => r.json()).then(data => {
+  async function loadDashboard() {
+    setSyncing(true);
+    try {
+      const r = await fetch('/api/admin/dashboard', { headers });
+      const data = await r.json();
       setRdvs(data.prochains || []);
       setStats(data.stats || {});
       setPendingCount(data.pendingCount || 0);
-    });
+      setLastSync(new Date());
+    } finally {
+      setSyncing(false);
+    }
   }
 
   useEffect(() => {
@@ -194,6 +202,19 @@ export default function AdminDashboard() {
           <p className="text-sm text-[#56627A] capitalize mt-0.5">{dateLabel}</p>
         </div>
         <div className="flex items-center gap-2">
+          {lastSync && (
+            <span className="text-[10px] text-[#A0A9B8]">
+              Mis à jour à {lastSync.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            onClick={loadDashboard}
+            disabled={syncing}
+            className="flex items-center gap-1.5 border border-[#E7DCCD] bg-white text-[#56627A] text-xs font-semibold px-3 py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-50"
+          >
+            <RotateCw size={13} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Sync...' : 'Synchroniser'}
+          </button>
           <button onClick={() => navigate('/admin/devis')}
             className="flex items-center gap-1.5 border border-[#E7DCCD] bg-white text-[#56627A] text-xs font-semibold px-4 py-2.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
             <FileText size={13} /> {t('dashboard.creerDevis')}

@@ -120,7 +120,7 @@ clientRouter.get('/devis', requireClientAuth, async (req, res) => {
   // Match by client_id OR by email (case-insensitive) to handle both linked and unlinked devis
   const { data, error } = await supabase
     .from('devis')
-    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance')
+    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance,paid_at')
     .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
@@ -200,6 +200,48 @@ clientRouter.get('/devis/:id/facture', requireClientAuth, async (req, res) => {
     res.send(pdfBuffer);
   } catch {
     res.status(500).json({ error: 'Erreur génération facture' });
+  }
+});
+
+// GET /api/client/devis/:id/devis-pdf — download the quote PDF (not the invoice)
+clientRouter.get('/devis/:id/devis-pdf', requireClientAuth, async (req, res) => {
+  const clientId = (req as ClientReq).clientId;
+  const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
+  if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+
+  const { data: devis } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (!devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    statut: string; numero: string; created_at: string;
+    client_prenom: string; client_nom: string; client_email: string; client_id?: number;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string; validite_date: string;
+  };
+
+  const email = (client as { email: string }).email;
+  const owned = d.client_id === clientId || d.client_email.toLowerCase() === email.toLowerCase();
+  if (!owned) { res.status(403).json({ error: 'Accès refusé' }); return; }
+
+  const emissionDate = format(new Date(d.created_at), 'd MMMM yyyy', { locale: fr });
+  const validiteDate = d.validite_date
+    ? format(new Date(d.validite_date), 'd MMMM yyyy', { locale: fr })
+    : emissionDate;
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: d.numero,
+      prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: Number(d.prix_par_seance),
+      total: Number(d.total), notes: d.notes, validiteDate, emissionDate,
+      isFacture: false,
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${d.numero}.pdf"`);
+    res.send(pdfBuffer);
+  } catch {
+    res.status(500).json({ error: 'Erreur génération devis' });
   }
 });
 

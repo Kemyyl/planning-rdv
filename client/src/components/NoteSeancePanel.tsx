@@ -361,66 +361,78 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
   // -------------------------------------------------------------------------
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 md:p-6"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 md:p-6"
       onClick={onClose}
     >
       <div
-        className="bg-[#FFFDFA] rounded-[22px] w-full max-w-4xl h-[90vh] flex flex-col shadow-2xl overflow-hidden"
+        className="bg-[#FFFDFA] rounded-[22px] w-full max-w-4xl h-[90vh] flex flex-col shadow-[0_32px_80px_-12px_rgba(10,29,53,0.28)] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
+        {/* Gradient accent bar */}
+        <div className="flex-none h-1 bg-gradient-to-r from-[#6CAED6] to-[#0A1D35]" />
+
         {/* ------------------------------------------------------------------ */}
         {/* HEADER                                                              */}
         {/* ------------------------------------------------------------------ */}
         <div className="flex-none border-b border-[#E7DCCD] px-6 py-5">
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0 flex-1">
-              {/* Top label */}
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#56627A] mb-1">
-                {t('noteSeance.titre')}
-              </p>
-              {/* Client name */}
-              <h2 className="text-lg font-bold text-[#0A1D35] truncate">{clientName}</h2>
-              {/* Date + prestation */}
-              <p className="text-xs text-[#56627A] capitalize mt-0.5">
-                {format(
-                  new Date(rdv.debut),
-                  `EEEE d MMMM yyyy '${t('common.at')}' ${timeFormat}`,
-                  { locale: dateLocale },
-                )}{' '}
-                · {rdv.prestation?.nom || rdv.titre || ''}
-              </p>
+            <div className="flex items-start gap-4 min-w-0 flex-1">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-[#6CAED6] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-white text-sm font-bold leading-none">
+                  {clientName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                </span>
+              </div>
 
-              {/* Motif */}
-              {rdv.commentaire && (
-                <div className="mt-3 bg-[#F7F2EB] border border-[#E7DCCD] rounded-[10px] px-4 py-2.5 max-w-lg">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#56627A] mb-1">
-                    {t('noteSeance.motif')}
-                  </p>
-                  <p className="text-xs text-[#0A1D35] leading-relaxed">{rdv.commentaire}</p>
-                </div>
-              )}
+              <div className="min-w-0 flex-1">
+                {/* Top label */}
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#56627A] mb-0.5">
+                  {t('noteSeance.titre')}
+                </p>
+                {/* Client name */}
+                <h2 className="text-lg font-bold text-[#0A1D35] truncate">{clientName}</h2>
+                {/* Date + prestation */}
+                <p className="text-xs text-[#56627A] capitalize mt-0.5">
+                  {format(
+                    new Date(rdv.debut),
+                    `EEEE d MMMM yyyy '${t('common.at')}' ${timeFormat}`,
+                    { locale: dateLocale },
+                  )}{' '}
+                  · {rdv.prestation?.nom || rdv.titre || ''}
+                </p>
 
-              {/* Meet link */}
-              {rdv.lien_meet && (
-                <a
-                  href={rdv.lien_meet}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-2 bg-[#0A1D35] text-white text-xs font-bold px-4 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors"
-                >
-                  <Video size={13} />
-                  {t('noteSeance.rejoindre')}
-                </a>
-              )}
+                {/* Motif */}
+                {rdv.commentaire && (
+                  <div className="mt-3 bg-[#F7F2EB] border-l-2 border-[#6CAED6] rounded-r-[10px] px-4 py-2.5 max-w-lg">
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-[#56627A] mb-1">
+                      {t('noteSeance.motif')}
+                    </p>
+                    <p className="text-xs text-[#0A1D35] leading-relaxed">{rdv.commentaire}</p>
+                  </div>
+                )}
+
+                {/* Meet link */}
+                {rdv.lien_meet && (
+                  <a
+                    href={rdv.lien_meet}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 bg-[#0A1D35] text-white text-xs font-bold px-4 py-2 rounded-[10px] hover:bg-[#1C3352] transition-colors shadow-sm"
+                  >
+                    <Video size={13} />
+                    {t('noteSeance.rejoindre')}
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Close */}
             <button
               onClick={onClose}
-              className="flex-none text-[#56627A] hover:text-[#0A1D35] transition-colors mt-0.5"
+              className="flex-none w-8 h-8 flex items-center justify-center text-[#56627A] hover:text-[#0A1D35] hover:bg-[#F7F2EB] rounded-lg transition-colors"
               aria-label="Fermer"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
@@ -432,16 +444,16 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
           {/* ================================================================ */}
           {/* LEFT — Editor + current-session notes                            */}
           {/* ================================================================ */}
-          <div className="flex flex-col flex-[3] min-w-0 overflow-y-auto border-r border-[#E7DCCD]">
+          <div className="flex flex-col flex-[3] min-w-0 overflow-y-auto border-r border-[#E7DCCD] bg-white">
             {/* ---- Toolbar ---- */}
-            <div className="flex-none flex items-center gap-1 px-5 pt-4 pb-2 flex-wrap">
+            <div className="flex-none mx-5 mt-4 mb-2 bg-[#F7F2EB] rounded-xl px-3 py-2 flex items-center gap-1 flex-wrap">
               {/* Formatting buttons */}
               <div className="flex items-center gap-0.5 mr-2">
                 <button
                   type="button"
                   title="Gras"
                   onClick={() => applyFormat('**', '**')}
-                  className="text-[#56627A] hover:bg-[#F7F2EB] rounded-lg p-1.5 transition-colors"
+                  className="text-[#56627A] hover:bg-white hover:shadow-sm hover:text-[#0A1D35] rounded-lg p-1.5 transition-all"
                 >
                   <Bold size={14} />
                 </button>
@@ -449,7 +461,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                   type="button"
                   title="Italique"
                   onClick={() => applyFormat('*', '*')}
-                  className="text-[#56627A] hover:bg-[#F7F2EB] rounded-lg p-1.5 transition-colors"
+                  className="text-[#56627A] hover:bg-white hover:shadow-sm hover:text-[#0A1D35] rounded-lg p-1.5 transition-all"
                 >
                   <Italic size={14} />
                 </button>
@@ -457,7 +469,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                   type="button"
                   title="Puce"
                   onClick={() => applyLinePrefix('- ')}
-                  className="text-[#56627A] hover:bg-[#F7F2EB] rounded-lg p-1.5 transition-colors"
+                  className="text-[#56627A] hover:bg-white hover:shadow-sm hover:text-[#0A1D35] rounded-lg p-1.5 transition-all"
                 >
                   <List size={14} />
                 </button>
@@ -465,7 +477,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                   type="button"
                   title="Séparateur"
                   onClick={() => appendTemplate('\n---\n')}
-                  className="text-[#56627A] hover:bg-[#F7F2EB] rounded-lg p-1.5 transition-colors font-bold text-sm leading-none"
+                  className="text-[#56627A] hover:bg-white hover:shadow-sm hover:text-[#0A1D35] rounded-lg p-1.5 transition-all"
                 >
                   <Minus size={14} />
                 </button>
@@ -478,28 +490,28 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
               <button
                 type="button"
                 onClick={() => appendTemplate('\n**Objectif :**\n')}
-                className="text-xs border border-[#E7DCCD] px-2.5 py-1 rounded-full hover:bg-[#F7F2EB] text-[#56627A] transition-colors whitespace-nowrap"
+                className="text-xs bg-white border border-[#E7DCCD] shadow-sm px-2.5 py-1 rounded-full hover:border-[#6CAED6] text-[#56627A] transition-all whitespace-nowrap"
               >
                 {t('noteSeance.templateObjectif')}
               </button>
               <button
                 type="button"
                 onClick={() => appendTemplate('\n**Points abordés :**\n- ')}
-                className="text-xs border border-[#E7DCCD] px-2.5 py-1 rounded-full hover:bg-[#F7F2EB] text-[#56627A] transition-colors whitespace-nowrap"
+                className="text-xs bg-white border border-[#E7DCCD] shadow-sm px-2.5 py-1 rounded-full hover:border-[#6CAED6] text-[#56627A] transition-all whitespace-nowrap"
               >
                 {t('noteSeance.templatePoints')}
               </button>
               <button
                 type="button"
                 onClick={() => appendTemplate('\n**Progrès :**\n')}
-                className="text-xs border border-[#E7DCCD] px-2.5 py-1 rounded-full hover:bg-[#F7F2EB] text-[#56627A] transition-colors whitespace-nowrap"
+                className="text-xs bg-white border border-[#E7DCCD] shadow-sm px-2.5 py-1 rounded-full hover:border-[#6CAED6] text-[#56627A] transition-all whitespace-nowrap"
               >
                 {t('noteSeance.templateProgres')}
               </button>
               <button
                 type="button"
                 onClick={() => appendTemplate('\n**À travailler :**\n- ')}
-                className="text-xs border border-[#E7DCCD] px-2.5 py-1 rounded-full hover:bg-[#F7F2EB] text-[#56627A] transition-colors whitespace-nowrap"
+                className="text-xs bg-white border border-[#E7DCCD] shadow-sm px-2.5 py-1 rounded-full hover:border-[#6CAED6] text-[#56627A] transition-all whitespace-nowrap"
               >
                 {t('noteSeance.templateATravail')}
               </button>
@@ -507,27 +519,29 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
 
             {/* ---- Textarea ---- */}
             <div className="relative px-5 pb-2">
-              <textarea
-                ref={textareaRef}
-                value={contenu}
-                onChange={e => setContenu(e.target.value)}
-                onInput={() => {
-                  const ta = textareaRef.current;
-                  if (!ta) return;
-                  ta.style.height = 'auto';
-                  ta.style.height = `${ta.scrollHeight}px`;
-                }}
-                placeholder={t('noteSeance.placeholder')}
-                rows={5}
-                className="w-full border border-[#E7DCCD] rounded-[12px] p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] resize-none bg-white leading-relaxed text-[#0A1D35] placeholder:text-[#A0A9B8] transition-shadow"
-                style={{ minHeight: '120px', overflowY: 'hidden' }}
-              />
-              {/* Draft badge */}
-              {hasDraft && (
-                <span className="absolute bottom-5 right-8 text-[10px] font-semibold bg-[#F7F2EB] border border-[#E7DCCD] text-[#56627A] px-2 py-0.5 rounded-full pointer-events-none">
-                  {t('noteSeance.brouillon')}
-                </span>
-              )}
+              <div className="relative shadow-sm rounded-[12px]">
+                <textarea
+                  ref={textareaRef}
+                  value={contenu}
+                  onChange={e => setContenu(e.target.value)}
+                  onInput={() => {
+                    const ta = textareaRef.current;
+                    if (!ta) return;
+                    ta.style.height = 'auto';
+                    ta.style.height = `${ta.scrollHeight}px`;
+                  }}
+                  placeholder={t('noteSeance.placeholder')}
+                  rows={5}
+                  className="w-full border border-[#E7DCCD] rounded-[12px] p-3.5 pb-8 text-sm focus:outline-none focus:ring-4 focus:ring-[#6CAED6]/30 focus:border-[#6CAED6] resize-none bg-white leading-relaxed text-[#0A1D35] placeholder:text-[#A0A9B8] transition-all"
+                  style={{ minHeight: '120px', overflowY: 'hidden' }}
+                />
+                {/* Draft badge */}
+                {hasDraft && (
+                  <span className="absolute bottom-3 right-3 text-[10px] font-semibold bg-[#F7F2EB] border border-[#E7DCCD] text-[#56627A] px-2 py-0.5 rounded-full pointer-events-none">
+                    {t('noteSeance.brouillon')}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* ---- Action row ---- */}
@@ -535,7 +549,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
               <button
                 onClick={ajouter}
                 disabled={!contenu.trim() || saving}
-                className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors disabled:opacity-40"
+                className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors shadow-md disabled:opacity-40"
               >
                 {saving ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -550,7 +564,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                 <button
                   onClick={importerGemini}
                   disabled={geminiLoading}
-                  className="flex items-center gap-1.5 text-xs font-semibold border border-[#E7DCCD] text-[#56627A] px-3.5 py-2.5 rounded-[12px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-[#F7F2EB] to-white border border-[#E7DCCD] text-[#56627A] px-3.5 py-2.5 rounded-[12px] hover:border-[#6CAED6] transition-all disabled:opacity-50"
                 >
                   {geminiLoading ? (
                     <Loader2 size={13} className="animate-spin" />
@@ -560,6 +574,10 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                   {t('noteSeance.importerGemini')}
                 </button>
               )}
+
+              <span className="ml-auto text-[10px] font-mono text-[#A0A9B8] bg-[#F7F2EB] border border-[#E7DCCD] px-2 py-1 rounded-md">
+                Ctrl+↵
+              </span>
             </div>
 
             {/* ---- Notes for this session ---- */}
@@ -570,7 +588,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                 </p>
               )}
               {sessionNotes.map(n => (
-                <div key={n.id} className="bg-[#F7F2EB] rounded-[12px] p-4">
+                <div key={n.id} className="bg-white border-l-2 border-[#6CAED6] border border-[#EDE6DA] rounded-[12px] p-4 shadow-sm">
                   {editId === n.id ? (
                     <div className="space-y-2">
                       <textarea
@@ -597,7 +615,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                         </button>
                         <button
                           onClick={() => setEditId(null)}
-                          className="text-xs text-[#56627A] px-3 py-1.5 border border-[#E7DCCD] rounded-[8px] hover:bg-white transition-colors"
+                          className="text-xs text-[#56627A] px-3 py-1.5 border border-[#E7DCCD] rounded-[8px] hover:bg-[#F7F2EB] transition-colors"
                         >
                           {t('prestations.annuler')}
                         </button>
@@ -609,8 +627,8 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                         className="text-sm text-[#0A1D35] leading-relaxed prose-sm max-w-none"
                         dangerouslySetInnerHTML={{ __html: renderMarkdown(n.contenu) }}
                       />
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#E7DCCD]">
-                        <span className="text-xs text-[#56627A]">
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#F7F2EB]">
+                        <span className="text-[10px] text-[#A0A9B8] font-medium">
                           {n.created_at
                             ? format(
                                 new Date(n.created_at),
@@ -619,23 +637,23 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                               )
                             : ''}
                         </span>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <button
                             onClick={() => {
                               setEditId(n.id);
                               setEditContenu(n.contenu);
                             }}
-                            className="text-[#56627A] hover:text-[#0A1D35] transition-colors p-1 rounded hover:bg-white"
+                            className="text-[#56627A] hover:text-[#0A1D35] transition-colors p-1.5 rounded-lg hover:bg-[#F7F2EB]"
                             title={t('noteSeance.modifie')}
                           >
-                            <Pencil size={13} />
+                            <Pencil size={12} />
                           </button>
                           <button
                             onClick={() => supprimer(n.id)}
-                            className="text-[#9B2C1F] hover:opacity-70 transition-opacity p-1 rounded hover:bg-white"
+                            className="text-[#9B2C1F] hover:opacity-70 transition-opacity p-1.5 rounded-lg hover:bg-[#F7F2EB]"
                             title={t('noteSeance.supprimer')}
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </div>
@@ -649,9 +667,9 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
           {/* ================================================================ */}
           {/* RIGHT — Client history (hidden on small screens)                 */}
           {/* ================================================================ */}
-          <div className="hidden md:flex flex-col flex-[2] min-w-0 overflow-y-auto bg-[#FEFCF9]">
+          <div className="hidden md:flex flex-col flex-[2] min-w-0 overflow-y-auto bg-[#FAFAF8]">
             {/* History header */}
-            <div className="flex-none px-5 pt-5 pb-3 border-b border-[#E7DCCD]">
+            <div className="flex-none px-5 pt-4 pb-3 bg-[#F7F2EB] border-b border-[#E7DCCD]">
               <p className="text-xs font-bold uppercase tracking-widest text-[#56627A]">
                 {t('noteSeance.historique')} — {clientName}
               </p>
@@ -660,19 +678,22 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
             <div className="flex-1 px-5 py-4 space-y-5">
               {groupedEntries.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-10 h-10 rounded-full bg-[#F7F2EB] flex items-center justify-center mb-3">
-                    <Pencil size={16} className="text-[#A0A9B8]" />
+                  <div className="w-14 h-14 rounded-full bg-[#EDE6DA] flex items-center justify-center mb-3">
+                    <Pencil size={20} className="text-[#A0A9B8]" />
                   </div>
                   <p className="text-sm text-[#56627A] italic">
                     {t('noteSeance.aucunHistorique')}
+                  </p>
+                  <p className="text-xs text-[#A0A9B8] mt-1">
+                    Les notes des séances précédentes apparaîtront ici.
                   </p>
                 </div>
               ) : (
                 groupedEntries.map(group => (
                   <div key={group.rdvId} className="space-y-2">
                     {/* Session header */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#56627A] uppercase tracking-wide">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold text-white bg-[#0A1D35] px-2 py-0.5 rounded-full">
                         {group.debut
                           ? format(new Date(group.debut), 'd MMM yyyy', {
                               locale: dateLocale,
@@ -680,10 +701,7 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                           : `${t('noteSeance.seance')} #${group.rdvId}`}
                       </span>
                       {group.prestation && (
-                        <>
-                          <span className="text-[#E7DCCD]">·</span>
-                          <span className="text-xs text-[#56627A]">{group.prestation}</span>
-                        </>
+                        <span className="text-xs text-[#56627A]">{group.prestation}</span>
                       )}
                     </div>
 
@@ -691,14 +709,14 @@ export default function NoteSeancePanel({ rdv, onClose }: Props) {
                     {group.notes.map(n => (
                       <div
                         key={n.id}
-                        className="bg-[#F7F2EB] rounded-[12px] p-3.5 border border-[#EDE6DA]"
+                        className="bg-white rounded-[12px] p-3.5 border border-[#EDE6DA] shadow-sm"
                       >
                         <div
                           className="text-xs text-[#0A1D35] leading-relaxed"
                           dangerouslySetInnerHTML={{ __html: renderMarkdown(n.contenu) }}
                         />
                         {n.created_at && (
-                          <p className="text-[10px] text-[#A0A9B8] mt-2 pt-2 border-t border-[#E7DCCD]">
+                          <p className="text-[10px] text-[#A0A9B8] mt-2 pt-2 border-t border-[#F7F2EB]">
                             {format(
                               new Date(n.created_at),
                               `d MMM yyyy '${t('common.at')}' ${timeFormat}`,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { Inbox, Mail, FileText, CheckCircle, Eye, Clock, Phone, MessageSquare, Tag } from 'lucide-react';
+import { Inbox, Mail, FileText, CheckCircle, Eye, Clock, Phone, MessageSquare, Tag, RotateCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -29,16 +29,26 @@ export default function Demandes() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  useEffect(() => {
+  async function fetchData() {
     if (!token) return;
-    fetch('/api/admin/demandes', { headers })
-      .then(r => r.json())
-      .then(d => setDemandes(Array.isArray(d) ? d : []))
-      .finally(() => setLoading(false));
-  }, [token]);
+    setSyncing(true);
+    try {
+      const r = await fetch('/api/admin/demandes', { headers });
+      const d = await r.json();
+      setDemandes(Array.isArray(d) ? d : []);
+      setLastSync(new Date());
+    } finally {
+      setSyncing(false);
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { fetchData(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function updateStatut(id: string, statut: Demande['statut']) {
     setUpdating(id);
@@ -86,6 +96,21 @@ export default function Demandes() {
               {nouveaux}
             </span>
           )}
+        </div>
+        <div className="flex items-center gap-2">
+          {lastSync && (
+            <span className="text-[10px] text-[#A0A9B8]">
+              Mis à jour à {lastSync.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <button
+            onClick={fetchData}
+            disabled={syncing}
+            className="flex items-center gap-1.5 text-xs font-semibold border border-[#E7DCCD] text-[#56627A] px-3 py-1.5 rounded-[10px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-50"
+          >
+            <RotateCw size={13} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Sync...' : 'Synchroniser'}
+          </button>
         </div>
       </div>
 

@@ -582,7 +582,7 @@ adminRouter.get('/devis/:id/pdf', requireAuth, async (req, res) => {
 // PATCH /api/admin/devis/:id/statut
 adminRouter.patch('/devis/:id/statut', requireAuth, async (req, res) => {
   const parsed = z.object({
-    statut: z.enum(['envoye', 'accepte', 'refuse', 'expire']),
+    statut: z.enum(['envoye', 'accepte', 'refuse', 'expire', 'paye']),
   }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Statut invalide' }); return; }
 
@@ -598,11 +598,14 @@ adminRouter.patch('/devis/:id/statut', requireAuth, async (req, res) => {
 
   const update: Record<string, unknown> = { statut: parsed.data.statut };
 
-  // Si accepté et pas encore de facture → générer numéro facture
-  if (parsed.data.statut === 'accepte' && !d.facture_numero) {
+  // Si accepté ou payé et pas encore de facture → générer numéro facture
+  if ((parsed.data.statut === 'accepte' || parsed.data.statut === 'paye') && !d.facture_numero) {
     const factureNum = `FAC-${format(new Date(), 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
     update.facture_numero = factureNum;
     update.facture_date = format(new Date(), 'yyyy-MM-dd');
+  }
+  if (parsed.data.statut === 'paye' && !('paid_at' in update)) {
+    update.paid_at = new Date().toISOString();
   }
 
   const { data: updated, error } = await supabase.from('devis').update(update).eq('id', req.params.id).select().single();
@@ -623,7 +626,7 @@ adminRouter.get('/devis/:id/facture', requireAuth, async (req, res) => {
     validite_date: string; created_at: string; statut: string;
   };
 
-  if (d.statut !== 'accepte' || !d.facture_numero) {
+  if ((d.statut !== 'accepte' && d.statut !== 'paye') || !d.facture_numero) {
     res.status(400).json({ error: 'Ce devis n\'a pas encore été accepté' }); return;
   }
 
@@ -663,7 +666,7 @@ adminRouter.post('/devis/:id/envoyer-facture', requireAuth, async (req, res) => 
     facture_numero?: string; facture_date?: string;
   };
 
-  if (d.statut !== 'accepte' || !d.facture_numero) {
+  if ((d.statut !== 'accepte' && d.statut !== 'paye') || !d.facture_numero) {
     res.status(400).json({ error: 'Facture non générée' }); return;
   }
 
@@ -690,6 +693,59 @@ adminRouter.post('/devis/:id/envoyer-facture', requireAuth, async (req, res) => 
   } catch (e) {
     res.status(500).json({ error: e instanceof Error ? e.message : 'Erreur' });
   }
+});
+
+// POST /api/admin/devis/:id/marquer-paye — admin marks a devis as manually paid
+adminRouter.post('/devis/:id/marquer-paye', requireAuth, async (req, res) => {
+  const { data: devis, error } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (error || !devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    id: string; statut: string; paid_at?: string;
+    client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string;
+    validite_date: string; created_at: string; facture_numero?: string; facture_date?: string;
+  };
+
+  if (d.statut === 'paye') { res.status(400).json({ error: 'Déjà payé' }); return; }
+  if (d.statut !== 'accepte') { res.status(400).json({ error: 'Le devis doit être accepté avant d\'être marqué payé' }); return; }
+
+  const now = new Date();
+  let factureNum = d.facture_numero;
+  const update: Record<string, unknown> = { statut: 'paye', paid_at: now.toISOString() };
+
+  if (!factureNum) {
+    factureNum = `FAC-${format(now, 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+    update.facture_numero = factureNum;
+    update.facture_date = format(now, 'yyyy-MM-dd');
+  }
+
+  await supabase.from('devis').update(update).eq('id', req.params.id);
+
+  // Send invoice by email (fire-and-forget)
+  try {
+    const emissionDate = d.facture_date
+      ? format(new Date(d.facture_date), 'd MMMM yyyy', { locale: fr })
+      : format(now, 'd MMMM yyyy', { locale: fr });
+
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: factureNum!,
+      prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: Number(d.prix_par_seance),
+      total: Number(d.total), notes: d.notes, validiteDate: emissionDate, emissionDate,
+      isFacture: true,
+    });
+    await sendFacturePdfEmail({
+      to: d.client_email, prenom: d.client_prenom, factureNum: factureNum!,
+      prestationNom: d.prestation_nom, duree: d.duree, nbSeances: d.nb_seances,
+      prixParSeance: Number(d.prix_par_seance), total: Number(d.total),
+      factureDate: emissionDate, pdfBuffer,
+    });
+  } catch { /* Email failure is not critical */ }
+
+  res.json({ ok: true });
 });
 
 // GET /api/admin/revenue — statistiques mensuelles (6 derniers mois)

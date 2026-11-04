@@ -34,10 +34,11 @@ interface DevisItem {
   total: number;
   validite_date: string;
   email_envoye: boolean;
-  statut: string;
+  statut: 'envoye' | 'accepte' | 'refuse' | 'expire' | 'paye';
   created_at: string;
   facture_numero?: string;
   facture_date?: string;
+  paid_at?: string | null;
 }
 
 export default function Devis() {
@@ -55,6 +56,7 @@ export default function Devis() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [updatingStatutId, setUpdatingStatutId] = useState<string | null>(null);
   const [sendingFactureId, setSendingFactureId] = useState<string | null>(null);
+  const [markingPayeId, setMarkingPayeId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   // ── Form state ───────────────────────────────────────────
@@ -217,6 +219,21 @@ export default function Devis() {
       toast.error(e instanceof Error ? e.message : t('common.erreur'));
     } finally {
       setSendingFactureId(null);
+    }
+  }
+
+  async function markPaye(item: DevisItem) {
+    setMarkingPayeId(item.id);
+    try {
+      const res = await fetch(`/api/admin/devis/${item.id}/marquer-paye`, { method: 'POST', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success('Devis marqué comme payé — facture envoyée par e-mail');
+      loadDevis();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
+    } finally {
+      setMarkingPayeId(null);
     }
   }
 
@@ -559,6 +576,11 @@ export default function Devis() {
                             <CheckCircle size={10} /> Accepté
                           </span>
                         )}
+                        {item.statut === 'paye' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E6B4A] bg-[#DCEFE4] px-2 py-0.5 rounded-full">
+                            <CheckCircle size={10} /> Payé ✓
+                          </span>
+                        )}
                         {item.statut === 'refuse' && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#9B2C1F] bg-[#F7DDD8] px-2 py-0.5 rounded-full">
                             Refusé
@@ -625,7 +647,17 @@ export default function Devis() {
                             </button>
                           </>
                         )}
-                        {item.statut === 'accepte' && item.facture_numero && (
+                        {/* Mark as paid (manual payment) */}
+                        {item.statut === 'accepte' && (
+                          <button
+                            onClick={() => markPaye(item)}
+                            disabled={markingPayeId === item.id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1E6B4A] border border-[#1E6B4A] px-3 py-1.5 rounded-[8px] hover:bg-[#17563C] transition-colors disabled:opacity-40">
+                            <CheckCircle size={12} /> {markingPayeId === item.id ? '…' : 'Marquer payé'}
+                          </button>
+                        )}
+                        {/* Facture buttons — for accepte and paye */}
+                        {(item.statut === 'accepte' || item.statut === 'paye') && item.facture_numero && (
                           <>
                             <button
                               onClick={() => downloadFacture(item)}
@@ -641,7 +673,7 @@ export default function Devis() {
                             </button>
                           </>
                         )}
-                        {item.statut === 'accepte' && !item.facture_numero && (
+                        {(item.statut === 'accepte') && !item.facture_numero && (
                           <button
                             onClick={() => changeStatut(item, 'accepte')}
                             disabled={updatingStatutId === item.id}
