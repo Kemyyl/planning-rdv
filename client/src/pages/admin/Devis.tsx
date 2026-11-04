@@ -607,6 +607,14 @@ export default function Devis() {
                             <Receipt size={12} /> {downloadingId === item.id ? '…' : 'Facture'}
                           </button>
                         )}
+                        {item.statut === 'accepte' && !item.facture_numero && (
+                          <button
+                            onClick={() => changeStatut(item, 'accepte')}
+                            disabled={updatingStatutId === item.id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
+                            <Receipt size={12} /> {updatingStatutId === item.id ? '…' : 'Générer facture'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
