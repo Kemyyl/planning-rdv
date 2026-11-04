@@ -7,10 +7,15 @@ import { supabase } from '../lib/supabase';
 import { generateDevisPdf } from '../lib/devis-pdf';
 import { sendFacturePdfEmail } from '../lib/email';
 
-// ── Stripe client ──────────────────────────────────────────────────────────
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-10-28.endive',
-});
+// ── Stripe client (lazy — initialized on first request so dotenv is already loaded) ──
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY non configuré');
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2026-10-28.endive' });
+  }
+  return _stripe;
+}
 
 // ── Auth middleware (same as client router) ────────────────────────────────
 interface ClientReq extends Request { clientId: number }
@@ -61,7 +66,7 @@ stripeRouter.post('/checkout', requireClientAuth, async (req, res) => {
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
   try {
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
       line_items: [{
         price_data: {
@@ -118,7 +123,7 @@ stripeWebhookRouter.post(
 
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
+      event = getStripe().webhooks.constructEvent(
         (req as Request & { rawBody: string }).rawBody,
         sig,
         webhookSecret,
