@@ -7,7 +7,9 @@ import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
+import { authLimiter } from '../middleware/rateLimit';
 import { getGoogleOAuthUrl, exchangeGoogleCode } from '../lib/google-meet';
+import { consumeOAuthState } from '../lib/oauth-state';
 import { sendInviteEmail, sendConfirmationEmail, sendDevisPdfEmail, sendFacturePdfEmail } from '../lib/email';
 import { findMeetNotes } from '../lib/google-drive';
 import { generateDevisPdf } from '../lib/devis-pdf';
@@ -15,7 +17,7 @@ import { generateDevisPdf } from '../lib/devis-pdf';
 export const adminRouter = Router();
 
 // POST /api/admin/login
-adminRouter.post('/login', async (req, res) => {
+adminRouter.post('/login', authLimiter, async (req, res) => {
   const parsed = z.object({ email: z.string().email(), mot_de_passe: z.string() }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Données invalides' }); return; }
   const { email, mot_de_passe } = parsed.data;
@@ -26,16 +28,24 @@ adminRouter.post('/login', async (req, res) => {
   const ok = await bcrypt.compare(mot_de_passe, (admin as { mot_de_passe: string }).mot_de_passe);
   if (!ok) { res.status(401).json({ error: 'Identifiants incorrects' }); return; }
 
-  const token = jwt.sign({ id: (admin as { id: string }).id, email }, process.env.JWT_SECRET!, { expiresIn: '8h' });
+  const token = jwt.sign({ id: (admin as { id: string }).id, email, role: 'admin' }, process.env.JWT_SECRET!, { expiresIn: '8h' });
   res.json({ token, nom: (admin as { nom: string }).nom });
 });
 
-// GET /api/admin/google-callback — appelé par Google après consentement (pas d'auth requise)
+// GET /api/admin/google-callback — appelé par Google après consentement
+// Protection CSRF : le `state` est un nonce aléatoire généré lors de l'initiation,
+// à usage unique, expiré à 10 min, lié à l'adminId côté serveur (non à l'adminId brut).
 adminRouter.get('/google-callback', async (req, res) => {
   const { code, state } = req.query as { code?: string; state?: string };
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
   if (!code || !state) {
+    res.redirect(`${appUrl}/admin/agenda?google=error`);
+    return;
+  }
+
+  const adminId = consumeOAuthState(state);
+  if (!adminId) {
     res.redirect(`${appUrl}/admin/agenda?google=error`);
     return;
   }
@@ -49,7 +59,7 @@ adminRouter.get('/google-callback', async (req, res) => {
   await supabase.from('admins').update({
     google_refresh_token: result.refreshToken,
     google_calendar_id: result.calendarId,
-  }).eq('id', state);
+  }).eq('id', adminId);
 
   res.redirect(`${appUrl}/admin/agenda?google=connected`);
 });
@@ -203,9 +213,13 @@ adminRouter.get('/rdv/:id/find-resume', async (req, res) => {
 
 // PATCH /api/admin/rdv/:id — modifier date/heure d'un RDV
 adminRouter.patch('/rdv/:id', async (req, res) => {
-  const { debut, duree } = req.body;
-  if (!debut) { res.status(400).json({ error: 'Date manquante' }); return; }
-  const dureeMin = duree && +duree > 0 ? +duree : 60;
+  const parsed = z.object({
+    debut: z.string().datetime(),
+    duree: z.number().int().min(1).max(600).optional(),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const { debut, duree } = parsed.data;
+  const dureeMin = duree && duree > 0 ? duree : 60;
   const fin = new Date(debut);
   fin.setMinutes(fin.getMinutes() + dureeMin);
 
@@ -426,29 +440,43 @@ adminRouter.post('/rdv/:id/note', async (req, res) => {
   res.status(201).json(data);
 });
 
-// PATCH /api/admin/notes/:id
+// PATCH /api/admin/notes/:id — seul l'admin propriétaire peut modifier sa note
 adminRouter.patch('/notes/:id', async (req, res) => {
-  const { contenu } = req.body;
-  if (!contenu?.trim()) { res.status(400).json({ error: 'Contenu requis' }); return; }
+  const parsed = z.object({ contenu: z.string().min(1).max(50000) }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Contenu requis' }); return; }
+  const adminId = (req as typeof req & { admin: { id: number } }).admin.id;
   const { data, error } = await supabase.from('notes_seance')
-    .update({ contenu: contenu.trim(), updated_at: new Date().toISOString() })
-    .eq('id', req.params.id).select().single();
-  if (error) { res.status(500).json({ error: error.message }); return; }
+    .update({ contenu: parsed.data.contenu.trim(), updated_at: new Date().toISOString() })
+    .eq('id', req.params.id)
+    .eq('admin_id', adminId)
+    .select().single();
+  if (error) { res.status(404).json({ error: 'Note introuvable ou accès refusé' }); return; }
   res.json(data);
 });
 
-// DELETE /api/admin/notes/:id
+// DELETE /api/admin/notes/:id — seul l'admin propriétaire peut supprimer sa note
 adminRouter.delete('/notes/:id', async (req, res) => {
-  const { error } = await supabase.from('notes_seance').delete().eq('id', req.params.id);
+  const adminId = (req as typeof req & { admin: { id: number } }).admin.id;
+  const { error, count } = await supabase.from('notes_seance')
+    .delete({ count: 'exact' })
+    .eq('id', req.params.id)
+    .eq('admin_id', adminId);
   if (error) { res.status(500).json({ error: error.message }); return; }
+  if (!count) { res.status(404).json({ error: 'Note introuvable ou accès refusé' }); return; }
   res.json({ ok: true });
 });
 
 // PATCH /api/admin/clients/:id
 adminRouter.patch('/clients/:id', async (req, res) => {
-  const allowed = ['seances_objectif', 'telephone', 'nom', 'prenom', 'compte_actif'];
-  const update: Record<string, unknown> = {};
-  for (const k of allowed) if (req.body[k] !== undefined) update[k] = req.body[k];
+  const parsed = z.object({
+    seances_objectif: z.number().int().min(0).max(1000).optional(),
+    telephone: z.string().max(20).optional().nullable(),
+    nom: z.string().min(1).max(100).optional(),
+    prenom: z.string().min(1).max(100).optional(),
+    compte_actif: z.boolean().optional(),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+  const update = parsed.data;
   if (Object.keys(update).length === 0) { res.status(400).json({ error: 'Rien à mettre à jour' }); return; }
   const { data, error } = await supabase.from('clients').update(update).eq('id', req.params.id).select().single();
   if (error) { res.status(500).json({ error: error.message }); return; }

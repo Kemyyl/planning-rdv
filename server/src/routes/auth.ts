@@ -3,11 +3,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
+import { authLimiter } from '../middleware/rateLimit';
 
 export const authRouter = Router();
 
 // POST /api/auth/login — vérifie admin puis client
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', authLimiter, async (req, res) => {
   const parsed = z.object({ email: z.string().email(), mot_de_passe: z.string() }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Données invalides' }); return; }
   const { email, mot_de_passe } = parsed.data;
@@ -19,7 +20,7 @@ authRouter.post('/login', async (req, res) => {
   if (admin && (admin as { mot_de_passe: string }).mot_de_passe) {
     const ok = await bcrypt.compare(mot_de_passe, (admin as { mot_de_passe: string }).mot_de_passe);
     if (ok) {
-      const token = jwt.sign({ id: (admin as { id: number }).id, email }, process.env.JWT_SECRET!, { expiresIn: '8h' });
+      const token = jwt.sign({ id: (admin as { id: number }).id, email, role: 'admin' }, process.env.JWT_SECRET!, { expiresIn: '8h' });
       res.json({ token, role: 'admin', nom: (admin as { nom: string }).nom });
       return;
     }

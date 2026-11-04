@@ -8,6 +8,8 @@ import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
 import { generateDevisPdf } from '../lib/devis-pdf';
+import { escapeIlike, mergeDedupe } from '../lib/query-safe';
+import { authLimiter } from '../middleware/rateLimit';
 
 export const clientRouter = Router();
 
@@ -25,7 +27,7 @@ function requireClientAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 // POST /api/client/register
-clientRouter.post('/register', async (req, res) => {
+clientRouter.post('/register', authLimiter, async (req, res) => {
   const parsed = z.object({
     email: z.string().email(),
     mot_de_passe: z.string().min(8, 'Minimum 8 caractères'),
@@ -41,8 +43,11 @@ clientRouter.post('/register', async (req, res) => {
 
   let clientId: number;
   if (existing) {
+    // Si un compte actif existe déjà : réponse générique pour éviter l'énumération d'emails.
+    // On n'authentifie pas le flux et on renvoie 200 comme pour un reset silencieux.
     if ((existing as { compte_actif: boolean }).compte_actif) {
-      res.status(409).json({ error: 'Un compte existe déjà avec cet e-mail.' }); return;
+      res.status(200).json({ ok: true, info: 'Si cet email n\'est pas déjà utilisé, le compte a été créé.' });
+      return;
     }
     await supabase.from('clients').update({ mot_de_passe: hash, compte_actif: true, nom, prenom, telephone }).eq('id', (existing as { id: number }).id);
     clientId = (existing as { id: number }).id;
@@ -59,7 +64,7 @@ clientRouter.post('/register', async (req, res) => {
 });
 
 // POST /api/client/login
-clientRouter.post('/login', async (req, res) => {
+clientRouter.post('/login', authLimiter, async (req, res) => {
   const parsed = z.object({ email: z.string().email(), mot_de_passe: z.string() }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Données invalides' }); return; }
   const { email, mot_de_passe } = parsed.data;
@@ -109,23 +114,22 @@ clientRouter.patch('/profil/mot-de-passe', requireClientAuth, async (req, res) =
   res.json({ ok: true });
 });
 
-// GET /api/client/factures — factures émises pour ce client (paid ou avec facture_numero)
+// GET /api/client/factures — factures émises pour ce client (paid)
 clientRouter.get('/factures', requireClientAuth, async (req, res) => {
   const clientId = (req as ClientReq).clientId;
   const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
   if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+  const email = escapeIlike((client as { email: string }).email);
 
-  const email = (client as { email: string }).email;
-
-  const { data, error } = await supabase
-    .from('devis')
-    .select('id,numero,facture_numero,facture_date,prestation_nom,nb_seances,prix_par_seance,total,statut,paid_at,created_at')
-    .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
-    .eq('statut', 'paye')
-    .not('facture_numero', 'is', null)
-    .order('facture_date', { ascending: false });
-  if (error) { res.status(500).json({ error: error.message }); return; }
-  res.json(data);
+  const cols = 'id,numero,facture_numero,facture_date,prestation_nom,nb_seances,prix_par_seance,total,statut,paid_at,created_at';
+  const [{ data: byId, error: e1 }, { data: byEmail, error: e2 }] = await Promise.all([
+    supabase.from('devis').select(cols).eq('client_id', clientId).eq('statut', 'paye').not('facture_numero', 'is', null),
+    supabase.from('devis').select(cols).ilike('client_email', email).eq('statut', 'paye').not('facture_numero', 'is', null),
+  ]);
+  if (e1 || e2) { res.status(500).json({ error: (e1 || e2)!.message }); return; }
+  const merged = mergeDedupe(byId as Array<{ id: string }> | null, byEmail as Array<{ id: string }> | null);
+  merged.sort((a, b) => (((b as unknown) as { facture_date: string }).facture_date || '').localeCompare(((a as unknown) as { facture_date: string }).facture_date || ''));
+  res.json(merged);
 });
 
 // GET /api/client/devis — devis & factures liés à ce client
@@ -133,17 +137,17 @@ clientRouter.get('/devis', requireClientAuth, async (req, res) => {
   const clientId = (req as ClientReq).clientId;
   const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
   if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+  const email = escapeIlike((client as { email: string }).email);
 
-  const email = (client as { email: string }).email;
-
-  // Match by client_id OR by email (case-insensitive) to handle both linked and unlinked devis
-  const { data, error } = await supabase
-    .from('devis')
-    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance')
-    .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
-    .order('created_at', { ascending: false });
-  if (error) { res.status(500).json({ error: error.message }); return; }
-  res.json(data || []);
+  const cols = 'id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance';
+  const [{ data: byId, error: e1 }, { data: byEmail, error: e2 }] = await Promise.all([
+    supabase.from('devis').select(cols).eq('client_id', clientId),
+    supabase.from('devis').select(cols).ilike('client_email', email),
+  ]);
+  if (e1 || e2) { res.status(500).json({ error: (e1 || e2)!.message }); return; }
+  const merged = mergeDedupe(byId as Array<{ id: string }> | null, byEmail as Array<{ id: string }> | null);
+  merged.sort((a, b) => (((b as unknown) as { created_at: string }).created_at || '').localeCompare(((a as unknown) as { created_at: string }).created_at || ''));
+  res.json(merged);
 });
 
 // PATCH /api/client/devis/:id/accepter

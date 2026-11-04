@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { getCreneauxDisponibles } from '../services/creneaux';
 import { sendConfirmationEmail, sendInviteEmail, sendDevisEmail, sendDevisConfirmEmail, sendResetPasswordEmail } from '../lib/email';
 import { createMeetEvent } from '../lib/google-meet';
+import { authLimiter, submitLimiter } from '../middleware/rateLimit';
 
 function fallbackMeetLink(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -50,7 +51,7 @@ const creerRdvSchema = z.object({
   }),
 });
 
-publicRouter.post('/rdv', async (req, res) => {
+publicRouter.post('/rdv', submitLimiter, async (req, res) => {
   const parsed = creerRdvSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
   const { prestation_id, debut, commentaire, client } = parsed.data;
@@ -125,26 +126,27 @@ publicRouter.post('/rdv', async (req, res) => {
   res.status(201).json({ id: rdv.id, jeton: rdv.jeton_annulation });
 });
 
-// GET /api/public/rdv/:id
-publicRouter.get('/rdv/:id', async (req, res) => {
-  const { data, error } = await supabase
-    .from('rendez_vous').select('*,client:clients(*),prestation:prestations(*)')
-    .eq('id', req.params.id).single();
-  if (error || !data) { res.status(404).json({ error: 'Introuvable' }); return; }
-  res.json(data);
-});
-
-// GET /api/public/rdv/jeton/:jeton
+// GET /api/public/rdv/jeton/:jeton — accès au RDV via jeton d'annulation (envoyé par email)
+// Les colonnes sensibles (mot_de_passe, token_reinitialisation...) sont volontairement exclues.
 publicRouter.get('/rdv/jeton/:jeton', async (req, res) => {
+  const jetonSchema = z.string().uuid().safeParse(req.params.jeton);
+  if (!jetonSchema.success) { res.status(400).json({ error: 'Jeton invalide' }); return; }
+
   const { data, error } = await supabase
-    .from('rendez_vous').select('*,client:clients(*),prestation:prestations(*)')
-    .eq('jeton_annulation', req.params.jeton).single();
+    .from('rendez_vous')
+    .select(`
+      id,debut,fin,statut,titre,lien_meet,commentaire,jeton_annulation,created_at,
+      client:clients(id,prenom,nom,email),
+      prestation:prestations(id,nom,duree,couleur)
+    `)
+    .eq('jeton_annulation', jetonSchema.data)
+    .single();
   if (error || !data) { res.status(404).json({ error: 'Introuvable' }); return; }
   res.json(data);
 });
 
 // POST /api/public/definir-mot-de-passe
-publicRouter.post('/definir-mot-de-passe', async (req, res) => {
+publicRouter.post('/definir-mot-de-passe', authLimiter, async (req, res) => {
   const parsed = z.object({
     token: z.string().uuid(),
     mot_de_passe: z.string().min(8, 'Minimum 8 caractères'),
@@ -174,7 +176,7 @@ publicRouter.post('/definir-mot-de-passe', async (req, res) => {
 });
 
 // POST /api/public/reset-password
-publicRouter.post('/reset-password', async (req, res) => {
+publicRouter.post('/reset-password', authLimiter, async (req, res) => {
   const parsed = z.object({ email: z.string().email() }).safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'Email invalide' }); return; }
 
@@ -222,7 +224,7 @@ publicRouter.patch('/rdv/:id/annuler', async (req, res) => {
 });
 
 // POST /api/public/devis
-publicRouter.post('/devis', async (req, res) => {
+publicRouter.post('/devis', submitLimiter, async (req, res) => {
   const parsed = z.object({
     prenom: z.string().min(1),
     nom: z.string().min(1),

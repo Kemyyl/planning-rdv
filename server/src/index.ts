@@ -2,6 +2,17 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+
+// ── Guards critiques au démarrage ─────────────────────────────────────────
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+  console.error('FATAL: JWT_SECRET manquant ou trop court (< 32 caractères).');
+  console.error('Générez-en un avec : node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'base64\'))"');
+  process.exit(1);
+}
+if (process.env.JWT_SECRET === 'synego_jwt_secret_change_in_prod_2026') {
+  console.error('FATAL: JWT_SECRET utilise la valeur d\'exemple. Générez-en un fort avant de démarrer.');
+  process.exit(1);
+}
 import { publicRouter } from './routes/public';
 import { adminRouter } from './routes/admin';
 import { clientRouter } from './routes/client';

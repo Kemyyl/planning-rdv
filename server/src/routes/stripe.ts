@@ -104,13 +104,26 @@ export const stripeWebhookRouter = Router();
 
 stripeWebhookRouter.post(
   '/',
-  // Raw body parser for signature verification
+  // Raw body parser avec limite 1 Mo pour éviter les DoS mémoire
   (req: Request, res: Response, next: NextFunction) => {
-    // express.raw middleware applied inline
+    const MAX = 1_048_576;
     let data = '';
+    let total = 0;
+    let aborted = false;
     req.setEncoding('utf8');
-    req.on('data', (chunk: string) => { data += chunk; });
+    req.on('data', (chunk: string) => {
+      if (aborted) return;
+      total += chunk.length;
+      if (total > MAX) {
+        aborted = true;
+        res.status(413).json({ error: 'Payload trop volumineux' });
+        req.destroy();
+        return;
+      }
+      data += chunk;
+    });
     req.on('end', () => {
+      if (aborted) return;
       (req as Request & { rawBody: string }).rawBody = data;
       next();
     });
@@ -137,11 +150,22 @@ stripeWebhookRouter.post(
 
       // ── Formations ───────────────────────────────────────────────────────
       if (session.metadata?.type === 'formation' && session.metadata?.formation_id) {
+        // Idempotence : ne pas réécrire si déjà payé, et exiger un vrai paiement Stripe
+        if (session.payment_status !== 'paid') { res.json({ received: true }); return; }
+
+        const { data: achat } = await supabase
+          .from('formation_achats')
+          .select('id,paid_at')
+          .eq('stripe_session_id', session.id)
+          .single();
+
+        if (!achat) { res.json({ received: true }); return; }
+        if ((achat as { paid_at: string | null }).paid_at) { res.json({ received: true }); return; }
 
         await supabase.from('formation_achats').update({
           paid_at: new Date().toISOString(),
           stripe_payment_intent: session.payment_intent as string,
-        }).eq('stripe_session_id', session.id);
+        }).eq('id', (achat as { id: string }).id);
 
         res.json({ received: true }); return;
       }

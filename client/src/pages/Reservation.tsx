@@ -103,7 +103,7 @@ export default function Reservation() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Erreur');
-      navigate(`/confirmation/${data.id}`);
+      navigate(`/confirmation/${data.jeton}`);
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Erreur lors de la réservation');
     } finally {

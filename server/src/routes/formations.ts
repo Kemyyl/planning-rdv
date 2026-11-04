@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../lib/supabase';
 import { requireAuth } from '../middleware/auth';
+import { escapeIlike, mergeDedupe } from '../lib/query-safe';
 
 // ── Slug generation ────────────────────────────────────────────────────────
 function makeSlug(titre: string): string {
@@ -329,14 +330,18 @@ formationsClientRouter.get('/mes-formations', requireClientAuth, async (req, res
   const clientId = (req as ClientReq).clientId;
   const clientEmail = (req as ClientReq).clientEmail;
 
-  const { data: achats, error } = await supabase
-    .from('formation_achats')
-    .select('formation_id,paid_at,formation:formations(id,titre,slug,description,prix,image_url,duree_heures,is_published)')
-    .or(`client_id.eq.${clientId},client_email.ilike.${clientEmail}`)
-    .not('paid_at', 'is', null)
-    .order('paid_at', { ascending: false });
-
-  if (error) { res.status(500).json({ error: error.message }); return; }
+  const emailEsc = escapeIlike(clientEmail);
+  const cols = 'id,formation_id,paid_at,formation:formations(id,titre,slug,description,prix,image_url,duree_heures,is_published)';
+  const [{ data: byId, error: e1 }, { data: byEmail, error: e2 }] = await Promise.all([
+    supabase.from('formation_achats').select(cols).eq('client_id', clientId).not('paid_at', 'is', null),
+    supabase.from('formation_achats').select(cols).ilike('client_email', emailEsc).not('paid_at', 'is', null),
+  ]);
+  if (e1 || e2) { res.status(500).json({ error: (e1 || e2)!.message }); return; }
+  const achats = mergeDedupe(
+    byId as Array<{ id: string; formation_id: string; paid_at: string }> | null,
+    byEmail as Array<{ id: string; formation_id: string; paid_at: string }> | null,
+  );
+  achats.sort((a, b) => (b.paid_at || '').localeCompare(a.paid_at || ''));
 
   // Pour chaque formation, récupérer le count de modules terminés
   const result = await Promise.all(
@@ -446,15 +451,13 @@ formationsClientRouter.get('/:id/acces', requireClientAuth, async (req, res) => 
   const clientEmail = (req as ClientReq).clientEmail;
   const formationId = req.params.id;
 
-  // Vérifier l'achat payé
-  const { data: achat } = await supabase
-    .from('formation_achats')
-    .select('id,paid_at')
-    .eq('formation_id', formationId)
-    .or(`client_id.eq.${clientId},client_email.ilike.${clientEmail}`)
-    .not('paid_at', 'is', null)
-    .single();
-
+  // Vérifier l'achat payé (par client_id ou email)
+  const emailEsc = escapeIlike(clientEmail);
+  const [{ data: a1 }, { data: a2 }] = await Promise.all([
+    supabase.from('formation_achats').select('id').eq('formation_id', formationId).eq('client_id', clientId).not('paid_at', 'is', null).limit(1),
+    supabase.from('formation_achats').select('id').eq('formation_id', formationId).ilike('client_email', emailEsc).not('paid_at', 'is', null).limit(1),
+  ]);
+  const achat = (a1 && a1[0]) || (a2 && a2[0]);
   if (!achat) { res.status(403).json({ error: 'Accès refusé — achetez cette formation pour y accéder' }); return; }
 
   // Récupérer la formation
@@ -493,15 +496,13 @@ formationsClientRouter.patch('/:id/modules/:moduleId/terminer', requireClientAut
   const clientEmail = (req as ClientReq).clientEmail;
   const { id: formationId, moduleId } = req.params;
 
-  // Vérifier l'achat payé
-  const { data: achat } = await supabase
-    .from('formation_achats')
-    .select('id')
-    .eq('formation_id', formationId)
-    .or(`client_id.eq.${clientId},client_email.ilike.${clientEmail}`)
-    .not('paid_at', 'is', null)
-    .single();
-
+  // Vérifier l'achat payé (par client_id ou email)
+  const emailEsc = escapeIlike(clientEmail);
+  const [{ data: a1 }, { data: a2 }] = await Promise.all([
+    supabase.from('formation_achats').select('id').eq('formation_id', formationId).eq('client_id', clientId).not('paid_at', 'is', null).limit(1),
+    supabase.from('formation_achats').select('id').eq('formation_id', formationId).ilike('client_email', emailEsc).not('paid_at', 'is', null).limit(1),
+  ]);
+  const achat = (a1 && a1[0]) || (a2 && a2[0]);
   if (!achat) { res.status(403).json({ error: 'Accès refusé' }); return; }
 
   // Vérifier que le module appartient bien à cette formation

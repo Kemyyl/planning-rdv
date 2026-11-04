@@ -27,6 +27,8 @@ function getOAuthClient(refreshToken: string) {
   return client;
 }
 
+import { createOAuthState } from './oauth-state';
+
 export function getGoogleOAuthUrl(adminId: number): string | null {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -40,7 +42,7 @@ export function getGoogleOAuthUrl(adminId: number): string | null {
       'https://www.googleapis.com/auth/meetings.space.created',
       'https://www.googleapis.com/auth/drive.readonly',
     ],
-    state: String(adminId),
+    state: createOAuthState(adminId),
     prompt: 'consent',
   });
 }

@@ -12,6 +12,21 @@ interface RdvInfo {
   jeton_annulation?: string;
 }
 
+/**
+ * Échappe les caractères HTML pour éviter l'injection quand on interpole des
+ * valeurs user-controlled dans un template email. À appliquer sur TOUTE
+ * variable non maîtrisée (noms, messages, commentaires…).
+ */
+function esc(v: string | number | null | undefined): string {
+  if (v == null) return '';
+  return String(v)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function makeTransport() {
   return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -29,12 +44,13 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
-  const cancelUrl = rdv.jeton_annulation ? `${appUrl}/mes-rdv?jeton=${rdv.jeton_annulation}` : '';
+  const cancelUrl = rdv.jeton_annulation ? `${appUrl}/mes-rdv?jeton=${encodeURIComponent(rdv.jeton_annulation)}` : '';
+  const seanceNom = rdv.prestation?.nom || rdv.titre || 'Séance';
 
   await makeTransport().sendMail({
     from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to,
-    subject: `Confirmation – ${rdv.prestation?.nom || rdv.titre || 'Séance'}`,
+    subject: `Confirmation – ${seanceNom}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
       <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
         <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
@@ -42,18 +58,18 @@ export async function sendConfirmationEmail(to: string, prenom: string, rdv: Rdv
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Votre rendez-vous est confirmé ✓</h2>
-        <p>Bonjour <strong>${prenom}</strong>,</p>
-        <p>Votre séance <strong>${rdv.prestation?.nom || rdv.titre || 'Séance'}</strong> est confirmée :</p>
+        <p>Bonjour <strong>${esc(prenom)}</strong>,</p>
+        <p>Votre séance <strong>${esc(seanceNom)}</strong> est confirmée :</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:20px 0">
-          <p style="margin:0;font-size:18px;font-weight:bold">${dateStr}${rdv.duree ? ` · ${rdv.duree} min` : ''}</p>
+          <p style="margin:0;font-size:18px;font-weight:bold">${esc(dateStr)}${rdv.duree ? ` · ${rdv.duree} min` : ''}</p>
         </div>
         ${rdv.lien_meet ? `
         <p style="margin-bottom:8px">Lien pour rejoindre la séance :</p>
-        <a href="${rdv.lien_meet}" style="display:inline-block;background:#6CAED6;color:#0A1D35;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold">
+        <a href="${esc(rdv.lien_meet)}" style="display:inline-block;background:#6CAED6;color:#0A1D35;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold">
           Rejoindre la séance
         </a>` : ''}
         ${cancelUrl ? `<p style="margin-top:24px;font-size:13px;color:#56627A">
-          Vous pouvez <a href="${cancelUrl}" style="color:#56627A">annuler gratuitement jusqu'à 24h avant</a>.
+          Vous pouvez <a href="${esc(cancelUrl)}" style="color:#56627A">annuler gratuitement jusqu'à 24h avant</a>.
         </p>` : ''}
         <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
       </div>
@@ -73,11 +89,11 @@ export async function sendInviteEmail(to: string, prenom: string, inviteUrl: str
         <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
-        <h2 style="margin-top:0">Bienvenue, ${prenom} !</h2>
+        <h2 style="margin-top:0">Bienvenue, ${esc(prenom)} !</h2>
         <p>Un compte a été créé pour vous sur Synégo.</p>
         <p>Cliquez sur le bouton ci-dessous pour définir votre mot de passe et accéder à votre espace :</p>
         <div style="margin:24px 0">
-          <a href="${inviteUrl}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
+          <a href="${esc(inviteUrl)}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
             Activer mon compte
           </a>
         </div>
@@ -98,7 +114,7 @@ export async function sendDevisEmail(data: {
     from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to,
     replyTo: data.email,
-    subject: `Nouvelle demande de devis — ${data.prenom} ${data.nom}`,
+    subject: `Nouvelle demande de devis — ${esc(data.prenom)} ${esc(data.nom)}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
       <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
         <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
@@ -107,14 +123,14 @@ export async function sendDevisEmail(data: {
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Demande de devis reçue</h2>
         <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:16px 0">
-          <p style="margin:0 0 8px"><strong>Nom :</strong> ${data.prenom} ${data.nom}</p>
-          <p style="margin:0 0 8px"><strong>Email :</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-          ${data.telephone ? `<p style="margin:0 0 8px"><strong>Téléphone :</strong> ${data.telephone}</p>` : ''}
-          ${data.type_accompagnement ? `<p style="margin:0"><strong>Type :</strong> ${data.type_accompagnement}</p>` : ''}
+          <p style="margin:0 0 8px"><strong>Nom :</strong> ${esc(data.prenom)} ${esc(data.nom)}</p>
+          <p style="margin:0 0 8px"><strong>Email :</strong> <a href="mailto:${esc(data.email)}">${esc(data.email)}</a></p>
+          ${data.telephone ? `<p style="margin:0 0 8px"><strong>Téléphone :</strong> ${esc(data.telephone)}</p>` : ''}
+          ${data.type_accompagnement ? `<p style="margin:0"><strong>Type :</strong> ${esc(data.type_accompagnement)}</p>` : ''}
         </div>
         <h3 style="color:#56627A;font-size:14px;text-transform:uppercase;letter-spacing:0.05em">Message</h3>
-        <p style="background:#F7F2EB;border-radius:12px;padding:16px 20px;white-space:pre-wrap">${data.message}</p>
-        <p style="color:#56627A;font-size:13px;margin-top:24px">Répondez directement à cet email pour contacter ${data.prenom}.</p>
+        <p style="background:#F7F2EB;border-radius:12px;padding:16px 20px;white-space:pre-wrap">${esc(data.message)}</p>
+        <p style="color:#56627A;font-size:13px;margin-top:24px">Répondez directement à cet email pour contacter ${esc(data.prenom)}.</p>
       </div>
     </div>`,
   });
@@ -132,7 +148,7 @@ export async function sendDevisConfirmEmail(to: string, prenom: string) {
         <p style="color:#6CAED6;margin:4px 0 0">Accompagnement thérapeutique</p>
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
-        <h2 style="margin-top:0">Demande reçue, ${prenom} ✓</h2>
+        <h2 style="margin-top:0">Demande reçue, ${esc(prenom)} ✓</h2>
         <p>Merci pour votre demande. Nous l'avons bien reçue et vous contacterons dans les 24h.</p>
         <p style="margin-top:24px;color:#56627A">À très bientôt,<br><strong>L'équipe Synégo</strong></p>
       </div>
@@ -158,7 +174,7 @@ export async function sendDevisPdfEmail(data: {
   await makeTransport().sendMail({
     from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to: data.to,
-    subject: `Votre devis Synégo — ${data.devisNum}`,
+    subject: `Votre devis Synégo — ${esc(data.devisNum)}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
       <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
         <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
@@ -166,15 +182,15 @@ export async function sendDevisPdfEmail(data: {
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Votre devis personnalisé</h2>
-        <p>Bonjour <strong>${data.prenom}</strong>,</p>
+        <p>Bonjour <strong>${esc(data.prenom)}</strong>,</p>
         <p>Veuillez trouver ci-joint votre devis personnalisé pour votre accompagnement.</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:20px 24px;margin:20px 0">
-          <p style="margin:0 0 6px;font-weight:bold;font-size:15px">${data.prestationNom}</p>
+          <p style="margin:0 0 6px;font-weight:bold;font-size:15px">${esc(data.prestationNom)}</p>
           <p style="margin:0 0 4px;color:#56627A;font-size:13px">${data.nbSeances} séance${data.nbSeances > 1 ? 's' : ''} · ${data.duree} min chacune</p>
           <p style="margin:10px 0 0;font-size:22px;font-weight:bold;color:#0A1D35">${totalStr}</p>
         </div>
-        <p style="font-size:13px;color:#56627A">Ce devis est valable jusqu'au <strong>${data.validiteDate}</strong>.</p>
-        <p style="font-size:12px;color:#9BA8B8;margin-top:4px">Réf. ${data.devisNum}</p>
+        <p style="font-size:13px;color:#56627A">Ce devis est valable jusqu'au <strong>${esc(data.validiteDate)}</strong>.</p>
+        <p style="font-size:12px;color:#9BA8B8;margin-top:4px">Réf. ${esc(data.devisNum)}</p>
         <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
       </div>
     </div>`,
@@ -199,10 +215,10 @@ export async function sendResetPasswordEmail(to: string, prenom: string, resetUr
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Réinitialisation de mot de passe</h2>
-        <p>Bonjour <strong>${prenom}</strong>,</p>
+        <p>Bonjour <strong>${esc(prenom)}</strong>,</p>
         <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous :</p>
         <div style="margin:24px 0">
-          <a href="${resetUrl}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
+          <a href="${esc(resetUrl)}" style="display:inline-block;background:#0A1D35;color:white;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:15px">
             Réinitialiser mon mot de passe
           </a>
         </div>
@@ -230,7 +246,7 @@ export async function sendFacturePdfEmail(data: {
   await makeTransport().sendMail({
     from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
     to: data.to,
-    subject: `Votre facture Synégo — ${data.factureNum}`,
+    subject: `Votre facture Synégo — ${esc(data.factureNum)}`,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0A1D35">
       <div style="background:#0A1D35;padding:24px 32px;border-radius:16px 16px 0 0">
         <h1 style="color:white;margin:0;font-size:22px">Synégo</h1>
@@ -238,15 +254,15 @@ export async function sendFacturePdfEmail(data: {
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Votre facture</h2>
-        <p>Bonjour <strong>${data.prenom}</strong>,</p>
+        <p>Bonjour <strong>${esc(data.prenom)}</strong>,</p>
         <p>Veuillez trouver ci-joint votre facture pour votre accompagnement.</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:20px 24px;margin:20px 0">
-          <p style="margin:0 0 6px;font-weight:bold;font-size:15px">${data.prestationNom}</p>
+          <p style="margin:0 0 6px;font-weight:bold;font-size:15px">${esc(data.prestationNom)}</p>
           <p style="margin:0 0 4px;color:#56627A;font-size:13px">${data.nbSeances} séance${data.nbSeances > 1 ? 's' : ''} · ${data.duree} min chacune</p>
           <p style="margin:10px 0 0;font-size:22px;font-weight:bold;color:#0A1D35">${totalStr}</p>
         </div>
-        <p style="font-size:13px;color:#56627A">Facture émise le <strong>${data.factureDate}</strong>.</p>
-        <p style="font-size:12px;color:#9BA8B8;margin-top:4px">Réf. ${data.factureNum}</p>
+        <p style="font-size:13px;color:#56627A">Facture émise le <strong>${esc(data.factureDate)}</strong>.</p>
+        <p style="font-size:12px;color:#9BA8B8;margin-top:4px">Réf. ${esc(data.factureNum)}</p>
         <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>
       </div>
     </div>`,
@@ -261,6 +277,7 @@ export async function sendFacturePdfEmail(data: {
 export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo) {
   if (!isConfigured()) return;
   const dateStr = format(new Date(rdv.debut), "EEEE d MMMM yyyy 'à' HH:mm", { locale: fr });
+  const seanceNom = rdv.prestation?.nom || rdv.titre || 'Séance';
 
   await makeTransport().sendMail({
     from: `Synégo <${process.env.EMAIL_FROM || 'noreply@synego.fr'}>`,
@@ -273,13 +290,13 @@ export async function sendReminderEmail(to: string, prenom: string, rdv: RdvInfo
       </div>
       <div style="background:white;padding:32px;border:1px solid #E7DCCD;border-top:none;border-radius:0 0 16px 16px">
         <h2 style="margin-top:0">Rappel de votre rendez-vous</h2>
-        <p>Bonjour <strong>${prenom}</strong>,</p>
-        <p>Rappel : votre séance <strong>${rdv.prestation?.nom}</strong> a lieu demain :</p>
+        <p>Bonjour <strong>${esc(prenom)}</strong>,</p>
+        <p>Rappel : votre séance <strong>${esc(seanceNom)}</strong> a lieu demain :</p>
         <div style="background:#F7F2EB;border-radius:12px;padding:16px 20px;margin:20px 0">
-          <p style="margin:0;font-size:18px;font-weight:bold">${dateStr}</p>
+          <p style="margin:0;font-size:18px;font-weight:bold">${esc(dateStr)}</p>
         </div>
         ${rdv.lien_meet ? `
-        <a href="${rdv.lien_meet}" style="display:inline-block;background:#6CAED6;color:#0A1D35;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold">
+        <a href="${esc(rdv.lien_meet)}" style="display:inline-block;background:#6CAED6;color:#0A1D35;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:bold">
           Rejoindre la séance
         </a>` : ''}
         <p style="margin-top:32px;color:#56627A">À bientôt,<br><strong>L'équipe Synégo</strong></p>

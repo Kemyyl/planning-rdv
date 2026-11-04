@@ -40,7 +40,7 @@ export default function App() {
           <Route path="/" element={<Accueil />} />
           <Route path="/services" element={<Services />} />
           <Route path="/reservation" element={<Reservation />} />
-          <Route path="/confirmation/:id" element={<Confirmation />} />
+          <Route path="/confirmation/:jeton" element={<Confirmation />} />
           <Route path="/mes-rdv" element={<MesRdv />} />
           <Route path="/mes-devis" element={<MesDevis />} />
           <Route path="/mes-factures" element={<MesFactures />} />

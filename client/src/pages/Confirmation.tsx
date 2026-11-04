@@ -12,17 +12,17 @@ export default function Confirmation() {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateLocale();
   const { timeFormat } = useTimeFormat();
-  const { id } = useParams<{ id: string }>();
+  const { jeton } = useParams<{ jeton: string }>();
   const [rdv, setRdv] = useState<RendezVous | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-    fetch(`/api/public/rdv/${id}`)
+    if (!jeton) return;
+    fetch(`/api/public/rdv/jeton/${jeton}`)
       .then(r => r.json())
       .then(data => { if (data.error) setError(true); else setRdv(data); })
       .catch(() => setError(true));
-  }, [id]);
+  }, [jeton]);
 
   if (error) return (
     <PublicLayout>
