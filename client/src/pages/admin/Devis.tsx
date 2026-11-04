@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { FileText, Send, Users, ChevronDown, Minus, Plus, CheckCircle, RotateCcw, Download, Mail, AlertCircle, ArrowLeft, Eye, Search } from 'lucide-react';
 import { format, addDays, isPast } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -38,6 +39,8 @@ interface DevisItem {
 
 export default function Devis() {
   const { token } = useAuth();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
   const [view, setView] = useState<'list' | 'create'>('list');
 
   // ── List state ───────────────────────────────────────────
@@ -89,8 +92,9 @@ export default function Devis() {
   const clientEmail = clientMode === 'existing' ? (selectedClient?.email || '') : email;
   const total = nbSeances * (Number(prixParSeance) || 0);
   const totalStr = total % 1 === 0 ? `${total} €` : `${total.toFixed(2)} €`;
-  const validiteDate = format(addDays(new Date(), validiteJours), 'd MMMM yyyy', { locale: fr });
+  const validiteDate = format(addDays(new Date(), validiteJours), 'd MMMM yyyy', { locale: dateLocale });
   const canSubmit = !!(clientPrenom && clientNom && clientEmail && selectedPrestation && prixParSeance !== '' && Number(prixParSeance) >= 0 && nbSeances >= 1);
+  const seanceLabel = nbSeances > 1 ? t('adminDevis.seances') : t('adminDevis.seance');
 
   // ── Actions ──────────────────────────────────────────────
   async function submit(e: React.FormEvent) {
@@ -117,7 +121,7 @@ export default function Devis() {
       setSent({ devisNum: data.devisNum, email: clientEmail, emailEnvoye: data.emailEnvoye });
       loadDevis();
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Erreur');
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
     } finally {
       setLoading(false);
     }
@@ -146,7 +150,7 @@ export default function Devis() {
       a.href = url; a.download = `${item.numero}.pdf`; a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Erreur lors du téléchargement');
+      toast.error(t('adminDevis.erreurTelechargement'));
     } finally {
       setDownloadingId(null);
     }
@@ -158,10 +162,10 @@ export default function Devis() {
       const res = await fetch(`/api/admin/devis/${item.id}/renvoyer`, { method: 'POST', headers });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      toast.success('Email renvoyé !');
+      toast.success(t('adminDevis.emailRenvoye'));
       loadDevis();
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : 'Erreur');
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
     } finally {
       setResendingId(null);
     }
@@ -174,32 +178,32 @@ export default function Devis() {
   // ── Success after create ──────────────────────────────────
   if (sent) {
     return (
-      <AdminLayout title="Créer un devis">
+      <AdminLayout title={t('adminDevis.titreCree')}>
         <div className="max-w-lg mx-auto text-center py-16">
           <div className="w-16 h-16 rounded-full bg-[#DCEFE4] flex items-center justify-center mx-auto mb-6">
             <CheckCircle size={32} className="text-[#1E6B4A]" />
           </div>
-          <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">Devis créé !</h2>
+          <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-2">{t('adminDevis.succes')}</h2>
           {sent.emailEnvoye ? (
-            <p className="text-[#56627A] mb-5">Le PDF a été envoyé par email à <strong>{sent.email}</strong>.</p>
+            <p className="text-[#56627A] mb-5">{t('adminDevis.succesEmail')} <strong>{sent.email}</strong>.</p>
           ) : (
             <p className="text-[#9B2C1F] mb-5 flex items-center justify-center gap-2">
-              <AlertCircle size={15} /> Devis enregistré mais l'email n'a pas pu être envoyé.
+              <AlertCircle size={15} /> {t('adminDevis.erreurEmail')}
             </p>
           )}
           <div className="inline-flex items-center gap-3 bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl px-5 py-3 mb-8">
             <FileText size={16} className="text-[#56627A]" />
-            <span className="text-xs text-[#56627A]">Référence :</span>
+            <span className="text-xs text-[#56627A]">{t('adminDevis.reference')}</span>
             <span className="text-sm font-bold text-[#0A1D35] font-mono">{sent.devisNum}</span>
           </div>
           <div className="flex gap-3 justify-center">
             <button onClick={() => { resetForm(); setView('list'); }}
               className="inline-flex items-center gap-2 bg-[#F7F2EB] border border-[#E7DCCD] text-[#56627A] font-semibold px-5 py-3 rounded-[12px] hover:bg-[#E7DCCD] transition-colors">
-              <Eye size={15} /> Voir les devis
+              <Eye size={15} /> {t('adminDevis.voirDevis')}
             </button>
             <button onClick={resetForm}
               className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-3 rounded-[12px] hover:bg-[#1C3352] transition-colors">
-              <RotateCcw size={15} /> Nouveau devis
+              <RotateCcw size={15} /> {t('adminDevis.nouveau')}
             </button>
           </div>
         </div>
@@ -210,11 +214,11 @@ export default function Devis() {
   // ── Create form ───────────────────────────────────────────
   if (view === 'create') {
     return (
-      <AdminLayout title="Créer un devis">
+      <AdminLayout title={t('adminDevis.titreCree')}>
         <div className="mb-5">
           <button onClick={() => setView('list')}
             className="inline-flex items-center gap-1.5 text-sm text-[#56627A] hover:text-[#0A1D35] transition-colors font-medium">
-            <ArrowLeft size={14} /> Retour aux devis
+            <ArrowLeft size={14} /> {t('adminDevis.retour')}
           </button>
         </div>
         <form onSubmit={submit}>
@@ -227,24 +231,24 @@ export default function Devis() {
                   <div className="w-8 h-8 rounded-lg bg-[#F7F2EB] flex items-center justify-center">
                     <Users size={15} className="text-[#56627A]" />
                   </div>
-                  <p className="font-bold text-[#0A1D35]">Client</p>
+                  <p className="font-bold text-[#0A1D35]">{t('adminDevis.client')}</p>
                 </div>
                 <div className="flex bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl p-1 mb-4">
                   <button type="button" onClick={() => setClientMode('existing')}
                     className={`flex-1 py-2 text-sm font-semibold rounded-[9px] transition-all ${clientMode === 'existing' ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'}`}>
-                    Client existant
+                    {t('adminDevis.clientExistant')}
                   </button>
                   <button type="button" onClick={() => setClientMode('new')}
                     className={`flex-1 py-2 text-sm font-semibold rounded-[9px] transition-all ${clientMode === 'new' ? 'bg-white text-[#0A1D35] shadow-sm' : 'text-[#56627A] hover:text-[#0A1D35]'}`}>
-                    Nouveau client
+                    {t('adminDevis.nouveauClient')}
                   </button>
                 </div>
                 {clientMode === 'existing' ? (
                   <div className="relative">
-                    <label className={labelClass}>Sélectionner un client</label>
+                    <label className={labelClass}>{t('adminDevis.selectionnerClient')}</label>
                     <select value={selectedClientId} onChange={e => setSelectedClientId(e.target.value)}
                       className={inputClass + ' appearance-none pr-10'}>
-                      <option value="">— Choisir un client —</option>
+                      <option value="">{t('adminDevis.choisirClient')}</option>
                       {clients.map(c => (
                         <option key={c.id} value={c.id}>{c.prenom} {c.nom} — {c.email}</option>
                       ))}
@@ -255,16 +259,16 @@ export default function Devis() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className={labelClass}>Prénom *</label>
+                        <label className={labelClass}>{t('adminDevis.prenom')}</label>
                         <input value={prenom} onChange={e => setPrenom(e.target.value)} placeholder="Marie" className={inputClass} />
                       </div>
                       <div>
-                        <label className={labelClass}>Nom *</label>
+                        <label className={labelClass}>{t('adminDevis.nom')}</label>
                         <input value={nom} onChange={e => setNom(e.target.value)} placeholder="Dupont" className={inputClass} />
                       </div>
                     </div>
                     <div>
-                      <label className={labelClass}>Email *</label>
+                      <label className={labelClass}>{t('adminDevis.email')}</label>
                       <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="marie.dupont@email.com" className={inputClass} />
                     </div>
                   </div>
@@ -277,15 +281,15 @@ export default function Devis() {
                   <div className="w-8 h-8 rounded-lg bg-[#F7F2EB] flex items-center justify-center">
                     <FileText size={15} className="text-[#56627A]" />
                   </div>
-                  <p className="font-bold text-[#0A1D35]">Prestation &amp; séances</p>
+                  <p className="font-bold text-[#0A1D35]">{t('adminDevis.prestationSeances')}</p>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className={labelClass}>Prestation *</label>
+                    <label className={labelClass}>{t('adminDevis.prestation')}</label>
                     <div className="relative">
                       <select value={selectedPrestationId} onChange={e => setSelectedPrestationId(e.target.value)}
                         className={inputClass + ' appearance-none pr-10'}>
-                        <option value="">— Choisir une prestation —</option>
+                        <option value="">{t('adminDevis.choisirPrestation')}</option>
                         {prestations.map(p => (
                           <option key={p.id} value={p.id}>{p.nom} · {p.duree} min</option>
                         ))}
@@ -295,7 +299,7 @@ export default function Devis() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className={labelClass}>Nombre de séances *</label>
+                      <label className={labelClass}>{t('adminDevis.nbSeances')}</label>
                       <div className="flex items-center border border-[#E7DCCD] rounded-xl overflow-hidden bg-white">
                         <button type="button" onClick={() => setNbSeances(n => Math.max(1, n - 1))}
                           className="px-4 py-3 text-[#56627A] hover:bg-[#F7F2EB] transition-colors border-r border-[#E7DCCD]">
@@ -309,7 +313,7 @@ export default function Devis() {
                       </div>
                     </div>
                     <div>
-                      <label className={labelClass}>Prix par séance *</label>
+                      <label className={labelClass}>{t('adminDevis.prixSeance')}</label>
                       <div className="relative">
                         <input type="number" min="0" step="0.01"
                           value={prixParSeance}
@@ -321,7 +325,7 @@ export default function Devis() {
                   </div>
                   {prixParSeance !== '' && (
                     <div className="bg-[#F7F2EB] border border-[#E7DCCD] rounded-xl px-5 py-4 flex items-center justify-between">
-                      <span className="text-sm text-[#56627A]">{nbSeances} séance{nbSeances > 1 ? 's' : ''} × {prixParSeance} €</span>
+                      <span className="text-sm text-[#56627A]">{nbSeances} {seanceLabel} × {prixParSeance} €</span>
                       <span className="text-xl font-extrabold text-[#0A1D35]">{totalStr}</span>
                     </div>
                   )}
@@ -330,26 +334,24 @@ export default function Devis() {
 
               {/* Conditions */}
               <div className={cardClass}>
-                <p className="font-bold text-[#0A1D35] mb-5">Conditions</p>
+                <p className="font-bold text-[#0A1D35] mb-5">{t('adminDevis.conditions')}</p>
                 <div className="space-y-4">
                   <div>
-                    <label className={labelClass}>Validité du devis</label>
+                    <label className={labelClass}>{t('adminDevis.validite')}</label>
                     <div className="relative">
                       <select value={validiteJours} onChange={e => setValiditeJours(Number(e.target.value))}
                         className={inputClass + ' appearance-none pr-10'}>
-                        <option value={15}>15 jours</option>
-                        <option value={30}>30 jours</option>
-                        <option value={45}>45 jours</option>
-                        <option value={60}>60 jours</option>
-                        <option value={90}>90 jours</option>
+                        {[15, 30, 45, 60, 90].map(j => (
+                          <option key={j} value={j}>{j} {i18n.language === 'fr' ? 'jours' : 'days'}</option>
+                        ))}
                       </select>
                       <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A8B8C8] pointer-events-none" />
                     </div>
                   </div>
                   <div>
-                    <label className={labelClass}>Notes <span className="font-normal normal-case text-[#A8B8C8]">(optionnel)</span></label>
+                    <label className={labelClass}>{t('adminDevis.notes')} <span className="font-normal normal-case text-[#A8B8C8]">{t('adminDevis.notesOpt')}</span></label>
                     <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={4}
-                      placeholder="Conditions particulières, modalités de paiement…"
+                      placeholder={t('adminDevis.notesPlaceholder')}
                       className={inputClass + ' resize-none'} />
                   </div>
                 </div>
@@ -359,16 +361,16 @@ export default function Devis() {
             {/* Preview sidebar */}
             <div className="sticky top-6 space-y-3">
               <div className="bg-[#0A1D35] rounded-[20px] p-6 text-white">
-                <p className="text-[#6CAED6] text-[11px] font-bold uppercase tracking-wide mb-5">Aperçu du devis</p>
+                <p className="text-[#6CAED6] text-[11px] font-bold uppercase tracking-wide mb-5">{t('adminDevis.apercu')}</p>
                 <div className="mb-5">
-                  <div className="text-[#8FA3B8] text-[11px] mb-1.5">Client</div>
+                  <div className="text-[#8FA3B8] text-[11px] mb-1.5">{t('adminDevis.client')}</div>
                   {clientPrenom || clientEmail ? (
                     <>
                       <div className="text-white font-semibold">{clientPrenom} {clientNom}</div>
                       <div className="text-[#6CAED6] text-xs mt-0.5">{clientEmail}</div>
                     </>
                   ) : (
-                    <div className="text-[#56627A] text-sm italic">Non renseigné</div>
+                    <div className="text-[#56627A] text-sm italic">{t('adminDevis.nonRenseigne')}</div>
                   )}
                 </div>
                 <div className="bg-white/5 rounded-xl p-4 mb-4">
@@ -378,17 +380,17 @@ export default function Devis() {
                         <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: selectedPrestation.couleur }} />
                         <span className="text-white font-semibold text-sm">{selectedPrestation.nom}</span>
                       </div>
-                      <div className="text-[#8FA3B8] text-xs">{selectedPrestation.duree} min · {nbSeances} séance{nbSeances > 1 ? 's' : ''}</div>
+                      <div className="text-[#8FA3B8] text-xs">{selectedPrestation.duree} min · {nbSeances} {seanceLabel}</div>
                     </>
                   ) : (
-                    <div className="text-[#56627A] text-sm italic">Aucune prestation</div>
+                    <div className="text-[#56627A] text-sm italic">{t('adminDevis.aucunePrestation')}</div>
                   )}
                 </div>
                 <div className="bg-[#6CAED6]/15 border border-[#6CAED6]/25 rounded-xl px-4 py-3.5 flex items-center justify-between mb-4">
-                  <span className="text-[#8FA3B8] text-sm">Total</span>
+                  <span className="text-[#8FA3B8] text-sm">{t('adminDevis.total')}</span>
                   <span className="text-2xl font-extrabold text-white">{prixParSeance !== '' ? totalStr : '—'}</span>
                 </div>
-                <div className="text-[#56627A] text-[11px] mb-5">Valable jusqu'au {validiteDate}</div>
+                <div className="text-[#56627A] text-[11px] mb-5">{t('adminDevis.valableJusquau', { date: validiteDate })}</div>
                 <button type="submit" disabled={!canSubmit || loading}
                   className="w-full flex items-center justify-center gap-2 bg-[#6CAED6] text-[#0A1D35] font-bold py-3.5 rounded-[12px] hover:opacity-90 transition-opacity disabled:opacity-30">
                   {loading ? (
@@ -397,12 +399,12 @@ export default function Devis() {
                       <span className="w-1.5 h-1.5 bg-[#0A1D35] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="w-1.5 h-1.5 bg-[#0A1D35] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </span>
-                  ) : <><Send size={15} /> Envoyer par email</>}
+                  ) : <><Send size={15} /> {t('adminDevis.envoyerEmail')}</>}
                 </button>
               </div>
               {!canSubmit && (
                 <p className="text-xs text-[#A8B8C8] text-center px-2">
-                  Renseignez le client, la prestation et le prix.
+                  {t('adminDevis.champsRequis')}
                 </p>
               )}
             </div>
@@ -414,14 +416,16 @@ export default function Devis() {
 
   // ── List view (default) ───────────────────────────────────
   return (
-    <AdminLayout title="Devis">
+    <AdminLayout title={t('adminDevis.titre')}>
       <div className="max-w-5xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <p className="text-[#56627A] text-sm">{devisList.length} devis enregistré{devisList.length > 1 ? 's' : ''}</p>
+          <p className="text-[#56627A] text-sm">
+            {devisList.length} {t('adminDevis.titre').toLowerCase()} enregistré{devisList.length > 1 ? 's' : ''}
+          </p>
           <button onClick={() => setView('create')}
             className="flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
-            <FileText size={14} /> Nouveau devis
+            <FileText size={14} /> {t('adminDevis.nouveau')}
           </button>
         </div>
 
@@ -431,7 +435,7 @@ export default function Devis() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, email ou numéro de devis…"
+            placeholder={t('adminDevis.recherche')}
             className="w-full border border-[#E7DCCD] rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#6CAED6] bg-white placeholder:text-[#A8B8C8]"
           />
         </div>
@@ -454,11 +458,11 @@ export default function Devis() {
             <div className="w-14 h-14 rounded-full bg-[#F7F2EB] flex items-center justify-center mx-auto mb-4">
               <FileText size={24} className="text-[#A8B8C8]" />
             </div>
-            <p className="text-[#0A1D35] font-bold mb-1">Aucun devis pour l'instant</p>
-            <p className="text-[#56627A] text-sm mb-5">Créez votre premier devis et envoyez-le par email.</p>
+            <p className="text-[#0A1D35] font-bold mb-1">{t('adminDevis.aucunTitre')}</p>
+            <p className="text-[#56627A] text-sm mb-5">{t('adminDevis.aucunDesc')}</p>
             <button onClick={() => setView('create')}
               className="inline-flex items-center gap-2 bg-[#0A1D35] text-white font-bold px-5 py-2.5 rounded-[12px] text-sm hover:bg-[#1C3352] transition-colors">
-              <FileText size={14} /> Créer un devis
+              <FileText size={14} /> {t('adminDevis.creer')}
             </button>
           </div>
         ) : (
@@ -474,6 +478,7 @@ export default function Devis() {
               );
             }).map(item => {
               const isExpired = isPast(new Date(item.validite_date));
+              const nbLabel = item.nb_seances > 1 ? t('adminDevis.seances') : t('adminDevis.seance');
               return (
                 <div key={item.id} className="bg-white border border-[#E7DCCD] rounded-[16px] p-5 hover:shadow-sm transition-shadow">
                   <div className="flex items-start justify-between gap-4">
@@ -482,16 +487,16 @@ export default function Devis() {
                         <span className="font-bold text-[#0A1D35] font-mono text-sm">{item.numero}</span>
                         {item.email_envoye ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E6B4A] bg-[#DCEFE4] px-2 py-0.5 rounded-full">
-                            <CheckCircle size={10} /> Email envoyé
+                            <CheckCircle size={10} /> {t('adminDevis.emailEnvoye')}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#9B2C1F] bg-[#F7DDD8] px-2 py-0.5 rounded-full">
-                            <AlertCircle size={10} /> Email non envoyé
+                            <AlertCircle size={10} /> {t('adminDevis.emailNonEnvoye')}
                           </span>
                         )}
                         {isExpired && (
                           <span className="text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2 py-0.5 rounded-full">
-                            Expiré
+                            {t('adminDevis.expire')}
                           </span>
                         )}
                       </div>
@@ -500,7 +505,7 @@ export default function Devis() {
                         <span className="text-[#56627A] font-normal"> · {item.client_email}</span>
                       </p>
                       <p className="text-[#56627A] text-xs mt-1">
-                        {item.prestation_nom} · {item.nb_seances} séance{item.nb_seances > 1 ? 's' : ''}
+                        {item.prestation_nom} · {item.nb_seances} {nbLabel}
                         {' · '}
                         <span className="font-bold text-[#0A1D35]">
                           {Number(item.total) % 1 === 0 ? item.total : Number(item.total).toFixed(2)} €
@@ -509,7 +514,7 @@ export default function Devis() {
                     </div>
                     <div className="text-right shrink-0">
                       <p className="text-xs text-[#56627A] mb-3">
-                        {format(new Date(item.created_at), 'd MMM yyyy', { locale: fr })}
+                        {format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}
                       </p>
                       <div className="flex items-center gap-2">
                         <button onClick={() => downloadPdf(item)} disabled={downloadingId === item.id}
@@ -518,7 +523,7 @@ export default function Devis() {
                         </button>
                         <button onClick={() => resendEmail(item)} disabled={resendingId === item.id}
                           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-40">
-                          <Mail size={12} /> {resendingId === item.id ? '…' : 'Renvoyer'}
+                          <Mail size={12} /> {resendingId === item.id ? '…' : t('adminDevis.renvoyer')}
                         </button>
                       </div>
                     </div>
