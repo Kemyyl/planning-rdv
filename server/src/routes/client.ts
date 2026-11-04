@@ -111,13 +111,17 @@ clientRouter.patch('/profil/mot-de-passe', requireClientAuth, async (req, res) =
 
 // GET /api/client/devis — devis & factures liés à ce client
 clientRouter.get('/devis', requireClientAuth, async (req, res) => {
-  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  const clientId = (req as ClientReq).clientId;
+  const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
   if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
 
+  const email = (client as { email: string }).email;
+
+  // Match by client_id OR by email (case-insensitive) to handle both linked and unlinked devis
   const { data, error } = await supabase
     .from('devis')
     .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance')
-    .eq('client_email', (client as { email: string }).email)
+    .or(`client_id.eq.${clientId},client_email.ilike.${email}`)
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data || []);
@@ -125,19 +129,20 @@ clientRouter.get('/devis', requireClientAuth, async (req, res) => {
 
 // PATCH /api/client/devis/:id/accepter
 clientRouter.patch('/devis/:id/accepter', requireClientAuth, async (req, res) => {
-  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  const clientId = (req as ClientReq).clientId;
+  const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
   if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
 
   const { data: devis } = await supabase.from('devis')
-    .select('id,statut,facture_numero,client_email')
+    .select('id,statut,facture_numero,client_email,client_id')
     .eq('id', req.params.id).single();
   if (!devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
 
-  const d = devis as { id: string; statut: string; facture_numero?: string; client_email: string };
+  const d = devis as { id: string; statut: string; facture_numero?: string; client_email: string; client_id?: number };
+  const email = (client as { email: string }).email;
 
-  if (d.client_email !== (client as { email: string }).email) {
-    res.status(403).json({ error: 'Accès refusé' }); return;
-  }
+  const owned = d.client_id === clientId || d.client_email.toLowerCase() === email.toLowerCase();
+  if (!owned) { res.status(403).json({ error: 'Accès refusé' }); return; }
   if (d.statut !== 'envoye') {
     res.status(400).json({ error: 'Ce devis ne peut pas être accepté' }); return;
   }
@@ -156,7 +161,8 @@ clientRouter.patch('/devis/:id/accepter', requireClientAuth, async (req, res) =>
 
 // GET /api/client/devis/:id/facture
 clientRouter.get('/devis/:id/facture', requireClientAuth, async (req, res) => {
-  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  const clientId = (req as ClientReq).clientId;
+  const { data: client } = await supabase.from('clients').select('email').eq('id', clientId).single();
   if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
 
   const { data: devis } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
@@ -164,14 +170,14 @@ clientRouter.get('/devis/:id/facture', requireClientAuth, async (req, res) => {
 
   const d = devis as {
     statut: string; facture_numero?: string; facture_date?: string; created_at: string;
-    client_prenom: string; client_nom: string; client_email: string;
+    client_prenom: string; client_nom: string; client_email: string; client_id?: number;
     prestation_nom: string; duree: number; nb_seances: number;
     prix_par_seance: number; total: number; notes?: string; validite_date: string;
   };
 
-  if (d.client_email !== (client as { email: string }).email) {
-    res.status(403).json({ error: 'Accès refusé' }); return;
-  }
+  const email = (client as { email: string }).email;
+  const owned = d.client_id === clientId || d.client_email.toLowerCase() === email.toLowerCase();
+  if (!owned) { res.status(403).json({ error: 'Accès refusé' }); return; }
   if (d.statut !== 'accepte' || !d.facture_numero) {
     res.status(400).json({ error: 'Facture non disponible' }); return;
   }
