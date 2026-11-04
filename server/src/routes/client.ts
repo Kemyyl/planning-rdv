@@ -2,10 +2,12 @@ import { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import PDFDocument from 'pdfkit';
+import { randomUUID } from 'crypto';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase';
+import { generateDevisPdf } from '../lib/devis-pdf';
 
 export const clientRouter = Router();
 
@@ -119,6 +121,80 @@ clientRouter.get('/devis', requireClientAuth, async (req, res) => {
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data || []);
+});
+
+// PATCH /api/client/devis/:id/accepter
+clientRouter.patch('/devis/:id/accepter', requireClientAuth, async (req, res) => {
+  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+
+  const { data: devis } = await supabase.from('devis')
+    .select('id,statut,facture_numero,client_email')
+    .eq('id', req.params.id).single();
+  if (!devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as { id: string; statut: string; facture_numero?: string; client_email: string };
+
+  if (d.client_email !== (client as { email: string }).email) {
+    res.status(403).json({ error: 'Accès refusé' }); return;
+  }
+  if (d.statut !== 'envoye') {
+    res.status(400).json({ error: 'Ce devis ne peut pas être accepté' }); return;
+  }
+
+  const update: Record<string, unknown> = { statut: 'accepte' };
+  if (!d.facture_numero) {
+    const factureNum = `FAC-${format(new Date(), 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+    update.facture_numero = factureNum;
+    update.facture_date = format(new Date(), 'yyyy-MM-dd');
+  }
+
+  const { error } = await supabase.from('devis').update(update).eq('id', req.params.id);
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json({ ok: true });
+});
+
+// GET /api/client/devis/:id/facture
+clientRouter.get('/devis/:id/facture', requireClientAuth, async (req, res) => {
+  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+
+  const { data: devis } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (!devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    statut: string; facture_numero?: string; facture_date?: string; created_at: string;
+    client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string; validite_date: string;
+  };
+
+  if (d.client_email !== (client as { email: string }).email) {
+    res.status(403).json({ error: 'Accès refusé' }); return;
+  }
+  if (d.statut !== 'accepte' || !d.facture_numero) {
+    res.status(400).json({ error: 'Facture non disponible' }); return;
+  }
+
+  const emissionDate = d.facture_date
+    ? format(new Date(d.facture_date), 'd MMMM yyyy', { locale: fr })
+    : format(new Date(d.created_at), 'd MMMM yyyy', { locale: fr });
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: d.facture_numero,
+      prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total: d.total, notes: d.notes, validiteDate: emissionDate, emissionDate,
+      isFacture: true,
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${d.facture_numero}.pdf"`);
+    res.send(pdfBuffer);
+  } catch {
+    res.status(500).json({ error: 'Erreur génération facture' });
+  }
 });
 
 // GET /api/client/rdv

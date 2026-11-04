@@ -51,6 +51,7 @@ export default function Devis() {
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [updatingStatutId, setUpdatingStatutId] = useState<string | null>(null);
+  const [sendingFactureId, setSendingFactureId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   // ── Form state ───────────────────────────────────────────
@@ -191,6 +192,20 @@ export default function Devis() {
       toast.error(t('adminDevis.erreurTelechargement'));
     } finally {
       setDownloadingId(null);
+    }
+  }
+
+  async function sendFacture(item: DevisItem) {
+    setSendingFactureId(item.id);
+    try {
+      const res = await fetch(`/api/admin/devis/${item.id}/envoyer-facture`, { method: 'POST', headers });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(t('adminDevis.factureEnvoyee'));
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
+    } finally {
+      setSendingFactureId(null);
     }
   }
 
@@ -600,12 +615,20 @@ export default function Devis() {
                           </>
                         )}
                         {item.statut === 'accepte' && item.facture_numero && (
-                          <button
-                            onClick={() => downloadFacture(item)}
-                            disabled={downloadingId === item.id}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
-                            <Receipt size={12} /> {downloadingId === item.id ? '…' : 'Facture'}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => downloadFacture(item)}
+                              disabled={downloadingId === item.id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
+                              <Receipt size={12} /> {downloadingId === item.id ? '…' : 'Facture'}
+                            </button>
+                            <button
+                              onClick={() => sendFacture(item)}
+                              disabled={sendingFactureId === item.id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-40">
+                              <Mail size={12} /> {sendingFactureId === item.id ? '…' : t('adminDevis.envoyerFacture')}
+                            </button>
+                          </>
                         )}
                         {item.statut === 'accepte' && !item.facture_numero && (
                           <button

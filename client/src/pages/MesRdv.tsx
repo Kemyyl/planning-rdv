@@ -72,6 +72,8 @@ export default function MesRdv() {
   const [showAllPast, setShowAllPast] = useState(false);
   const [devisList, setDevisList] = useState<DevisClientItem[]>([]);
   const [devisLoading, setDevisLoading] = useState(false);
+  const [acceptingDevisId, setAcceptingDevisId] = useState<string | null>(null);
+  const [downloadingFactureId, setDownloadingFactureId] = useState<string | null>(null);
 
   const fullName = [prenom, nom].filter(Boolean).join(' ') || prenom || '';
   const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
@@ -112,6 +114,15 @@ export default function MesRdv() {
     return new Date(debut) > addHours(new Date(), 24);
   }
 
+  function loadDevis() {
+    if (!clientToken) return;
+    setDevisLoading(true);
+    fetch('/api/client/devis', { headers: { Authorization: `Bearer ${clientToken}` } })
+      .then(r => r.json())
+      .then(d => setDevisList(Array.isArray(d) ? d : []))
+      .finally(() => setDevisLoading(false));
+  }
+
   async function annuler(rdv: RendezVous) {
     if (!confirm('Confirmer l\'annulation ?')) return;
     const res = await fetch(`/api/public/rdv/${rdv.id}/annuler`, {
@@ -123,6 +134,42 @@ export default function MesRdv() {
       toast.success(t('mesRdv.rdvAnnule'));
       setRdvs(prev => prev.map(r => r.id === rdv.id ? { ...r, statut: 'annule' } : r));
     } else { toast.error(t('mesRdv.erreurAnnulation')); }
+  }
+
+  async function accepterDevis(id: string) {
+    if (!clientToken) return;
+    setAcceptingDevisId(id);
+    try {
+      const res = await fetch(`/api/client/devis/${id}/accepter`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${clientToken}` },
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success(t('mesRdv.devisAccepteOk'));
+      loadDevis();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('mesRdv.erreurAcceptDevis'));
+    } finally {
+      setAcceptingDevisId(null);
+    }
+  }
+
+  async function downloadFactureClient(item: DevisClientItem) {
+    if (!clientToken) return;
+    setDownloadingFactureId(item.id);
+    try {
+      const res = await fetch(`/api/client/devis/${item.id}/facture`, { headers: { Authorization: `Bearer ${clientToken}` } });
+      if (!res.ok) throw new Error('Erreur');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${item.facture_numero ?? item.numero}-facture.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t('mesRdv.erreurPdf'));
+    } finally {
+      setDownloadingFactureId(null);
+    }
   }
 
   // Not connected, no token
@@ -194,6 +241,7 @@ export default function MesRdv() {
   }
 
   const upcoming = rdvs.filter(r => r.statut !== 'annule' && !isPast(new Date(r.debut)));
+  const cancelled = rdvs.filter(r => r.statut === 'annule').sort((a, b) => new Date(b.debut).getTime() - new Date(a.debut).getTime());
   const past = rdvs.filter(r => r.statut === 'confirme' && isPast(new Date(r.debut)));
   const sortedPast = [...past].sort((a, b) => new Date(b.debut).getTime() - new Date(a.debut).getTime());
   const allConfirmed = [...rdvs].filter(r => r.statut !== 'annule').sort((a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime());
@@ -370,54 +418,91 @@ export default function MesRdv() {
               </>
             )}
 
+            {/* Cancelled sessions */}
+            {cancelled.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-base font-extrabold text-[#0A1D35] mb-4">{t('mesRdv.annules')}</h2>
+                <div className="bg-white border border-[#E7DCCD] rounded-[18px] overflow-hidden shadow-sm">
+                  {cancelled.map((r, idx, arr) => (
+                    <div key={r.id} className={`flex items-center gap-4 px-5 py-3.5 text-sm ${idx < arr.length - 1 ? 'border-b border-[#F7F2EB]' : ''}`}>
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#F7DDD8] shrink-0" />
+                      <span className="text-[#56627A] w-28 shrink-0 capitalize text-xs">
+                        {format(new Date(r.debut), 'd MMM yyyy', { locale: dateLocale })}
+                      </span>
+                      <span className="text-[#A8B8C8] w-12 shrink-0 text-xs" translate="no">
+                        {format(new Date(r.debut), timeFormat)}
+                      </span>
+                      <span className="flex-1 font-medium text-[#0A1D35] truncate">
+                        {r.prestation?.nom || '—'}
+                      </span>
+                      <span className="bg-[#F7DDD8] text-[#9B2C1F] text-[11px] font-semibold px-2.5 py-1 rounded-full shrink-0">
+                        {t('mesRdv.annulee')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Devis & Factures */}
             {clientToken && !devisLoading && devisList.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-lg font-extrabold text-[#0A1D35] mb-4">Mes devis &amp; factures</h2>
+                <h2 className="text-base font-extrabold text-[#0A1D35] mb-4">{t('mesRdv.devisFactures')}</h2>
                 <div className="space-y-3">
                   {devisList.map(item => {
                     const statutConfig: Record<DevisClientItem['statut'], { bg: string; text: string; label: string }> = {
-                      envoye:  { bg: 'bg-[#E8F0FB]', text: 'text-[#1A56A4]', label: 'Devis envoyé' },
-                      accepte: { bg: 'bg-[#DCEFE4]', text: 'text-[#1E6B4A]', label: item.facture_numero ? 'Facture disponible' : 'Accepté ✓' },
-                      refuse:  { bg: 'bg-[#F7DDD8]', text: 'text-[#9B2C1F]', label: 'Refusé' },
-                      expire:  { bg: 'bg-[#F7F2EB]', text: 'text-[#56627A]',  label: 'Expiré' },
+                      envoye:  { bg: 'bg-[#E8F0FB]', text: 'text-[#1A56A4]', label: t('mesRdv.devisEnvoye') },
+                      accepte: { bg: 'bg-[#DCEFE4]', text: 'text-[#1E6B4A]', label: item.facture_numero ? t('mesRdv.factureDisponible') : t('mesRdv.devisAccepte') },
+                      refuse:  { bg: 'bg-[#F7DDD8]', text: 'text-[#9B2C1F]', label: t('mesRdv.devisRefuse') },
+                      expire:  { bg: 'bg-[#F7F2EB]', text: 'text-[#56627A]',  label: t('mesRdv.devisExpire') },
                     };
                     const { bg, text, label } = statutConfig[item.statut];
                     return (
                       <div key={item.id} className="bg-white border border-[#E7DCCD] rounded-[16px] p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
-                            {/* Numero + statut badges */}
                             <div className="flex flex-wrap items-center gap-2 mb-2">
-                              <span className="text-xs font-bold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
-                                {item.facture_numero ? `Facture ${item.facture_numero}` : `Devis ${item.numero}`}
+                              <span className="text-xs font-bold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full font-mono">
+                                {item.facture_numero ?? item.numero}
                               </span>
                               <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${bg} ${text}`}>
                                 {label}
                               </span>
                             </div>
-                            {/* Prestation */}
                             <div className="font-semibold text-[#0A1D35] text-sm leading-snug mb-1">
                               {item.prestation_nom}
                             </div>
-                            {/* Details */}
                             <div className="text-xs text-[#56627A] space-y-0.5">
                               <div>
-                                {item.nb_seances} séance{item.nb_seances > 1 ? 's' : ''} &middot; {item.prix_par_seance.toFixed(2)} € / séance
+                                {item.nb_seances} {item.nb_seances > 1 ? t('mesRdv.seancePluriels') : t('mesRdv.seance').toLowerCase()} &middot; {Number(item.prix_par_seance).toFixed(2)} € {t('mesRdv.parSeance')}
                               </div>
                               <div className="font-bold text-[#0A1D35]">
-                                Total : {item.total.toFixed(2)} €
+                                {t('mesRdv.total')} {Number(item.total).toFixed(2)} €
                               </div>
-                              {item.facture_date ? (
-                                <div>
-                                  Facture du {format(new Date(item.facture_date), 'd MMM yyyy', { locale: dateLocale })}
-                                </div>
-                              ) : (
-                                <div>
-                                  Créé le {format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}
-                                </div>
-                              )}
+                              <div>
+                                {item.facture_date
+                                  ? `${t('mesRdv.factureDate')} ${format(new Date(item.facture_date), 'd MMM yyyy', { locale: dateLocale })}`
+                                  : `${t('mesRdv.creeLe')} ${format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}`}
+                              </div>
                             </div>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            {item.statut === 'envoye' && (
+                              <button
+                                onClick={() => accepterDevis(item.id)}
+                                disabled={acceptingDevisId === item.id}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B4A] border border-[#DCEFE4] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#DCEFE4] transition-colors disabled:opacity-40">
+                                <CheckCircle size={12} /> {acceptingDevisId === item.id ? '…' : t('mesRdv.accepterDevis')}
+                              </button>
+                            )}
+                            {item.statut === 'accepte' && item.facture_numero && (
+                              <button
+                                onClick={() => downloadFactureClient(item)}
+                                disabled={downloadingFactureId === item.id}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
+                                <Download size={12} /> {downloadingFactureId === item.id ? '…' : t('mesRdv.telechargerFacture')}
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
