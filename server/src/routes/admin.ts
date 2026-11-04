@@ -650,7 +650,7 @@ adminRouter.post('/devis', requireAuth, async (req, res) => {
 adminRouter.get('/devis', requireAuth, async (_req, res) => {
   const { data, error } = await supabase
     .from('devis')
-    .select('id,numero,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,validite_date,email_envoye,statut,created_at')
+    .select('id,numero,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,validite_date,email_envoye,statut,created_at,facture_numero,facture_date')
     .order('created_at', { ascending: false });
   if (error) { res.status(500).json({ error: error.message }); return; }
   res.json(data);
