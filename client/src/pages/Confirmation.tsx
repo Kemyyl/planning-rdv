@@ -5,10 +5,11 @@ import { useDateLocale, useTimeFormat } from '../hooks/useDateLocale';
 import { CheckCircle, Calendar, Clock, Mail, Video } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
+import { formatDuree } from '../lib/formatDuree';
 import type { RendezVous } from '@synego/shared';
 
 export default function Confirmation() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dateLocale = useDateLocale();
   const { timeFormat } = useTimeFormat();
   const { id } = useParams<{ id: string }>();
@@ -60,7 +61,7 @@ export default function Confirmation() {
             {rdv.prestation && (
               <div className="flex items-center gap-3 text-sm">
                 <Calendar size={16} className="text-[#56627A] shrink-0" />
-                <span className="text-[#0A1D35] font-semibold">{rdv.prestation.nom} · {rdv.prestation.duree} min</span>
+                <span className="text-[#0A1D35] font-semibold">{rdv.prestation.nom} · {formatDuree(rdv.prestation.duree, i18n.language === 'en' ? 'en' : 'fr')}</span>
               </div>
             )}
             {rdv.client && (

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import DevisPanel from '../components/DevisPanel';
 import { localizePrestation } from '../lib/i18nUtils';
+import { formatDuree } from '../lib/formatDuree';
 import type { Prestation } from '@synego/shared';
 
 function SkeletonCard() {
@@ -104,7 +105,7 @@ export default function Services() {
                     {/* Meta chips */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
-                        <Clock size={11} /> {p.duree} {t('common.min')}
+                        <Clock size={11} /> {formatDuree(p.duree, i18n.language === 'en' ? 'en' : 'fr')}
                       </span>
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
                         <Video size={11} /> {t('services.visio')}

@@ -6,6 +6,7 @@ import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../hooks/useTheme';
+import CookieBanner from './CookieBanner';
 
 function LangToggle() {
   const { i18n: i } = useTranslation();
@@ -123,6 +124,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
+      <CookieBanner />
     </div>
   );
 }

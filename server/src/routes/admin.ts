@@ -455,6 +455,60 @@ adminRouter.patch('/clients/:id', async (req, res) => {
   res.json(data);
 });
 
+// POST /api/admin/clients/:id/oublier — Droit à l'oubli RGPD (Art. 17)
+// Anonymise les données personnelles tout en conservant les RDV/devis pour la comptabilité légale.
+adminRouter.post('/clients/:id/oublier', async (req, res) => {
+  const clientId = req.params.id;
+
+  const { data: existing, error: fetchErr } = await supabase
+    .from('clients').select('id,email').eq('id', clientId).single();
+  if (fetchErr || !existing) { res.status(404).json({ error: 'Client introuvable' }); return; }
+
+  const anonSuffix = Math.random().toString(36).slice(2, 10);
+  const anonEmail = `anonymise-${clientId}-${anonSuffix}@rgpd.local`;
+  const nowIso = new Date().toISOString();
+
+  // 1. Anonymiser le client
+  const { error: clientErr } = await supabase.from('clients').update({
+    prenom: 'Anonymisé',
+    nom: 'RGPD',
+    email: anonEmail,
+    telephone: null,
+    mot_de_passe: null,
+    compte_actif: false,
+    date_consentement: null,
+    rgpd_oublie_at: nowIso,
+  }).eq('id', clientId);
+  if (clientErr) { res.status(500).json({ error: `Erreur anonymisation client: ${clientErr.message}` }); return; }
+
+  // 2. Anonymiser les RDV conservés (titre, commentaire, résumé)
+  await supabase.from('rendez_vous').update({
+    titre: 'Anonymisé',
+    commentaire: null,
+    resume_url: null,
+  }).eq('client_id', clientId);
+
+  // 3. Anonymiser les devis — on garde montant/statut/dates pour la compta
+  await supabase.from('devis').update({
+    client_prenom: 'Anonymisé',
+    client_nom: 'RGPD',
+    client_email: anonEmail,
+    notes: null,
+  }).eq('client_id', clientId);
+
+  // 4. Supprimer les notes de séance (contenu personnel sans valeur comptable)
+  await supabase.from('notes_seance').delete().eq('client_id', clientId);
+
+  // 5. Supprimer la progression des formations (donnée personnelle)
+  await supabase.from('formation_progres').delete().eq('client_id', clientId);
+
+  res.json({
+    ok: true,
+    message: 'Client anonymisé conformément au RGPD. RDV et devis conservés pour obligations comptables.',
+    anonymized_email: anonEmail,
+  });
+});
+
 // PATCH /api/admin/prestations/:id
 adminRouter.patch('/prestations/:id', async (req, res) => {
   const allowed = ['nom', 'nom_en', 'description', 'description_en', 'duree', 'prix', 'couleur', 'actif', 'visible_client', 'ordre'];

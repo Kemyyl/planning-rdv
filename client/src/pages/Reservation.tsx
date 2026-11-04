@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { PublicLayout } from '../components/Layout';
 import { useClientAuth } from '../contexts/ClientAuthContext';
 import { localizePrestation } from '../lib/i18nUtils';
+import { formatDuree } from '../lib/formatDuree';
 import type { Prestation, Creneau } from '@synego/shared';
 
 const CALENDLY_URL = 'https://calendly.com/sandidkemyl2003/30min';
@@ -128,7 +129,7 @@ export default function Reservation() {
           </div>
           <div className="flex justify-between">
             <span className="text-[#56627A]">{t('reservation.duree')}</span>
-            <span className="font-semibold text-[#0A1D35]">{prestation?.duree} {t('reservation.min')}</span>
+            <span className="font-semibold text-[#0A1D35]">{formatDuree(prestation?.duree, i18n.language === 'en' ? 'en' : 'fr')}</span>
           </div>
           {creneau && (
             <div className="border-t border-[#E7DCCD] pt-3">
@@ -277,7 +278,7 @@ export default function Reservation() {
                     {p.description && <div className="text-xs text-[#56627A] leading-relaxed mb-3">{p.description}</div>}
                     <div className="flex items-center gap-2 flex-wrap mt-auto">
                       <span className="flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2 py-1 rounded-full">
-                        <Clock size={10} /> {p.duree} {t('reservation.min')}
+                        <Clock size={10} /> {formatDuree(p.duree, i18n.language === 'en' ? 'en' : 'fr')}
                       </span>
                     </div>
                   </button>
@@ -297,7 +298,7 @@ export default function Reservation() {
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-extrabold text-[#0A1D35] mb-1">{t('reservation.titreEtape2')}</h2>
-                <p className="text-sm text-[#56627A]">{prestationLocalized?.nom} · {prestation?.duree} {t('reservation.min')}</p>
+                <p className="text-sm text-[#56627A]">{prestationLocalized?.nom} · {formatDuree(prestation?.duree, i18n.language === 'en' ? 'en' : 'fr')}</p>
               </div>
 
               <div className="bg-white border border-[#E7DCCD] rounded-[22px] p-5 shadow-sm">

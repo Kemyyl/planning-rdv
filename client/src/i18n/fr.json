@@ -110,7 +110,7 @@
     "ilsOntDit": "Témoignages",
     "clientVerifie": "Client vérifié",
     "readyTitre": "Prêt à démarrer votre accompagnement ?",
-    "readyDesc": "Première séance découverte offerte."
+    "readyDesc": "Un accompagnement sur mesure, à votre rythme."
   },
   "services": {
     "titre": "Nos accompagnements",
@@ -677,5 +677,11 @@
     "typeCoaching": "Coaching",
     "typeSeminaire": "Séminaire",
     "typeAutre": "Autre"
+  },
+  "cookies": {
+    "titre": "Cookies & confidentialité",
+    "description": "Nous utilisons des cookies strictement nécessaires au fonctionnement du site (session, authentification). Aucun cookie publicitaire ni de traçage.",
+    "accepter": "J'accepte",
+    "refuser": "Refuser"
   }
 }

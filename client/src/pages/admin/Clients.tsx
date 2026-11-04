@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format, formatDistanceToNow, isThisMonth } from 'date-fns';
 import { useDateLocale } from '../../hooks/useDateLocale';
-import { Search, Plus, Eye, Pencil, Check, Users, UserCheck, Sparkles, FileText } from 'lucide-react';
+import { Search, Plus, Eye, Pencil, Check, Users, UserCheck, Sparkles, FileText, ShieldOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -67,6 +67,30 @@ export default function AdminClients() {
   const [showNouveauClient, setShowNouveauClient] = useState(false);
   const [clientPanel, setClientPanel] = useState<{ client: ClientWithStats; readOnly: boolean } | null>(null);
   const headers = { Authorization: `Bearer ${token}` };
+
+  async function rgpdOublier(client: ClientWithStats) {
+    const nom = `${client.prenom} ${client.nom}`.trim();
+    const step1 = confirm(
+      `Droit à l'oubli RGPD\n\n` +
+      `Vous allez anonymiser définitivement :\n${nom} (${client.email})\n\n` +
+      `• Nom, email, téléphone → remplacés par "Anonymisé"\n` +
+      `• Compte désactivé, mot de passe effacé\n` +
+      `• Notes de séance et progression formations supprimées\n` +
+      `• RDV et devis conservés (obligation comptable) mais anonymisés\n\n` +
+      `Cette action est IRRÉVERSIBLE. Continuer ?`
+    );
+    if (!step1) return;
+    const step2 = prompt(`Pour confirmer, tapez exactement : OUBLIER`);
+    if (step2 !== 'OUBLIER') { toast.error('Confirmation invalide — annulé'); return; }
+    try {
+      const res = await fetch(`/api/admin/clients/${client.id}/oublier`, { method: 'POST', headers });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error); }
+      toast.success('Client anonymisé conformément au RGPD');
+      reload();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Erreur');
+    }
+  }
 
   async function saveObjectif(clientId: number, val: string) {
     const n = parseInt(val, 10);
@@ -288,6 +312,10 @@ export default function AdminClients() {
                       <button onClick={() => setClientPanel({ client: c, readOnly: false })}
                         className="p-1.5 hover:bg-[#F7F2EB] rounded-[7px] text-[#56627A] transition-colors" title="Modifier">
                         <Pencil size={14} />
+                      </button>
+                      <button onClick={() => rgpdOublier(c)}
+                        className="p-1.5 hover:bg-[#F7DDD8] hover:text-[#9B2C1F] rounded-[7px] text-[#56627A] transition-colors" title="Droit à l'oubli (RGPD)">
+                        <ShieldOff size={14} />
                       </button>
                     </div>
                   </td>

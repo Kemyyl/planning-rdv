@@ -110,7 +110,7 @@
     "ilsOntDit": "Testimonials",
     "clientVerifie": "Verified client",
     "readyTitre": "Ready to begin your journey?",
-    "readyDesc": "First discovery session on us."
+    "readyDesc": "Tailored support, at your own pace."
   },
   "services": {
     "titre": "Our support programs",
@@ -677,5 +677,11 @@
     "typeCoaching": "Coaching",
     "typeSeminaire": "Seminar",
     "typeAutre": "Other"
+  },
+  "cookies": {
+    "titre": "Cookies & privacy",
+    "description": "We only use cookies strictly required for the site to function (session, authentication). No advertising or tracking cookies.",
+    "accepter": "I accept",
+    "refuser": "Decline"
   }
 }
