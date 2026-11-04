@@ -519,6 +519,96 @@ adminRouter.patch('/prestations/:id', async (req, res) => {
   res.json(data);
 });
 
+// ── Factures directes (sans devis préalable) ─────────────────
+
+// POST /api/admin/factures — créer une facture directe et l'envoyer par email
+adminRouter.post('/factures', requireAuth, async (req, res) => {
+  const schema = z.object({
+    prenom: z.string().min(1),
+    nom: z.string().min(1),
+    email: z.string().email(),
+    client_id: z.number().int().optional().nullable(),
+    prestation_nom: z.string().min(1),
+    duree: z.number().int().min(1),
+    nb_seances: z.number().int().min(1).max(100),
+    prix_par_seance: z.number().min(0),
+    notes: z.string().optional(),
+    envoyer_email: z.boolean().default(true),
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.issues[0].message }); return; }
+
+  const d = parsed.data;
+  const now = new Date();
+  const devisNum = `SYNEGO-${format(now, 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+  const factureNum = `FAC-${format(now, 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+  const emissionDate = format(now, 'd MMMM yyyy', { locale: fr });
+  const total = d.nb_seances * d.prix_par_seance;
+
+  // Insert devis en statut 'paye' directement (facture émise)
+  const { data: record, error: dbError } = await supabase.from('devis').insert({
+    numero: devisNum,
+    client_prenom: d.prenom,
+    client_nom: d.nom,
+    client_email: d.email,
+    client_id: d.client_id ?? null,
+    prestation_nom: d.prestation_nom,
+    duree: d.duree,
+    nb_seances: d.nb_seances,
+    prix_par_seance: d.prix_par_seance,
+    total,
+    notes: d.notes ?? null,
+    validite_jours: 30,
+    validite_date: format(now, 'yyyy-MM-dd'),
+    statut: 'paye',
+    paid_at: now.toISOString(),
+    facture_numero: factureNum,
+    facture_date: format(now, 'yyyy-MM-dd'),
+    email_envoye: false,
+  }).select('id').single();
+
+  if (dbError) { res.status(500).json({ error: dbError.message }); return; }
+
+  // Génération PDF facture + envoi email
+  let emailEnvoye = false;
+  let emailError: string | undefined;
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: factureNum, prenom: d.prenom, nom: d.nom, email: d.email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total, notes: d.notes, validiteDate: emissionDate, emissionDate,
+      isFacture: true,
+    });
+    if (d.envoyer_email) {
+      await sendFacturePdfEmail({
+        to: d.email, prenom: d.prenom, factureNum,
+        prestationNom: d.prestation_nom, duree: d.duree,
+        nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+        total, factureDate: emissionDate, pdfBuffer,
+      });
+      emailEnvoye = true;
+      await supabase.from('devis').update({ email_envoye: true }).eq('id', (record as { id: string }).id);
+    }
+  } catch (e) {
+    emailError = e instanceof Error ? e.message : 'Erreur email';
+    console.error('Erreur envoi facture:', emailError);
+  }
+
+  res.json({ ok: true, factureNum, emailEnvoye, emailError });
+});
+
+// GET /api/admin/factures — liste des factures émises
+adminRouter.get('/factures', requireAuth, async (_req, res) => {
+  const { data, error } = await supabase
+    .from('devis')
+    .select('id,numero,facture_numero,facture_date,client_prenom,client_nom,client_email,prestation_nom,nb_seances,total,email_envoye,statut,created_at,paid_at')
+    .not('facture_numero', 'is', null)
+    .order('facture_date', { ascending: false });
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data);
+});
+
 // ── Devis ────────────────────────────────────────────────────
 
 // POST /api/admin/devis

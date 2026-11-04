@@ -11,6 +11,7 @@
     "modeSombre": "Dark mode",
     "mesRdv": "My appointments",
     "mesDevis": "My quotes",
+    "mesFactures": "My invoices",
     "mesFormations": "My courses",
     "formations": "Courses"
   },
@@ -31,7 +32,8 @@
     "prestations": "Services",
     "espacePraticien": "Practitioner space",
     "demandes": "Requests",
-    "formations": "Courses"
+    "formations": "Courses",
+    "factures": "Invoices"
   },
   "demandes": {
     "titre": "Contact requests",
@@ -677,6 +679,18 @@
     "typeCoaching": "Coaching",
     "typeSeminaire": "Seminar",
     "typeAutre": "Other"
+  },
+  "mesFactures": {
+    "titre": "My invoices",
+    "resume": "Summary",
+    "total": "Total paid",
+    "facture": "invoice",
+    "factures": "invoices",
+    "payee": "Paid",
+    "telecharger": "Download",
+    "aucune": "No invoice yet",
+    "aucuneDesc": "Your invoices will appear here as soon as they are issued.",
+    "erreurTelechargement": "Download error"
   },
   "cookies": {
     "titre": "Cookies & privacy",

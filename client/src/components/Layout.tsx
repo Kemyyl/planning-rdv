@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox, GraduationCap, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, Users, Settings, LogOut, User, ChevronDown, Plus, Sun, Moon, FileText, Layers, Inbox, GraduationCap, ArrowRight, Receipt } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import { useClientAuth } from '../contexts/ClientAuthContext';
@@ -142,6 +142,7 @@ export function PatientLayout({ children, title }: { children: React.ReactNode; 
   const NAV = [
     { href: '/mes-rdv', label: t('nav.mesRdv'), icon: Calendar },
     { href: '/mes-devis', label: t('nav.mesDevis'), icon: FileText },
+    { href: '/mes-factures', label: t('nav.mesFactures'), icon: Receipt },
     { href: '/mes-formations', label: t('nav.mesFormations'), icon: GraduationCap },
     { href: '/profil', label: t('profil.monProfil'), icon: User },
   ];
@@ -238,6 +239,7 @@ export function AdminLayout({ children, title }: { children: React.ReactNode; ti
     { href: '/admin/planning', label: t('admin.agenda'), icon: Calendar, badge: 0 },
     { href: '/admin/clients', label: t('admin.clients'), icon: Users, badge: 0 },
     { href: '/admin/devis', label: t('admin.devis'), icon: FileText, badge: 0 },
+    { href: '/admin/factures', label: t('admin.factures'), icon: Receipt, badge: 0 },
     { href: '/admin/demandes', label: t('admin.demandes'), icon: Inbox, badge: nbNouvelles },
     { href: '/admin/prestations', label: t('admin.prestations'), icon: Layers, badge: 0 },
     { href: '/admin/formations', label: t('admin.formations'), icon: GraduationCap, badge: 0 },

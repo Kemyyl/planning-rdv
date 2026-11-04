@@ -5,6 +5,7 @@ import Reservation from './pages/Reservation';
 import Confirmation from './pages/Confirmation';
 import MesRdv from './pages/MesRdv';
 import MesDevis from './pages/MesDevis';
+import MesFactures from './pages/MesFactures';
 import DefinirMotDePasse from './pages/DefinirMotDePasse';
 import Profil from './pages/Profil';
 import Formations from './pages/Formations';
@@ -18,6 +19,7 @@ import AdminClients from './pages/admin/Clients';
 import AdminAgenda from './pages/admin/Agenda';
 import AdminPrestations from './pages/admin/Prestations';
 import AdminDevis from './pages/admin/Devis';
+import AdminFactures from './pages/admin/Factures';
 import AdminDemandes from './pages/admin/Demandes';
 import AdminFormations from './pages/admin/Formations';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -41,6 +43,7 @@ export default function App() {
           <Route path="/confirmation/:id" element={<Confirmation />} />
           <Route path="/mes-rdv" element={<MesRdv />} />
           <Route path="/mes-devis" element={<MesDevis />} />
+          <Route path="/mes-factures" element={<MesFactures />} />
           <Route path="/definir-mot-de-passe" element={<DefinirMotDePasse />} />
           <Route path="/profil" element={<Profil />} />
           <Route path="/formations" element={<Formations />} />
@@ -59,6 +62,7 @@ export default function App() {
           <Route path="/admin/agenda" element={<AdminRoute><AdminAgenda /></AdminRoute>} />
           <Route path="/admin/prestations" element={<AdminRoute><AdminPrestations /></AdminRoute>} />
           <Route path="/admin/devis" element={<AdminRoute><AdminDevis /></AdminRoute>} />
+          <Route path="/admin/factures" element={<AdminRoute><AdminFactures /></AdminRoute>} />
           <Route path="/admin/demandes" element={<AdminRoute><AdminDemandes /></AdminRoute>} />
           <Route path="/admin/formations" element={<AdminRoute><AdminFormations /></AdminRoute>} />
 

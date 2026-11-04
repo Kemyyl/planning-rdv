@@ -11,6 +11,7 @@
     "modeSombre": "Mode sombre",
     "mesRdv": "Mes rendez-vous",
     "mesDevis": "Mes devis",
+    "mesFactures": "Mes factures",
     "mesFormations": "Mes formations",
     "formations": "Formations"
   },
@@ -31,7 +32,8 @@
     "prestations": "Prestations",
     "espacePraticien": "Espace praticien",
     "demandes": "Demandes",
-    "formations": "Formations"
+    "formations": "Formations",
+    "factures": "Factures"
   },
   "demandes": {
     "titre": "Demandes de contact",
@@ -677,6 +679,18 @@
     "typeCoaching": "Coaching",
     "typeSeminaire": "Séminaire",
     "typeAutre": "Autre"
+  },
+  "mesFactures": {
+    "titre": "Mes factures",
+    "resume": "Résumé",
+    "total": "Total encaissé",
+    "facture": "facture",
+    "factures": "factures",
+    "payee": "Payée",
+    "telecharger": "Télécharger",
+    "aucune": "Aucune facture pour le moment",
+    "aucuneDesc": "Vos factures apparaîtront ici dès qu'elles seront émises.",
+    "erreurTelechargement": "Erreur lors du téléchargement"
   },
   "cookies": {
     "titre": "Cookies & confidentialité",
