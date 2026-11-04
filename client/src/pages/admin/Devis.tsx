@@ -4,7 +4,7 @@ import { format, addDays, isPast } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -44,6 +44,7 @@ export default function Devis() {
   const { token } = useAuth();
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language === 'fr' ? fr : enUS;
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [view, setView] = useState<'list' | 'create'>(() => searchParams.has('prenom') ? 'create' : 'list');
 
@@ -89,6 +90,14 @@ export default function Devis() {
     fetch('/api/admin/prestations', { headers })
       .then(r => r.json()).then(d => setPrestations(Array.isArray(d) ? d.filter((p: Prestation) => p.actif) : []));
   }, [token]);
+
+  // Reset to list when URL params are cleared (e.g. after navigate('/admin/devis'))
+  useEffect(() => {
+    if (!searchParams.has('prenom')) {
+      setSent(null);
+      setView('list');
+    }
+  }, [searchParams]);
 
   // ── Computed ─────────────────────────────────────────────
   const selectedClient = clients.find(c => String(c.id) === String(selectedClientId));
@@ -252,7 +261,7 @@ export default function Devis() {
             <span className="text-sm font-bold text-[#0A1D35] font-mono">{sent.devisNum}</span>
           </div>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => { resetForm(); setView('list'); }}
+            <button onClick={() => { resetForm(); navigate('/admin/devis', { replace: true }); }}
               className="inline-flex items-center gap-2 bg-[#F7F2EB] border border-[#E7DCCD] text-[#56627A] font-semibold px-5 py-3 rounded-[12px] hover:bg-[#E7DCCD] transition-colors">
               <Eye size={15} /> {t('adminDevis.voirDevis')}
             </button>
