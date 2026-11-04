@@ -347,16 +347,26 @@
     "activer": "Activate"
   },
   "noteSeance": {
-    "titre": "Session summary",
+    "titre": "Session notes",
+    "historique": "History",
     "motif": "Reason for consultation",
-    "aucunResume": "No summary for this session.",
-    "placeholder": "Write the session summary…",
-    "enregistrer": "Save summary",
+    "aucunResume": "No notes for this session.",
+    "aucunHistorique": "No notes from previous sessions.",
+    "placeholder": "Write your notes… (Ctrl+Enter to save)",
+    "enregistrer": "Save",
     "enregistrement": "Saving…",
     "rejoindre": "Join Meet",
-    "supprimer": "Delete this summary?",
-    "modifie": "Updated",
-    "supprime": "Deleted"
+    "supprimer": "Delete this note?",
+    "modifie": "Note updated",
+    "supprime": "Note deleted",
+    "brouillon": "Draft",
+    "importerGemini": "Gemini Notes",
+    "geminiIntrouvable": "No Gemini notes found",
+    "templateObjectif": "Goal",
+    "templatePoints": "Topics covered",
+    "templateProgres": "Progress",
+    "templateATravail": "To work on",
+    "seance": "Session"
   },
   "nouveauRdvPanel": {
     "titre": "New appointment",

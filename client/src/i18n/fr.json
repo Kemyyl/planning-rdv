@@ -347,16 +347,26 @@
     "activer": "Activer"
   },
   "noteSeance": {
-    "titre": "Résumé de séance",
+    "titre": "Notes de séance",
+    "historique": "Historique",
     "motif": "Motif de consultation",
-    "aucunResume": "Aucun résumé pour cette séance.",
-    "placeholder": "Rédigez le résumé de cette séance…",
-    "enregistrer": "Enregistrer le résumé",
+    "aucunResume": "Aucune note pour cette séance.",
+    "aucunHistorique": "Aucune note des séances précédentes.",
+    "placeholder": "Rédigez vos notes… (Ctrl+Entrée pour enregistrer)",
+    "enregistrer": "Enregistrer",
     "enregistrement": "Enregistrement…",
     "rejoindre": "Rejoindre le Meet",
-    "supprimer": "Supprimer ce résumé ?",
-    "modifie": "Modifié",
-    "supprime": "Supprimé"
+    "supprimer": "Supprimer cette note ?",
+    "modifie": "Note modifiée",
+    "supprime": "Note supprimée",
+    "brouillon": "Brouillon",
+    "importerGemini": "Notes Gemini",
+    "geminiIntrouvable": "Aucune note Gemini trouvée",
+    "templateObjectif": "Objectif",
+    "templatePoints": "Points abordés",
+    "templateProgres": "Progrès",
+    "templateATravail": "À travailler",
+    "seance": "Séance"
   },
   "nouveauRdvPanel": {
     "titre": "Nouveau rendez-vous",
