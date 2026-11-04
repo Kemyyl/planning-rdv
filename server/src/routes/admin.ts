@@ -483,7 +483,7 @@ function generateDevisPdf(data: {
   devisNum: string; prenom: string; nom: string; email: string;
   prestationNom: string; duree: number; nbSeances: number;
   prixParSeance: number; total: number; notes?: string;
-  validiteDate: string; emissionDate: string;
+  validiteDate: string; emissionDate: string; isFacture?: boolean;
 }): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 50 });
@@ -512,7 +512,7 @@ function generateDevisPdf(data: {
       doc.fontSize(10).fillColor(blue).text('Accompagnement thérapeutique', L + 20, 80, { lineBreak: false });
     }
 
-    doc.fontSize(11).fillColor('white').text('DEVIS', L, 56, { width: W - 20, align: 'right', lineBreak: false });
+    doc.fontSize(11).fillColor('white').text(data.isFacture ? 'FACTURE' : 'DEVIS', L, 56, { width: W - 20, align: 'right', lineBreak: false });
     doc.fontSize(8).fillColor(blue).text(data.devisNum, L, 72, { width: W - 20, align: 'right', lineBreak: false });
 
     // ── Destinataire + dates ───────────────────────────────
@@ -523,8 +523,10 @@ function generateDevisPdf(data: {
 
     doc.fontSize(7).fillColor(grey).text('ÉMIS LE', L, y1, { width: W, align: 'right', lineBreak: false });
     doc.fontSize(10).fillColor(navy).text(data.emissionDate, L, y1 + 13, { width: W, align: 'right', lineBreak: false });
-    doc.fontSize(7).fillColor(grey).text("VALABLE JUSQU'AU", L, y1 + 30, { width: W, align: 'right', lineBreak: false });
-    doc.fontSize(10).fillColor(navy).text(data.validiteDate, L, y1 + 43, { width: W, align: 'right', lineBreak: false });
+    if (!data.isFacture) {
+      doc.fontSize(7).fillColor(grey).text("VALABLE JUSQU'AU", L, y1 + 30, { width: W, align: 'right', lineBreak: false });
+      doc.fontSize(10).fillColor(navy).text(data.validiteDate, L, y1 + 43, { width: W, align: 'right', lineBreak: false });
+    }
 
     // ── Separator ─────────────────────────────────────────
     doc.moveTo(L, 192).lineTo(R, 192).strokeColor(light).lineWidth(1).stroke();
@@ -682,6 +684,104 @@ adminRouter.get('/devis/:id/pdf', requireAuth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Erreur génération PDF' });
   }
+});
+
+// PATCH /api/admin/devis/:id/statut
+adminRouter.patch('/devis/:id/statut', requireAuth, async (req, res) => {
+  const parsed = z.object({
+    statut: z.enum(['envoye', 'accepte', 'refuse', 'expire']),
+  }).safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Statut invalide' }); return; }
+
+  const { data: devis, error: fetchErr } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (fetchErr || !devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    id: string; numero: string; client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string;
+    validite_date: string; created_at: string; facture_numero?: string;
+  };
+
+  const update: Record<string, unknown> = { statut: parsed.data.statut };
+
+  // Si accepté et pas encore de facture → générer numéro facture
+  if (parsed.data.statut === 'accepte' && !d.facture_numero) {
+    const factureNum = `FAC-${format(new Date(), 'yyyyMM')}-${randomUUID().slice(0, 6).toUpperCase()}`;
+    update.facture_numero = factureNum;
+    update.facture_date = format(new Date(), 'yyyy-MM-dd');
+  }
+
+  const { data: updated, error } = await supabase.from('devis').update(update).eq('id', req.params.id).select().single();
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(updated);
+});
+
+// GET /api/admin/devis/:id/facture
+adminRouter.get('/devis/:id/facture', requireAuth, async (req, res) => {
+  const { data: devis, error } = await supabase.from('devis').select('*').eq('id', req.params.id).single();
+  if (error || !devis) { res.status(404).json({ error: 'Devis introuvable' }); return; }
+
+  const d = devis as {
+    numero: string; facture_numero?: string; facture_date?: string;
+    client_prenom: string; client_nom: string; client_email: string;
+    prestation_nom: string; duree: number; nb_seances: number;
+    prix_par_seance: number; total: number; notes?: string;
+    validite_date: string; created_at: string; statut: string;
+  };
+
+  if (d.statut !== 'accepte' || !d.facture_numero) {
+    res.status(400).json({ error: 'Ce devis n\'a pas encore été accepté' }); return;
+  }
+
+  const emissionDate = d.facture_date
+    ? format(new Date(d.facture_date), 'd MMMM yyyy', { locale: fr })
+    : format(new Date(d.created_at), 'd MMMM yyyy', { locale: fr });
+
+  try {
+    const pdfBuffer = await generateDevisPdf({
+      devisNum: d.facture_numero,
+      prenom: d.client_prenom, nom: d.client_nom, email: d.client_email,
+      prestationNom: d.prestation_nom, duree: d.duree,
+      nbSeances: d.nb_seances, prixParSeance: d.prix_par_seance,
+      total: d.total, notes: d.notes,
+      validiteDate: emissionDate,
+      emissionDate,
+      isFacture: true,
+    });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${d.facture_numero}.pdf"`);
+    res.send(pdfBuffer);
+  } catch {
+    res.status(500).json({ error: 'Erreur génération facture' });
+  }
+});
+
+// GET /api/admin/revenue — statistiques mensuelles (6 derniers mois)
+adminRouter.get('/revenue', requireAuth, async (_req, res) => {
+  const months: { month: string; label: string; rdvs: number; revenue: number }[] = [];
+  const now = new Date();
+
+  for (let i = 5; i >= 0; i--) {
+    const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    const monthKey = format(start, 'yyyy-MM');
+    const monthLabel = format(start, 'MMM yyyy', { locale: fr });
+
+    const [rdvsResult, devisResult] = await Promise.all([
+      supabase.from('rendez_vous').select('id', { count: 'exact', head: true })
+        .eq('statut', 'confirme').gte('debut', start.toISOString()).lt('debut', end.toISOString()),
+      supabase.from('devis').select('total')
+        .eq('statut', 'accepte').gte('created_at', start.toISOString()).lt('created_at', end.toISOString()),
+    ]);
+
+    const revenue = ((devisResult.data || []) as { total: number }[])
+      .reduce((sum, d) => sum + Number(d.total), 0);
+
+    months.push({ month: monthKey, label: monthLabel, rdvs: rdvsResult.count || 0, revenue });
+  }
+
+  res.json(months);
 });
 
 // POST /api/admin/devis/:id/renvoyer

@@ -107,6 +107,20 @@ clientRouter.patch('/profil/mot-de-passe', requireClientAuth, async (req, res) =
   res.json({ ok: true });
 });
 
+// GET /api/client/devis — devis & factures liés à ce client
+clientRouter.get('/devis', requireClientAuth, async (req, res) => {
+  const { data: client } = await supabase.from('clients').select('email').eq('id', (req as ClientReq).clientId).single();
+  if (!client) { res.status(404).json({ error: 'Client introuvable' }); return; }
+
+  const { data, error } = await supabase
+    .from('devis')
+    .select('id,numero,prestation_nom,nb_seances,total,statut,email_envoye,validite_date,created_at,facture_numero,facture_date,prix_par_seance')
+    .eq('client_email', (client as { email: string }).email)
+    .order('created_at', { ascending: false });
+  if (error) { res.status(500).json({ error: error.message }); return; }
+  res.json(data || []);
+});
+
 // GET /api/client/rdv
 clientRouter.get('/rdv', requireClientAuth, async (req, res) => {
   const { data, error } = await supabase

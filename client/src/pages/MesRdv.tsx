@@ -14,6 +14,21 @@ interface RdvWithNotes extends RendezVous {
   lien_meet?: string;
 }
 
+interface DevisClientItem {
+  id: string;
+  numero: string;
+  prestation_nom: string;
+  nb_seances: number;
+  total: number;
+  statut: 'envoye' | 'accepte' | 'refuse' | 'expire';
+  email_envoye: boolean;
+  validite_date: string;
+  created_at: string;
+  facture_numero?: string;
+  facture_date?: string;
+  prix_par_seance: number;
+}
+
 function DateBox({ date }: { date: Date }) {
   const dateLocale = useDateLocale();
   return (
@@ -55,6 +70,8 @@ export default function MesRdv() {
   const [rdvJeton, setRdvJeton] = useState<(RendezVous & { lien_meet?: string }) | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAllPast, setShowAllPast] = useState(false);
+  const [devisList, setDevisList] = useState<DevisClientItem[]>([]);
+  const [devisLoading, setDevisLoading] = useState(false);
 
   const fullName = [prenom, nom].filter(Boolean).join(' ') || prenom || '';
   const initials = fullName.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
@@ -65,6 +82,11 @@ export default function MesRdv() {
         .then(r => r.json())
         .then(data => setRdvs(Array.isArray(data) ? data : []))
         .finally(() => setLoading(false));
+      setDevisLoading(true);
+      fetch('/api/client/devis', { headers: { Authorization: `Bearer ${clientToken}` } })
+        .then(r => r.json())
+        .then(d => setDevisList(Array.isArray(d) ? d : []))
+        .finally(() => setDevisLoading(false));
     } else if (jeton) {
       fetch(`/api/public/rdv/jeton/${jeton}`)
         .then(r => r.json())
@@ -346,6 +368,63 @@ export default function MesRdv() {
                   })}
                 </div>
               </>
+            )}
+
+            {/* Devis & Factures */}
+            {clientToken && !devisLoading && devisList.length > 0 && (
+              <div className="mt-8">
+                <h2 className="text-lg font-extrabold text-[#0A1D35] mb-4">Mes devis &amp; factures</h2>
+                <div className="space-y-3">
+                  {devisList.map(item => {
+                    const statutConfig: Record<DevisClientItem['statut'], { bg: string; text: string; label: string }> = {
+                      envoye:  { bg: 'bg-[#E8F0FB]', text: 'text-[#1A56A4]', label: 'Devis envoyé' },
+                      accepte: { bg: 'bg-[#DCEFE4]', text: 'text-[#1E6B4A]', label: item.facture_numero ? 'Facture disponible' : 'Accepté ✓' },
+                      refuse:  { bg: 'bg-[#F7DDD8]', text: 'text-[#9B2C1F]', label: 'Refusé' },
+                      expire:  { bg: 'bg-[#F7F2EB]', text: 'text-[#56627A]',  label: 'Expiré' },
+                    };
+                    const { bg, text, label } = statutConfig[item.statut];
+                    return (
+                      <div key={item.id} className="bg-white border border-[#E7DCCD] rounded-[16px] p-5">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            {/* Numero + statut badges */}
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="text-xs font-bold text-[#56627A] bg-[#F7F2EB] px-2.5 py-1 rounded-full">
+                                {item.facture_numero ? `Facture ${item.facture_numero}` : `Devis ${item.numero}`}
+                              </span>
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${bg} ${text}`}>
+                                {label}
+                              </span>
+                            </div>
+                            {/* Prestation */}
+                            <div className="font-semibold text-[#0A1D35] text-sm leading-snug mb-1">
+                              {item.prestation_nom}
+                            </div>
+                            {/* Details */}
+                            <div className="text-xs text-[#56627A] space-y-0.5">
+                              <div>
+                                {item.nb_seances} séance{item.nb_seances > 1 ? 's' : ''} &middot; {item.prix_par_seance.toFixed(2)} € / séance
+                              </div>
+                              <div className="font-bold text-[#0A1D35]">
+                                Total : {item.total.toFixed(2)} €
+                              </div>
+                              {item.facture_date ? (
+                                <div>
+                                  Facture du {format(new Date(item.facture_date), 'd MMM yyyy', { locale: dateLocale })}
+                                </div>
+                              ) : (
+                                <div>
+                                  Créé le {format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 

@@ -4,8 +4,9 @@ import { format, isToday, isThisWeek, isThisMonth, formatDistanceToNow } from 'd
 import { useDateLocale, useTimeFormat } from '../../hooks/useDateLocale';
 import {
   Calendar, Users, Clock, Bell, Plus, Pencil, Trash2, Video,
-  FileText, TrendingUp, ArrowRight, Zap, ChevronRight,
+  FileText, TrendingUp, ArrowRight, Zap, ChevronRight, Download,
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { AdminLayout } from '../../components/Layout';
@@ -55,6 +56,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [rdvs, setRdvs] = useState<RendezVous[]>([]);
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, month: 0, total: 0, clients: 0 });
+  const [revenueData, setRevenueData] = useState<{ month: string; label: string; rdvs: number; revenue: number }[]>([]);
   const [noteRdv, setNoteRdv] = useState<RendezVous | null>(null);
   const [showNouveauRdv, setShowNouveauRdv] = useState(false);
   const [period, setPeriod] = useState<Period>('today');
@@ -107,7 +109,12 @@ export default function AdminDashboard() {
     });
   }
 
-  useEffect(() => { loadDashboard(); }, []);
+  useEffect(() => {
+    loadDashboard();
+    fetch('/api/admin/revenue', { headers })
+      .then(r => r.json())
+      .then(d => setRevenueData(Array.isArray(d) ? d : []));
+  }, []);
 
   useEffect(() => {
     const pastWithoutResume = rdvs.filter(r => r.statut !== 'annule' && new Date(r.fin) < now && !r.resume_url);
@@ -139,6 +146,36 @@ export default function AdminDashboard() {
     { label: t('dashboard.statMois'), value: stats.month, icon: TrendingUp, bg: '#DCEFE4', fg: '#1E6B4A', accent: '#3DAA72' },
     { label: t('dashboard.statClients'), value: stats.clients, icon: Users, bg: '#E9D8F5', fg: '#5A2C8A', accent: '#9B6DDA' },
   ];
+
+  function exportCsvClients() {
+    fetch('/api/admin/clients', { headers })
+      .then(r => r.json())
+      .then((clients: Array<{ prenom: string; nom: string; email: string; telephone?: string; created_at?: string }>) => {
+        const header = 'Prénom,Nom,Email,Téléphone,Inscrit le';
+        const rows = clients.map(c => `${c.prenom},${c.nom},${c.email},${c.telephone || ''},${c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : ''}`);
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'clients.csv'; a.click();
+        URL.revokeObjectURL(url);
+      });
+  }
+
+  function exportCsvDevis() {
+    fetch('/api/admin/devis', { headers })
+      .then(r => r.json())
+      .then((devis: Array<{ numero: string; client_prenom: string; client_nom: string; client_email: string; prestation_nom: string; nb_seances: number; total: number; statut: string; created_at: string }>) => {
+        const header = 'Numéro,Client,Email,Prestation,Séances,Total,Statut,Date';
+        const rows = devis.map(d => `${d.numero},${d.client_prenom} ${d.client_nom},${d.client_email},${d.prestation_nom},${d.nb_seances},${d.total},${d.statut},${new Date(d.created_at).toLocaleDateString('fr-FR')}`);
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'devis.csv'; a.click();
+        URL.revokeObjectURL(url);
+      });
+  }
+
+  const totalRevenue = revenueData.reduce((sum, d) => sum + d.revenue, 0);
 
   const PERIODS: [Period, string][] = [
     ['today', t('dashboard.periodeAujourdhui')],
@@ -198,6 +235,54 @@ export default function AdminDashboard() {
               style={{ background: accent }} />
           </div>
         ))}
+      </div>
+
+      {/* ── Revenue chart ─────────────────────────────────────── */}
+      <div className="bg-white border border-[#E7DCCD] rounded-[18px] p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <p className="text-sm font-bold text-[#0A1D35] mb-1">Activité &amp; revenus — 6 derniers mois</p>
+            <p className="text-xs text-[#56627A]">
+              CA accepté : <span className="font-bold text-[#0A1D35]">{totalRevenue} €</span>
+            </p>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={revenueData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="gradRdvs" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#0A1D35" stopOpacity={0.18} />
+                <stop offset="95%" stopColor="#0A1D35" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="gradRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6CAED6" stopOpacity={0.22} />
+                <stop offset="95%" stopColor="#6CAED6" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0EAE0" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#A8B8C8' }} axisLine={false} tickLine={false} />
+            <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#A8B8C8' }} axisLine={false} tickLine={false} width={28} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#A8B8C8' }} axisLine={false} tickLine={false} width={40} tickFormatter={v => `${v}€`} />
+            <Tooltip
+              contentStyle={{ borderRadius: 10, border: '1px solid #E7DCCD', fontSize: 12 }}
+              formatter={(value: number, name: string) => name === 'revenue' ? [`${value} €`, 'Revenus'] : [value, 'Séances']}
+            />
+            <Area yAxisId="left" type="monotone" dataKey="rdvs" stroke="#0A1D35" strokeWidth={2} fill="url(#gradRdvs)" dot={false} />
+            <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="#6CAED6" strokeWidth={2} fill="url(#gradRevenue)" dot={false} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ── CSV export buttons ────────────────────────────────── */}
+      <div className="flex items-center gap-2 mb-6">
+        <button onClick={exportCsvClients}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-2 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
+          <Download size={12} /> Export clients
+        </button>
+        <button onClick={exportCsvDevis}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-2 rounded-[10px] hover:bg-[#F7F2EB] transition-colors">
+          <Download size={12} /> Export devis
+        </button>
       </div>
 
       {/* ── Main two-column layout ────────────────────────────── */}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { FileText, Send, Users, ChevronDown, Minus, Plus, CheckCircle, RotateCcw, Download, Mail, AlertCircle, ArrowLeft, Eye, Search } from 'lucide-react';
+import { FileText, Send, Users, ChevronDown, Minus, Plus, CheckCircle, RotateCcw, Download, Mail, AlertCircle, ArrowLeft, Eye, Search, Receipt } from 'lucide-react';
 import { format, addDays, isPast } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import toast from 'react-hot-toast';
@@ -35,6 +35,8 @@ interface DevisItem {
   email_envoye: boolean;
   statut: string;
   created_at: string;
+  facture_numero?: string;
+  facture_date?: string;
 }
 
 export default function Devis() {
@@ -48,6 +50,7 @@ export default function Devis() {
   const [listLoading, setListLoading] = useState(true);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [updatingStatutId, setUpdatingStatutId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   // ── Form state ───────────────────────────────────────────
@@ -148,6 +151,41 @@ export default function Devis() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `${item.numero}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t('adminDevis.erreurTelechargement'));
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
+  async function changeStatut(item: DevisItem, newStatut: string) {
+    setUpdatingStatutId(item.id);
+    try {
+      const res = await fetch(`/api/admin/devis/${item.id}/statut`, {
+        method: 'PATCH',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: newStatut }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      loadDevis();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('common.erreur'));
+    } finally {
+      setUpdatingStatutId(null);
+    }
+  }
+
+  async function downloadFacture(item: DevisItem) {
+    setDownloadingId(item.id);
+    try {
+      const res = await fetch(`/api/admin/devis/${item.id}/facture`, { headers });
+      if (!res.ok) throw new Error('Erreur facture');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${item.facture_numero ?? item.numero}-facture.pdf`; a.click();
       URL.revokeObjectURL(url);
     } catch {
       toast.error(t('adminDevis.erreurTelechargement'));
@@ -485,6 +523,26 @@ export default function Devis() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                         <span className="font-bold text-[#0A1D35] font-mono text-sm">{item.numero}</span>
+                        {item.statut === 'envoye' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1A56A4] bg-[#E8F0FB] px-2 py-0.5 rounded-full">
+                            Envoyé
+                          </span>
+                        )}
+                        {item.statut === 'accepte' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E6B4A] bg-[#DCEFE4] px-2 py-0.5 rounded-full">
+                            <CheckCircle size={10} /> Accepté
+                          </span>
+                        )}
+                        {item.statut === 'refuse' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#9B2C1F] bg-[#F7DDD8] px-2 py-0.5 rounded-full">
+                            Refusé
+                          </span>
+                        )}
+                        {item.statut === 'expire' && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2 py-0.5 rounded-full">
+                            Expiré
+                          </span>
+                        )}
                         {item.email_envoye ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1E6B4A] bg-[#DCEFE4] px-2 py-0.5 rounded-full">
                             <CheckCircle size={10} /> {t('adminDevis.emailEnvoye')}
@@ -494,7 +552,7 @@ export default function Devis() {
                             <AlertCircle size={10} /> {t('adminDevis.emailNonEnvoye')}
                           </span>
                         )}
-                        {isExpired && (
+                        {isExpired && item.statut !== 'expire' && item.statut !== 'refuse' && (
                           <span className="text-[11px] font-semibold text-[#56627A] bg-[#F7F2EB] px-2 py-0.5 rounded-full">
                             {t('adminDevis.expire')}
                           </span>
@@ -516,7 +574,7 @@ export default function Devis() {
                       <p className="text-xs text-[#56627A] mb-3">
                         {format(new Date(item.created_at), 'd MMM yyyy', { locale: dateLocale })}
                       </p>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap justify-end">
                         <button onClick={() => downloadPdf(item)} disabled={downloadingId === item.id}
                           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-40">
                           <Download size={12} /> {downloadingId === item.id ? '…' : 'PDF'}
@@ -525,6 +583,30 @@ export default function Devis() {
                           className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#56627A] border border-[#E7DCCD] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7F2EB] transition-colors disabled:opacity-40">
                           <Mail size={12} /> {resendingId === item.id ? '…' : t('adminDevis.renvoyer')}
                         </button>
+                        {item.statut === 'envoye' && (
+                          <>
+                            <button
+                              onClick={() => changeStatut(item, 'accepte')}
+                              disabled={updatingStatutId === item.id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1E6B4A] border border-[#DCEFE4] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#DCEFE4] transition-colors disabled:opacity-40">
+                              {updatingStatutId === item.id ? '…' : '✓ Accepter'}
+                            </button>
+                            <button
+                              onClick={() => changeStatut(item, 'refuse')}
+                              disabled={updatingStatutId === item.id}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B2C1F] border border-[#F7DDD8] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#F7DDD8] transition-colors disabled:opacity-40">
+                              {updatingStatutId === item.id ? '…' : '✗ Refuser'}
+                            </button>
+                          </>
+                        )}
+                        {item.statut === 'accepte' && item.facture_numero && (
+                          <button
+                            onClick={() => downloadFacture(item)}
+                            disabled={downloadingId === item.id}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1A56A4] border border-[#E8F0FB] bg-white px-3 py-1.5 rounded-[8px] hover:bg-[#E8F0FB] transition-colors disabled:opacity-40">
+                            <Receipt size={12} /> {downloadingId === item.id ? '…' : 'Facture'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
